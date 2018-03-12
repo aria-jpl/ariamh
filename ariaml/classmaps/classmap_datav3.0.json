@@ -1,0 +1,31 @@
+{
+    "UWE_0":1,
+    "UWE_1":1,
+    "UWE_2":-1,
+    "UWE_3":-1,
+    
+    "M-UWE_0":1,
+    "M-UWE_1":1, 
+    "M-UWE_2":-1, 
+    "M-UWE_3":-1, 
+
+    "EF_UWE_0":1, "UWE_0-EF":1, "EF-UWE_0":1,
+    "EF_UWE_1":1,  "UWE_1-EF":1,  "EF-UWE_1":1, 
+    "EF_UWE_2":-1,  "UWE_2-EF":-1,  "EF-UWE_2":-1, 
+    "EF_UWE_3":-1,  "UWE_3-EF":-1,  "EF-UWE_3":-1,     
+
+    "PL-UWE_0":1,
+    "PL-UWE_1":1,
+    "PL-UWE_2":-1,
+    "PL-UWE_3":-1,
+
+    "ZL-UWE_0":1,
+    "ZL-UWE_1":1,
+    "ZL-UWE_2":-1,
+    "ZL-UWE_3":-1, 
+
+    "PM-UWE_0":1,
+    "PM-UWE_1":1,
+    "PM-UWE_2":-1,
+    "PM-UWE_3":-1
+}

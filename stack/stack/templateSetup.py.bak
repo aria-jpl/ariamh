@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+from string import Template
+import numpy 
+import os
+
+default_dir = os.path.join(os.path.dirname(__file__), 'templates')
+print default_dir
+
+def templateSetup(rdict, source='', target='.', filename=None):
+    '''
+    Create a file in target/filename using template in source dir.
+    '''
+
+    #Set up source dir for templates
+    if source in ['', None]:
+	srcDir = default_dir
+    else:
+	srcDir = source
+
+    if filename is None:
+	raise ValueError('No template file name provided.')
+
+    #Read and set up the template string
+    tempFile = os.path.join(srcDir, 'tmpl_'+filename)
+    fid = open(tempFile, 'r')
+    dstr = Template(fid.read())
+    fid.close()
+
+    #Write to the target file
+    outFile = os.path.join(target, filename)
+    outstr = dstr.substitute(rdict)
+    fid = open(outFile, 'w')
+    fid.write(outstr)
+    fid.close()
+
+if __name__ == '__main__':
+    rdict= {}
+    rdict['template'] = 'template substitution'
+    rdict['giant'] = 'GIAnT preparation'
+    templateSetup(rdict, filename='test.txt')

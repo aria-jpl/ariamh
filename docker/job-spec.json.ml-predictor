@@ -1,0 +1,19 @@
+{
+  "command":"/home/ops/ariamh/ariaml/predictor_wrapper.py",
+  "disk_usage":"1GB",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws",
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "params" : [
+    {
+      "name": "predictor_model",
+      "destination": "localize"
+    },
+    {
+      "name": "uri",
+      "destination": "positional"
+    }
+  ]
+}

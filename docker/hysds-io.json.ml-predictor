@@ -1,0 +1,19 @@
+{
+  "submission_type": "iteration",
+  "label": "ML - Predictor",
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    {
+      "name": "predictor_model",
+      "from": "submitter",
+      "type": "text",
+      "placeholder": "A url to the predictor model for prediction"
+    },
+    {
+      "name": "uri",
+      "from": "dataset_jpath:_source.urls",
+      "type": "text",
+      "lambda": "lambda urls: get_best_url(urls,'http')"
+    }
+  ]
+}

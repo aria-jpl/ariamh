@@ -1,0 +1,42 @@
+{
+  "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_reprocess_ifg.sh",
+  "disk_usage":"1GB",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws",
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "recommended-queues" : [
+    "grfn-job_worker-small",
+    "aria-job_worker-small",
+    "mem-job_worker-small",
+    "dwr-job_worker-small",
+    "urgent-response-job_worker-small"
+  ],
+  "params" : [
+    {
+      "name": "ifg_version",
+      "destination": "context"
+    },
+    {
+      "name": "starttime",
+      "destination": "context"
+    },
+    {
+      "name": "endtime",
+      "destination": "context"
+    },
+    {
+      "name": "url",
+      "destination": "context"
+    },
+    {
+      "name": "orbit_file",
+      "destination": "context"
+    },
+    {
+      "name": "platform",
+      "destination": "context"
+    }
+  ]
+}

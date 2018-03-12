@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+import os, sys, requests, json
+from pprint import pprint
+import argparse
+
+def getMetadata(track=None, frame=None, beam=None, passdir=None,version="v0.4"):
+    """
+    Download metadata json from product repo for product with ID passed in.
+    """
+
+    if not beam.startswith('H4'):
+        beam = 'H4-' + beam
+
+    url = "http://grq.jpl.nasa.gov:8878/grq"
+    params = {
+    "dataset": "interferogram",
+    "trackNumber": track,
+    "direction": passdir,
+    "latitudeIndexMin": "[* TO %d]"%(frame),
+    "latitudeIndexMax": "[%d TO *]"%(frame),
+    "beamID" : beam,
+    "version": version
+        }
+
+   
+    # get GRQ request
+    r = requests.get(url, params=params, verify=False)
+    r.raise_for_status()
+    res_json = r.json()
+    if res_json['count'] == 0:
+        raise ValueError("Found no interferogram product for Track %d, Frame %d."%(track,frame))
+
+    return res_json
+
+def checkBbox(res_json):
+    '''
+    Ensure that all the results have the same bbox.
+    '''
+    
+    uBox = []
+    indBox = []
+    countUBox = []
+
+    num = res_json['count']
+    print 'Initial number of returned results: ', num
+
+    ######Initialize unique list
+#    bounds = res_json['result'][0]['imageCorners']
+#    bbox = [bounds['maxLat'], bounds['minLat'],bounds['maxLon'],bounds['minLon']]
+    bbox = res_json['result'][0]['refbbox']
+    uBox.append(bbox)
+    countUBox.append(1)
+    indBox.append(0)
+
+    for resnum in xrange(1,num):
+#        bounds = res_json['result'][resnum]['imageCorners']
+#        box = [bounds['maxLat'], bounds['minLat'], bounds['maxLon'], bounds['minLon']]
+        box = res_json['result'][resnum]['refbbox']
+        found = False
+
+        for index,elem in enumerate(uBox):
+            if found:
+                continue
+
+            if box==elem:
+                indBox.append(index)
+                countUBox[index] += 1
+                found = True
+
+        if not found:
+#            print res_json['result'][resnum]
+            uBox.append(box)
+            countUBox.append(1)
+            indBox.append(len(uBox)-1)
+
+    print 'Number of unique boxes: ', len(uBox)
+    print 'Counts for unique boxes: ', countUBox
+    if len(uBox) > 1:
+        print 'Warning: More than one set of geocoded results found.'
+        print 'Picking the largest returned group.'
+
+        maxIndex = countUBox.index(max(countUBox))
+
+        result = {}
+        result['count'] = countUBox[maxIndex]
+        result['message'] = ""
+        result['result'] = []
+
+        for index,elem in enumerate(res_json['result']):
+            if indBox[index] == maxIndex:
+                result['result'].append(elem)
+
+        return result
+    else:
+        print 'All returned results belong to single group.'
+        return res_json
+
+
+def parseCmdLine():
+    '''
+    Command Line Parser.
+    '''
+    parser = argparse.ArgumentParser(description='Gets the meta data associated with an interferogram and dumps it as a json file.')
+    parser.add_argument('--track', dest='track', type=int, required=True,
+            help = 'Track number.')
+    parser.add_argument('--frame', dest='frame', type=int, required=True,
+            help = 'Frame number.')
+    parser.add_argument('--beam', dest='beam', type=str, default=None,
+            help = 'Beam Id.')
+    parser.add_argument('--pass', dest='passdir', type=str, required=True, 
+            choices = ('asc','dsc'), help='Pass direction')
+    parser.add_argument('--out', dest='out', type=str, default='metadata.json',
+            help = 'Output file.')
+
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    inps = parseCmdLine()
+    res = getMetadata(track=inps.track, frame=inps.frame, beam=inps.beam, passdir=inps.passdir)
+    res = checkBbox(res)
+    with open(inps.out, 'w') as fid:
+        json.dump(res, fid, indent=2, sort_keys=True)

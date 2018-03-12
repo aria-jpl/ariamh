@@ -1,0 +1,95 @@
+{
+  "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_create_ifg.sh",
+  "imported_worker_files": {
+    "/home/ops/.netrc": ["/home/ops/.netrc"],
+    "/home/ops/.aws": ["/home/ops/.aws", "ro"],
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "dependency_images": [
+    {
+      "container_image_name": "aria/isce_giant:20171030",
+      "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-20171030.tar.gz",
+      "container_mappings": {
+        "/home/ops/.netrc": ["/root/.netrc"],
+        "/home/ops/.aws": ["/root/.aws", "ro"]
+      }
+    }
+  ],
+  "recommended-queues" : [
+    "grfn-job_worker-small",
+    "aria-job_worker-small",
+    "mem-job_worker-small",
+    "dwr-job_worker-small",
+    "urgent-response-job_worker-small"
+  ],
+  "params" : [
+    {
+      "name": "dataset_tag",
+      "destination": "context"
+    },
+    {
+      "name": "project",
+      "destination": "context"
+    },
+    {
+      "name": "singlesceneOnly",
+      "destination": "context"
+    },
+    {
+      "name": "preReferencePairDirection",
+      "destination": "context"
+    },
+    {
+      "name": "postReferencePairDirection",
+      "destination": "context"
+    },
+    {
+      "name": "temporalBaseline",
+      "destination": "context"
+    },
+    {
+      "name": "minMatch",
+      "destination": "context"
+    },
+    { 
+      "name": "covth",
+      "destination": "context"
+    },
+    {
+      "name": "auto_bbox",
+      "destination": "context"
+    },
+    {
+      "name": "precise_orbit_only",
+      "destination": "context"
+    },
+    {
+      "name": "azimuth_looks",
+      "destination": "context"
+    },
+    {
+      "name": "range_looks",
+      "destination": "context"
+    },
+    { 
+      "name": "filter_strength",
+      "destination": "context"
+    },
+    {
+      "name": "dem_type",
+      "destination": "context"
+    },
+    {
+      "name": "query",
+      "destination": "context"
+    },
+    {
+      "name": "name",
+      "destination": "context"
+    },
+    {
+      "name": "username",
+      "destination": "context"
+    }
+  ]
+}

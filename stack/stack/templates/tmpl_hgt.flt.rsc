@@ -1,0 +1,12 @@
+WIDTH                                    $width
+FILE_LENGTH                              $length                    
+RANGE_PIXEL_SIZE                         $deltarg              
+AZIMUTH_PIXEL_SIZE                       $deltaaz
+LAT_REF1                                 $lat1
+LON_REF1                                 $lon1
+LAT_REF2                                 $lat2
+LON_REF2                                 $lon2
+LAT_REF3                                 $lat3
+LON_REF3                                 $lon3
+LAT_REF4                                 $lat4
+LON_REF4                                 $lon4

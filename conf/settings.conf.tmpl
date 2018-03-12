@@ -1,0 +1,17 @@
+GRQ_URL=http://{{ GRQ_ES_PVT_IP }}:9200/
+ARIA_DAV_URL=https://{{ DAV_SERVER }}
+ARIA_DAV_U={{ username }}
+ARIA_DAV_P={{ password }}
+ARIA_DEM_URL=https://{{ DAV_SERVER }}/repository/products/SRTM1_v3/
+ARIA_NED1_DEM_URL=https://{{ DAV_SERVER }}/repository/products/ned1/
+ARIA_NED13_DEM_URL=https://{{ DAV_SERVER }}/repository/products/ned13/
+ARIA_WBD_URL=https://{{ DAV_SERVER }}/repository/products/usgs_mirror/SRTMSWBD.003/2000.02.11/
+ARIA_DEM_U={{ username }}
+ARIA_DEM_P={{ password }}
+ARIA_WBD_U={{ username }}
+ARIA_WBD_P={{ password }}
+ARIA_PRD_URL=https://{{ DAV_SERVER }}/repository/products/
+ARIA_DB_VERSION=v1.0
+GRQ_INDEX_PREFIX=grq
+MOZART_URL=amqp://username:password@{{ MOZART_RABBIT_PVT_IP }}:5672//
+DATASETS_CONFIG=/home/ops/verdi/etc/datasets.json

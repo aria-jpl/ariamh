@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topsApp>
+  <component name="topsinsar">
+    <component name="master">
+      <property name="orbit file">$MASTER_ORBIT_FILE</property>
+      <property name="auxiliary data directory">aux_cal</property>
+      <property name="output directory">master</property>
+      <property name="safe">$MASTER_SAFE_DIR</property>
+      <property name="polarization">hh</property>
+    </component>
+    <component name="slave">
+      <property name="orbit file">$SLAVE_ORBIT_FILE</property>
+      <property name="auxiliary data directory">aux_cal</property>
+      <property name="output directory">slave</property>
+      <property name="safe">$SLAVE_SAFE_DIR</property>
+      <property name="polarization">hh</property>
+    </component>
+    <property name="swaths">[$SWATHNUM]</property>
+    <property name="demFilename">$DEM_FILE</property>
+    <property name="do interferogram">True</property>
+    <property name="do dense offsets">True</property>
+    <property name="do ESD">False</property>
+    <property name="do unwrap">False</property>
+    <property name="do unwrap 2 stage">False</property>
+    <property name="ampcor skip width">$AMPCOR_SKIP_WIDTH</property>
+    <property name="ampcor skip height">$AMPCOR_SKIP_HEIGHT</property>
+    <property name="ampcor search window width">$AMPCOR_SRC_WIN_WIDTH</property>
+    <property name="ampcor search window height">$AMPCOR_SRC_WIN_HEIGHT</property>
+    <property name="ampcor window width">$AMPCOR_SRC_WIDTH</property>
+    <property name="ampcor window height">$AMPCOR_SRC_HEIGHT</property>
+  </component>
+</topsApp>

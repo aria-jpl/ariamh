@@ -1,0 +1,39 @@
+{
+  "submission_type": "iteration",
+  "label": "Reprocess Sentinel-1 Interferogram POEORB",
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    {
+      "name": "ifg_version",
+      "from": "submitter",
+      "type": "text",
+      "placeholder": "S1-IFG version to check for reprocessing, e.g. v1.1.2"
+    },
+    {
+      "name": "starttime",
+      "from": "dataset_jpath:_source.starttime",
+      "type": "datetime"
+    },
+    {
+      "name": "endtime",
+      "from": "dataset_jpath:_source.endtime",
+      "type": "datetime"
+    },
+    {
+      "name": "url",
+      "from": "dataset_jpath:_source.urls",
+      "type": "text",
+      "lambda": "lambda urls: get_best_url(urls, 'http')"
+    },
+    {
+      "name": "orbit_file",
+      "from": "dataset_jpath:_source.metadata.archive_filename",
+      "type": "text"
+    },
+    {
+      "name": "platform",
+      "from": "dataset_jpath:_source.metadata.platform",
+      "type": "text"
+    }
+  ]
+}

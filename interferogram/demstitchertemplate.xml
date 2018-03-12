@@ -1,0 +1,14 @@
+		<component name="demstitcher">
+			<property name="url">
+				<value>httpsvalue</value>
+			</property>
+			<property name="extra">
+				<value>""</value>
+			</property>
+			<property name="username">
+				<value>usernamevalue</value>
+			</property>
+			<property name="password">
+				<value>passwordvalue</value>
+			</property>
+		</component>

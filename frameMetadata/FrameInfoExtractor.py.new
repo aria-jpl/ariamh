@@ -1,0 +1,323 @@
+#! /usr/bin/env python 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Author: Giangi Sacco
+# Copyright 2012, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged.
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+from __future__ import print_function
+import os
+from mroipac.geolocate.Geolocate import Geolocate
+import logging
+import logging.config
+logging.config.fileConfig(os.environ['ISCE_HOME']+ '/library/applications/logging.conf')
+import math
+import sys
+import numpy
+import json
+from httplib2 import Http
+from urllib import urlencode
+from frameMetadata.FrameMetadata import FrameMetadata
+from OrbitInfo import OrbitInfo
+from peg_region_check.PegRegionChecker import PegRegionChecker
+#at the moment there is no localized config with the grq server. get it from the PegRegionChecker
+#to avoid having it in too many places
+class FrameInfoExtractor():
+
+    
+    def __init__(self):
+        self.logger = logging.getLogger("FrameInfoExtractor")
+        self._frameFilename = ''
+        self._frame = None 
+        self._lookDirectionMap = {-1:'right',1:'left'}
+        self._latitudeResolution = .1
+    def __getstate__(self):
+        d = dict(self.__dict__)
+        del d['logger']
+        return d
+    def __setstate__(self,d):
+        self.__dict__.update(d)
+        self.logger = logging.getLogger("FrameInfoExtractor")
+    
+    def setFrameFilename(self,name):
+        self._frameFilename = name
+    
+    def calculateCorners(self):
+        """
+        Calculate the approximate geographic coordinates of corners of the SAR image.
+
+        @return (\a tuple) a list with the corner coordinates and a list with the look angles to these coordinates
+        """
+        # Extract the planet from the hh object
+        
+        planet = self._frame.getInstrument().getPlatform().getPlanet()
+        # Wire up the geolocation object
+        geolocate = Geolocate()
+        geolocate.wireInputPort(name='planet',object=planet)
+        
+        earlySquint = self._frame._squintAngle 
+        # Get the ranges, squints and state vectors that defined the boundaries of the frame
+        orbit = self._frame.getOrbit()               
+        nearRange = self._frame.getStartingRange()
+        farRange = self._frame.getFarRange()        
+        earlyStateVector = orbit.interpolateOrbit(self._frame.getSensingStart())
+        lateStateVector = orbit.interpolateOrbit(self._frame.getSensingStop())            
+        nearEarlyCorner,nearEarlyLookAngle,nearEarlyIncAngle = geolocate.geolocate(earlyStateVector.getPosition(),
+                                                                                   earlyStateVector.getVelocity(),
+                                                                                   nearRange,earlySquint)        
+        farEarlyCorner,farEarlyLookAngle,farEarlyIncAngle = geolocate.geolocate(earlyStateVector.getPosition(),
+                                                                                earlyStateVector.getVelocity(),
+                                                                                farRange,earlySquint)
+        nearLateCorner,nearLateLookAngle,nearLateIncAngle = geolocate.geolocate(lateStateVector.getPosition(),
+                                                                                lateStateVector.getVelocity(),
+                                                                                nearRange,earlySquint)
+        farLateCorner,farLateLookAngle,farLateIncAngle = geolocate.geolocate(lateStateVector.getPosition(),
+                                                                             lateStateVector.getVelocity(),
+                                                                             farRange,earlySquint)
+        self.logger.debug("Near Early Corner: %s" % nearEarlyCorner)
+        self.logger.debug("Near Early Look Angle: %s" % nearEarlyLookAngle)
+        self.logger.debug("Near Early Incidence Angle: %s " % nearEarlyIncAngle)
+
+        self.logger.debug("Far Early Corner: %s" % farEarlyCorner)
+        self.logger.debug("Far Early Look Angle: %s" % farEarlyLookAngle)
+        self.logger.debug("Far Early Incidence Angle: %s" % farEarlyIncAngle)
+
+        self.logger.debug("Near Late Corner: %s" % nearLateCorner)
+        self.logger.debug("Near Late Look Angle: %s" % nearLateLookAngle)
+        self.logger.debug("Near Late Incidence Angle: %s" % nearLateIncAngle)
+
+        self.logger.debug("Far Late Corner: %s" % farLateCorner)
+        self.logger.debug("Far Late Look Angle: %s" % farLateLookAngle)
+        self.logger.debug("Far Late Incidence Angle: %s" % farLateIncAngle)
+
+        corners = [nearEarlyCorner,farEarlyCorner,nearLateCorner,farLateCorner]
+        lookAngles = [nearEarlyLookAngle,farEarlyLookAngle,nearLateLookAngle,farLateLookAngle]
+        return corners,lookAngles
+
+
+    def extractInfoFromFrame(self,frame):
+        self._frame = frame
+        return self.extractInfo()
+
+    # update the frame by setting the attribute attr to the value val. if obj is a string then assume that is a filename, otherwise assume that is a frame object
+    def updateFrameInfo(self,attr,val,obj):
+        from isceobj.Scene import Frame
+        if(isinstance(obj,str)):
+            import cPickle as cP
+            fp  = open(obj,'r')
+            frame = cP.load(fp)
+            fp.close()
+            if(isinstance(attr,list)):
+                for i in xrange(len(attr)):
+                    setattr(frame,attr[i],val[i])
+            else:
+                setattr(frame,attr,val)
+            #update the pickled file
+            fp  = open(obj,'w')
+            cP.dump(frame,fp,2)
+            fp.close()
+
+        elif(isinstance(obj,Frame)):
+            frame = obj
+            if(isinstance(attr,list)):
+                for i in xrange(len(attr)):
+                    setattr(frame,attr[i],val[i])
+            else:
+                setattr(frame,attr,val)
+        else:
+            self.logger.error("Error. The method updateFrameInfo takes as third argument a string or a Frame object.")
+            raise Exception
+    def extractTrack(self,fm):
+        if(fm.spacecraftName.lower() == 'alos'):
+            fm._trackNumber =  (46*int(fm._orbitNumber) + 84)%671 + 1
+        elif(fm.spacecraftName.lower() == 'csks1' or fm.spacecraftName.lower() == 'csks2'
+             or fm.spacecraftName.lower() == 'csks3'):
+            fm._trackNumber =  fm._orbitNumber%237
+        elif(fm.spacecraftName.lower() == 'csks4'):
+            fm._trackNumber =  (fm._orbitNumber - 193)%237
+
+        # for envi need to get it from the filename, so need to add it to metadata  
+    def extractOrbitRepeat(self,fm):
+        if(fm.spacecraftName.lower() == 'alos'):
+            fm.orbitRepeat = 671
+        elif(fm.spacecraftName.lower().count('csk')):
+            fm.orbitRepeat = 237
+        #envi is 431
+            
+    def computeLatitudeIndeces(self,fm):
+        extremes = self.getExtremes(fm.bbox)
+        latMin = extremes[0]
+        latMax = extremes[1]
+        fm.latitudeIndexMin = int(math.floor(latMin/self._latitudeResolution))
+        fm.latitudeIndexMax = int(math.ceil(latMax/self._latitudeResolution))
+
+
+    #given a bbox return the list [latMin,latMax,lonMin,lonMax]
+    def getExtremes(self,bbox):
+        return [min(min(min(bbox[0][0],bbox[1][0]),bbox[2][0]),bbox[3][0]),
+                max(max(max(bbox[0][0],bbox[1][0]),bbox[2][0]),bbox[3][0]),
+                min(min(min(bbox[0][1],bbox[1][1]),bbox[2][1]),bbox[3][1]),
+                max(max(max(bbox[0][1],bbox[1][1]),bbox[2][1]),bbox[3][1])]
+
+
+#return True/False depending if it failed or not
+
+    def computeBaseline(self,fm):
+        ret = True
+        oi = OrbitInfo(fm)
+        prc = PegRegionChecker(fm.spacecraftName)
+        requester = prc.requester
+        rest_url = prc.rest_url
+        
+        fmRef = FrameMetadata()
+        #just need an estimate
+        extremes = self.getExtremes(fm.bbox)
+        latMin = extremes[0]
+        latMax = extremes[1]
+        lonMin = extremes[2]
+        lonMax = extremes[3]
+        latDelta = (latMax - latMin)/5.
+        lonDelta = (lonMax - lonMin)/5
+        baseline = [0,0,0]
+       
+        params = {
+            'version'  : 'latest',
+            'spacecraftName'  : fm.spacecraftName,
+            'trackNumber':fm.trackNumber,
+            'latMin': latMin - latDelta,
+            'latMax': latMax + latDelta,
+            'lonMin': lonMin - lonDelta,
+            'lonMax': lonMax + lonDelta,
+            'direction':fm.direction,
+            'lookDirection':fm.lookDirection,
+            'reference':True,
+            'spatial':'within',
+            'responseGroups': 'Medium'
+            }
+        resp,cnt = requester.request("%s?%s" %(rest_url,urlencode(params)))
+        if(resp['status'] == PegRegionChecker.STATUS_QUERY_OK):
+            results = json.loads(cnt)
+            #if empty no results available
+            if results['result']:
+                #there should be only one result
+                if(len(results['result']) > 1):
+                    print("WARNING: Expecting only one frame to be reference")
+                
+                fmRef.load(results['result'][0])
+                oiRef = OrbitInfo(fmRef)
+                oi.computeBaseline(oiRef)
+                bl = oi.getBaseline()
+                baseline = [bl['horz'],bl['vert'],bl['total']]
+                fm.reference = False
+            else:
+                fm.reference = True
+
+            fm.horizontalBaseline = baseline[0]
+            fm.verticalBaseline = baseline[1]
+            fm.totalBaseline = baseline[2]
+            
+        else:
+            ret = False
+
+        return ret
+       
+# if the extraction fails it return None    
+    def extractInfo(self):
+        fm = FrameMetadata()
+        bbox , dummy = self.calculateCorners()
+        for bb in bbox:
+            fm._bbox.append((bb.getLatitude(),bb.getLongitude()))
+        fm._sensingStart = self._frame.getSensingStart()
+        fm._sensingStop = self._frame.getSensingStop()
+        fm._spacecraftName = self._frame.getInstrument().getPlatform().getSpacecraftName()
+        fm._lookDirection = self._lookDirectionMap[self._frame.getInstrument().getPlatform().pointingDirection]
+        fm._doppler = self._frame.doppler
+        fm._prf = self._frame.PRF
+        fm._startingRange = self._frame.startingRange
+        uorb = self._frame.orbit._unpackOrbit()
+        fm._orbit = uorb
+        #make sure that the imlememnted method returns the right order
+        #bbox is nearEarly,farEarly,nearLate,farLate
+        if(fm._bbox[0][0] < fm._bbox[2][0]):
+            #if latEarly < latLate then asc otherwise dsc
+            fm._direction = 'asc'
+        else:
+            fm._direction = 'dsc'
+        #try since sometimes is and empty string. if so set it to None
+        try:
+            fm._frameNumber = int(self._frame.getFrameNumber())
+        except:
+            fm._frameNumber = None
+        try:
+            fm._orbitNumber = int(self._frame.getOrbitNumber())
+        except:
+            fm._orbitNumber = None
+        try:
+            fm._trackNumber = int(self._frame.getTrackNumber())
+        except:
+            fm._trackNumber = None
+            self.extractTrack(fm)
+            
+        self.extractOrbitRepeat(fm)
+
+        latIndx = self.computeLatitudeIndeces(fm)
+        
+
+        if self.computeBaseline(fm):
+            #double check if during the baseline computation somebody else became a master
+            if(self.masterExists(fm)):
+                #if so recompute the baseline
+                self.computeBaseline(fm)
+        else:
+            fm = None
+        return fm
+    
+    def masterExists(self,fm):
+        prc = PegRegionChecker(fm.spacecraftName)
+        requester = prc.requester
+        rest_url = prc.rest_url
+        
+        #just need an estimate
+        extremes = self.getExtremes(fm.bbox)
+        latMin = extremes[0]
+        latMax = extremes[1]
+        lonMin = extremes[2]
+        lonMax = extremes[3]
+        latDelta = (latMax - latMin)/5.
+        lonDelta = (lonMax - lonMin)/5
+        params = {
+            'version'  : 'latest',
+            'spacecraftName'  : fm.spacecraftName,
+            'trackNumber':fm.trackNumber,
+            'latMin': latMin - latDelta,
+            'latMax': latMax + latDelta,
+            'lonMin': lonMin - lonDelta,
+            'lonMax': lonMax + lonDelta,
+            'direction':fm.direction,
+            'lookDirection':fm.lookDirection,
+            'reference':True,
+            'spatial':'within',
+            'responseGroups': 'Medium'
+            }
+        exists = False
+        resp,cnt = requester.request("%s?%s" %(rest_url,urlencode(params)))
+        if(resp['status'] == PegRegionChecker.STATUS_QUERY_OK):
+            results = json.loads(cnt)
+            #if empty no results available
+            if results['result']:
+                exists = True
+        return exists
+    
+
+def main(argv):
+    import pdb
+    pdb.set_trace()
+    FI = FrameInfoExtractor()
+    fm = FI.extractInfoFromFile(argv[0])
+    print(fm.bbox) 
+
+if __name__ == "__main__":
+    import sys
+    argv = sys.argv[1:]
+    sys.exit(main(argv))

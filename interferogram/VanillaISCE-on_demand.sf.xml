@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<sf:sciflo xmlns:sf="http://sciflo.jpl.nasa.gov/2006v1/sf"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:py="http://sciflo.jpl.nasa.gov/2006v1/py">
+  <sf:flow id="Vanilla_ISCE-on_demand">
+    <sf:title>Vanilla ISCE on-demand</sf:title>
+    <sf:icon>http://sciflo.jpl.nasa.gov/sciflo/web/thumbnails/merged_data.png</sf:icon>
+    <sf:description>Run vanilla ISCE in on-demand mode.</sf:description>
+    <sf:inputs>
+      <mode>on_demand</mode>
+      <sensor>csks1</sensor>
+      <project>kilauea_test_triggersf</project>
+      <demURL>http://url_to_DEM</demURL>
+      <unwrap>true</unwrap>
+      <unwrapper>snaphu_mcf</unwrapper>
+      <posting>15</posting>
+      <geolist>topophase.cor filt_topophase.unw phsig.cor los.rdr filt_topophase.unw.conncomp</geolist>
+      <productList>*.geo filt_topophase.unw filt_topophase.unw.conncomp filt_topophase.flat</productList>
+      <filterStrength>0.7</filterStrength>
+      <criticalBaseline>400</criticalBaseline>
+      <doppler>.4</doppler>
+      <temporalBaseline>180</temporalBaseline>
+      <coherenceThreshold>.3</coherenceThreshold>
+      <track>164</track>
+      <startingLatBand>19.7</startingLatBand>
+      <endingLatBand>19.1</endingLatBand>
+      <direction>dsc</direction>
+      <longitude>-155</longitude>
+      <archive_filename>EL20140606_696189_3560038.6.2.tar.gz</archive_filename>
+      <h5_file>CSKS1_RAW_HI_10_HH_RD_20140606040250_20140606040258.h5</h5_file>
+      <objectid>CSKS1_RAW_HI_10_HH_RD_20140606040250_20140606040258</objectid>
+      <output_name>CSKS1_RAW_HI_10_HH_RD_20140606040250_20140606040258.interferogram.json</output_name>
+      <url>https://aria-dav.jpl.nasa.gov/repository/products/csk/v0.3-dev/2014/06/06/CSKS1_RAW_HI_10_HH_RD_20140606040250_20140606040258/EL20140606_696189_3560038.6.2</url>
+    </sf:inputs>
+    <sf:outputs>
+      <coherence_url from="@#get_preflight_configs"/>
+      <peg_url from="@#get_preflight_configs"/>
+      <netsel_urls from="@#get_netsel_configs"/>
+      <interferograms from="@#create_interferogram"/>
+    </sf:outputs>
+
+    <sf:processes>
+
+      <sf:process id="create_job_description">
+        <sf:inputs>
+          <objectid/>
+          <project/>
+          <mode/>
+          <workflow>vanilla_isce</workflow>
+          <unwrapper/>
+          <unwrap/>
+          <posting/>
+          <filterStrength/>
+          <output_name/>
+          <geolist/>
+          <productList/>
+        </sf:inputs>
+        <sf:outputs>
+            <job_info/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding job_queue="jobs_processed">parallel:python:?network_selector.parpython.create_job_desc</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+
+      <sf:process id="get_job_description">
+        <sf:inputs>
+          <job_info from="@#previous" />
+        </sf:inputs>
+        <sf:outputs>
+          <job_desc_url/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding>python:?network_selector.parpython.get_jobdesc_config</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+
+      <sf:process id="preflight">
+        <sf:inputs>
+          <objectid/>
+          <url/>
+          <project/>
+          <archive_filename/>
+          <h5_file/>
+          <sensor/>
+          <direction/>
+          <track/>
+          <longitude/>
+          <startingLatBand/>
+          <endingLatBand/>
+          <temporalBaseline/>
+          <doppler/>
+          <criticalBaseline/>
+          <coherenceThreshold/>
+        </sf:inputs>
+        <sf:outputs>
+            <job_info/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding job_queue="jobs_processed">parallel:python:?interferogram.preflight.create_job</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+
+      <sf:process id="get_preflight_configs">
+        <sf:inputs>
+          <job_info from="@#previous" />
+        </sf:inputs>
+        <sf:outputs>
+          <coherence_url/>
+          <peg_url/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding>python:?interferogram.preflight.get_preflight_configs</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+      
+      <sf:process id="network_selector">
+        <sf:inputs>
+          <objectid/>
+          <output_name/>
+          <project/>
+          <job_desc_url from="@#get_job_description" />
+          <coherence_url from="@#previous" />
+          <peg_url from="@#previous" />
+        </sf:inputs>
+        <sf:outputs>
+            <job_info/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding job_queue="jobs_processed">parallel:python:?network_selector.parpython.create_job_with_cfgs</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+      
+      <sf:process id="get_netsel_configs">
+        <sf:inputs>
+          <job_info from="@#previous" />
+        </sf:inputs>
+        <sf:outputs>
+          <netsel_urls/>
+          <job_desc_urls/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding>python:?network_selector.parpython.get_netsel_configs</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+
+      <sf:process id="create_interferogram">
+        <sf:inputs>
+          <netsel_urls from="@#previous"/>
+          <job_desc_urls from="@#previous"/>
+          <project/>
+          <coherence_url from="@#get_preflight_configs" />
+          <peg_url from="@#get_preflight_configs" />
+        </sf:inputs>
+        <sf:outputs>
+          <interferograms/>
+        </sf:outputs>
+        <sf:operator>
+          <sf:description></sf:description>
+          <sf:op>
+            <sf:binding job_queue="jobs_processed">map:python:?interferogram.parpython.create_job_with_cfgs</sf:binding>
+          </sf:op>
+        </sf:operator>
+      </sf:process>
+
+    </sf:processes>
+  </sf:flow>
+</sf:sciflo>

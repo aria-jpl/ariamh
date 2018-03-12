@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import argparse
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import tsinsar as ts
+
+if __name__ == '__main__':
+    g = ts.TSXML('params')
+    g.prepare_sbas_xml(nvalid={nvalid}, netramp={netramp}, gpsramp={gpsramp},
+                       atmos='', demerr=False, uwcheck=False, regu=True,
+                       filt={filt})
+    g.writexml('sbas.xml')

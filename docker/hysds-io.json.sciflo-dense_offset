@@ -1,0 +1,149 @@
+{
+  "label" : "Sentinel-1 Dense Offset Product",
+  "recommended-queues" : [ "pdf-job_worker-small" ],
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    { 
+      "name": "dataset_tag",
+      "from": "submitter",
+      "type": "text",
+      "default": "standard",
+      "placeholder": "A value to append to the dataset identifier"
+    },
+    {
+      "name": "project",
+      "from": "submitter",
+      "type": "enum",
+      "default": "pdf",
+      "enumerables": ["pdf", "aria", "grfn", "mem", "urgent-response", "dwr"]
+    },
+    { 
+      "name": "singlesceneOnly",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "true"
+    },
+    { 
+      "name": "preReferencePairDirection",
+      "from": "submitter",
+      "type": "enum",
+      "default": "backward",
+      "enumerables": ["backward", "forward", "both", "none"]
+    },
+    { 
+      "name": "postReferencePairDirection",
+      "from": "submitter",
+      "type": "enum",
+      "default": "none",
+      "enumerables": ["backward", "forward", "both", "none"]
+    },
+    { 
+      "name": "temporalBaseline",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "24"
+    },
+    { 
+      "name": "minMatch",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "2"
+    },
+    { 
+      "name": "auto_bbox",
+      "from": "value",
+      "type": "boolean",
+      "value": "true"
+    },
+    { 
+      "name": "precise_orbit_only",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "false"
+    },
+    { 
+      "name": "azimuth_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "3"
+    },
+    { 
+      "name": "range_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "7"
+    },
+    { 
+      "name": "filter_strength",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.5"
+    },
+    { 
+      "name": "query",
+      "from": "passthrough"
+    },
+    { 
+      "name": "name",
+      "from": "passthrough"
+    },
+    { 
+      "name": "username",
+      "from": "passthrough"
+    },
+    { 
+      "name": "ampcor_skip_width",
+      "from": "submitter",
+      "type": "number",
+      "default": "32"
+    },
+    { 
+      "name": "ampcor_skip_height",
+      "from": "submitter",
+      "type": "number",
+      "default": "8"
+    },
+    { 
+      "name": "ampcor_src_win_width",
+      "from": "submitter",
+      "type": "number",
+      "default": "40"
+    },
+    { 
+      "name": "ampcor_src_win_height",
+      "from": "submitter",
+      "type": "number",
+      "default": "40"
+    },
+    { 
+      "name": "ampcor_src_width",
+      "from": "submitter",
+      "type": "number",
+      "default": "64"
+    },
+    { 
+      "name": "ampcor_src_height",
+      "from": "submitter",
+      "type": "number",
+      "default": "64"
+    },
+    { 
+      "name": "dem_urls",
+      "from": "submitter",
+      "type": "enum",
+      "enumerables": ["demLat_S79_S73_Lon_W085_W065.dem.wgs84"],
+      "default": "demLat_S79_S73_Lon_W085_W065.dem.wgs84",
+      "lambda": "lambda x: ['https://s3-us-west-2.amazonaws.com/grfn-v2-ops-product-bucket/dev_datasets/dems/' + str(x), 'https://s3-us-west-2.amazonaws.com/grfn-v2-ops-product-bucket/dev_datasets/dems/' + str(x) + '.xml']"
+    },
+    { 
+      "name": "swathnum",
+      "from": "submitter",
+      "type": "number",
+      "default": "3"
+    }
+  ]
+}

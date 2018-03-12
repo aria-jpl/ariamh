@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<insarMH>
+	<component name="insar">
+		<property name="Sensor name">
+			<value>COSMO_SKYMED</value>
+		</property>
+		<property name ="doppler method">
+            <value>useDEFAULT</value>
+        </property>
+		<component name="Master">
+			<property name="HDF5">
+				<value>masterh5value</value>
+			</property>
+			<property name="OUTPUT">
+				<value>masteroutputvalue</value>
+			</property>
+		</component>
+		<component name="Slave">
+			<property name="HDF5">
+				<value>slaveh5value</value>
+			</property>
+			<property name="OUTPUT">
+				<value>slaveoutputvalue</value>
+			</property>
+		</component>
+	</component>
+</insarMH> 

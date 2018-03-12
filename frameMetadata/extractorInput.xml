@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<extractMetadata>
+    <component name="extractMetadata"> 
+        <property name="Sensor Name"> 
+            <value>COSMO_SkyMed</value> 
+        </property> 
+        <property name="metadata file"> 
+            <value>CSKS3_RAW_B_HI_13_HH_RD_SF_20140923214233_20140923214240.h5.json</value> 
+        </property> 
+        <property name="doppler method"> 
+            <value>useDEFAULT</value> 
+        </property> 
+        <component name="sensor"> 
+            <property name="HDF5"> 
+                <value>CSKS3_RAW_B_HI_13_HH_RD_SF_20140923214233_20140923214240.h5</value> 
+            </property> 
+            <property name="OUTPUT"> 
+                <value>dummy.raw</value> 
+            </property> 
+        </component> 
+    </component> 
+</extractMetadata> 

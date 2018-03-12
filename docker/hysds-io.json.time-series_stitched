@@ -1,0 +1,100 @@
+{
+  "label":"S1AB Stitched Time Series",
+  "submission_type":"individual",
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    { 
+      "name": "project",
+      "from": "submitter",
+      "type": "enum",
+      "enumerables": ["grfn", "aria", "dwr"]
+    },
+    { 
+      "name": "sensor",
+      "from": "submitter",
+      "type": "enum",
+      "enumerables": ["S1", "SMAP"],
+      "default": "S1"
+    },
+    { 
+      "name": "region_of_interest",
+      "from": "submitter",
+      "type": "region",
+      "optional": true,
+      "lambda":"lambda x: False if x == '' else region_to_bbox(x)"
+    },
+    { 
+      "name": "ref_point",
+      "from": "submitter",
+      "type": "text",
+      "lambda":"lambda val: [float(x.strip('[], \t')) for x in val.replace(',', ' ').split()]"
+    },
+    { 
+      "name": "ref_box_num_pixels",
+      "from": "submitter",
+      "lambda":"lambda val: [int(x) for x in val.split()]",
+      "type": "text",
+      "default": "11 11"
+    },
+    { 
+      "name": "coherence_threshold",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.2"
+    },
+    { 
+      "name": "coverage_threshold",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.7"
+    },
+    { 
+      "name": "range_pixel_size",
+      "from": "submitter",
+      "type": "number",
+      "default": "100.0"
+    },
+    {
+      "name": "azimuth_pixel_size",
+      "from": "submitter",
+      "lambda": "lambda x: float(x)",
+      "type": "number",
+      "default": "100.0"
+    },
+    { 
+      "name": "inc",
+      "from": "submitter",
+      "type": "number",
+      "default": "39.0"
+    },
+    { 
+      "name": "gpsramp",
+      "from": "value",
+      "type": "boolean",
+      "value": "false"
+    },
+    { 
+      "name": "netramp",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "false"
+    },
+    { 
+      "name": "filt",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.05"
+    },
+    {
+      "name":"localize_products",
+      "from":"dataset_jpath:",
+      "type":"text",
+      "lambda" : "lambda met: get_partial_products(met['_id'], get_best_url(met['_source']['urls']), [met['_id']+'.met.json', 'filt_topophase.unw.geo', 'phsig.cor.geo', 'filt_topophase.unw.geo.xml', 'phsig.cor.geo.xml', 'filt_topophase.unw.geo.vrt', 'phsig.cor.geo.vrt' ])"
+    }, 
+    {
+      "name":"products",
+      "type":"text",
+      "from":"dataset_jpath:_id"
+    } 
+  ]
+}

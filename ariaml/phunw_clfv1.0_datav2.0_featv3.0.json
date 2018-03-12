@@ -1,0 +1,9 @@
+{
+    "clf_file":"phunw_clfv1.0_datav2.0_featv3.0.pkl",
+    "clf_type":"rf",
+    "feature_order": ["gradientDist","topoCorr","edgeStrength","connComp",
+		      "residues","coherenceDist"],
+    "feature_dims":[9,1,20,4,2,6],
+    "valid_cohthr10":[2,4,6],
+    "cohthr10":4
+ }

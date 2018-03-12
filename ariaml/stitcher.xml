@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- NOTE: property names are not case sensitive -->
+
+<stitcher>
+    <component name="stitcher">
+        <!--values are version3 (default) or version2 -->
+        <property name="stitcher">
+            <value>version3</value>
+        </property>
+        <component name="demStitcher">
+            <property name="action">
+                <value>stitch</value>
+            </property>
+            <property name='noFilling'>
+                <value>False</value>
+            </property>
+            <property name="url1">
+            <value>https://aria-alt-dav.jpl.nasa.gov/repository/products/SRTM1_v3/</value>
+            </property>
+            <property name="username">
+            <value>{{ username }}</value>
+            </property>
+            <property name="hasextras">
+            <value>False</value>
+            </property>
+            <property name="password">
+            <value>{{ password }}</value>
+            </property>
+        </component>
+    </component>
+</stitcher>
+

@@ -1,0 +1,112 @@
+{
+  "label" : "Sentinel-1 Interferogram Product",
+  "recommended-queues" : [ "grfn-job_worker-large" ],
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    { 
+      "name": "dataset_tag",
+      "from": "submitter",
+      "type": "text",
+      "default": "standard",
+      "placeholder": "A value to append to the dataset identifier"
+    },
+    {
+      "name": "project",
+      "from": "submitter",
+      "type": "enum",
+      "default": "grfn",
+      "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr"]
+    },
+    { 
+      "name": "singlesceneOnly",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "true"
+    },
+    { 
+      "name": "preReferencePairDirection",
+      "from": "submitter",
+      "type": "enum",
+      "default": "backward",
+      "enumerables": ["backward", "forward", "both", "none"]
+    },
+    { 
+      "name": "postReferencePairDirection",
+      "from": "submitter",
+      "type": "enum",
+      "default": "none",
+      "enumerables": ["backward", "forward", "both", "none"]
+    },
+    { 
+      "name": "temporalBaseline",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "24"
+    },
+    { 
+      "name": "minMatch",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "2"
+    },
+    { 
+      "name": "covth",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.95"
+    },
+    { 
+      "name": "auto_bbox",
+      "from": "value",
+      "type": "boolean",
+      "value": "true"
+    },
+    { 
+      "name": "precise_orbit_only",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "false"
+    },
+    { 
+      "name": "azimuth_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "11"
+    },
+    { 
+      "name": "range_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "33"
+    },
+    { 
+      "name": "filter_strength",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.5"
+    },
+    {
+      "name": "dem_type",
+      "from": "submitter",
+      "type": "enum",
+      "default": "SRTM+v3",
+      "enumerables": ["SRTM+v3", "NED1", "NED13", "NED13-downsampled"]
+    },
+    { 
+      "name": "query",
+      "from": "passthrough"
+    },
+    { 
+      "name": "name",
+      "from": "passthrough"
+    },
+    { 
+      "name": "username",
+      "from": "passthrough"
+    }
+  ]
+}

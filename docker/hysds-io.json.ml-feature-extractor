@@ -1,0 +1,11 @@
+{
+  "submission_type": "iteration",
+  "label": "ML - Feature Extractor",
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    {
+      "name": "uri",
+      "from": "dataset_jpath:_source.urls.0"
+    }
+  ]
+}

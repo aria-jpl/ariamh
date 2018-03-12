@@ -1,0 +1,39 @@
+{
+  "submission_type": "individual",
+  "label": "ML - Trainer",
+  "allowed_accounts": [ "ops" ],
+  "params": [
+    {
+      "name": "query",
+      "from": "passthrough"
+    },
+    {
+      "name": "username",
+      "from": "passthrough"
+    },
+    {
+      "name": "name",
+      "from": "passthrough"
+    },
+    {
+      "name": "clf_version",
+      "from": "submitter",
+      "default": "3.0"
+    },
+    {
+      "name": "clf_type",
+      "from": "submitter",
+      "default": "rf"
+    },
+    {
+      "name": "classmap_file",
+      "from": "submitter",
+      "default": "classmap_datav3.0.json"
+    },
+    {
+      "name": "feat_file",
+      "from": "submitter",
+      "default": "featv3.0.json"
+    }
+  ]
+}

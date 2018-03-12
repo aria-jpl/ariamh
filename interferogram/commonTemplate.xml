@@ -1,0 +1,15 @@
+		<property name="unwrap">
+			<value>unwrapvalue</value>
+		</property>
+		<property name="unwrapper name">
+			<value>unwrappervalue</value>
+		</property>
+		<property name="useHighResolutionDemOnly">
+			<value>useHighResolutionDemOnlyvalue</value>
+		</property>
+		<property name="filterStrength">
+			<value>filtervalue</value>
+		</property>
+		<property name="geocode list">
+			<value>geolistvalue</value>
+		</property>

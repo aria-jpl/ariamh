@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- NOTE: property names are not case sensitive -->
+
+<stitcher>
+    <component name="wbdstitcher">
+        <component name="wbd stitcher">
+            <property name="action">
+                <value>stitch</value>
+            </property>
+            <property name='noFilling'>
+                <value>False</value>
+            </property>
+        </component>
+    </component>
+</stitcher>
+

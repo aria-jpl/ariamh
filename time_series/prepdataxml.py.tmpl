@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import argparse
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import tsinsar as ts
+
+if __name__ == '__main__':
+
+    ######Prepare the data.xml
+    g = ts.TSXML('data')
+    g.prepare_data_xml('example.rsc', proc='RPAC',
+                       xlim={xlim}, ylim={ylim},
+                       rxlim={rxlim}, rylim={rylim},
+                       latfile='', lonfile='', hgtfile='',
+                       inc = {inc}, cohth={cohth}, chgendian='False',
+                       unwfmt='GRD', corfmt='GRD') # change from FLT to GRD after calling gdal_translate so that it uses GDAL to read it
+                       #unwfmt='FLT', corfmt='FLT')
+    g.writexml('data.xml')

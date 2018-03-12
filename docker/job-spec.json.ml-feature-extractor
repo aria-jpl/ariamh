@@ -1,0 +1,15 @@
+{
+  "command":"/home/ops/ariamh/ariaml/extractFeatures.sh",
+  "disk_usage":"1GB",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws",
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "params" : [
+    {
+      "name": "uri",
+      "destination": "positional"
+    }
+  ]
+}

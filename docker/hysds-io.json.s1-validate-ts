@@ -1,0 +1,60 @@
+{
+  "label" : "Sentinel-1 Time-Series Stack Validator",
+  "submission_type": "individual",
+  "recommended-queues" : [ "grfn-job_worker-small" ],
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    { 
+      "name": "dataset_tag",
+      "from": "submitter",
+      "type": "text",
+      "default": "standard",
+      "placeholder": "A value to append to the dataset identifier"
+    },
+    {
+      "name": "project",
+      "from": "submitter",
+      "type": "enum",
+      "default": "grfn",
+      "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr"]
+    },
+    {
+      "name": "location",
+      "from": "submitter",
+      "type": "region",
+      "placeholder":"GeoJSON shape string"
+    },
+    {
+      "name": "min_repeat",
+      "from": "submitter",
+      "type": "number",
+      "default": "12",
+      "lambda": "lambda x: int(x)"
+    },
+    {
+      "name": "max_repeat",
+      "from": "submitter",
+      "type": "number",
+      "default": "48",
+      "lambda": "lambda x: int(x)"
+    },
+    { 
+      "name": "only_best",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "false"
+    },
+    { 
+      "name": "query",
+      "from": "passthrough"
+    },
+    { 
+      "name": "name",
+      "from": "passthrough"
+    },
+    { 
+      "name": "username",
+      "from": "passthrough"
+    }
+  ]
+}

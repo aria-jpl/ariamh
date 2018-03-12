@@ -1,0 +1,6 @@
+{
+    "clf_file":"phunw_clfv1.0_datav2.0_featv3.0.pkl",
+    "clf_type":"rf",
+    "classmap_file":"classmap_datav2.0.json",
+    "feat_file":"featv3.0.json"
+ }

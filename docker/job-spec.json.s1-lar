@@ -1,0 +1,26 @@
+{
+  "command":"/home/ops/verdi/ops/slcp2pm/script/create_lar.sh",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws",
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "recommended-queues" : [
+    "grfn-job_worker-large",
+    "aria-job_worker-large",
+    "mem-job_worker-large",
+    "dwr-job_worker-large",
+    "urgent-response-job_worker-large"
+  ],
+  "disk_usage":"100GB",
+  "params" : [
+    { 
+      "name": "localize_url",
+      "destination": "localize"
+    },
+    {
+      "name": "path",
+      "destination": "positional"
+    }
+  ]
+}

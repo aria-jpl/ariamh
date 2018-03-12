@@ -1,0 +1,39 @@
+{
+  "command":"/home/ops/ariamh/ariaml/trainPredictor.sh",
+  "disk_usage":"10GB",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws",
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "params": [
+    {
+      "name": "query",
+      "destination": "context"
+    },
+    {
+      "name": "username",
+      "destination": "context"
+    },
+    {
+      "name": "name",
+      "destination": "context"
+    },
+    {
+      "name": "clf_version",
+      "destination": "context"
+    },
+    {
+      "name": "clf_type",
+      "destination": "context"
+    },
+    {
+      "name": "classmap_file",
+      "destination": "context"
+    },
+    {
+      "name": "feat_file",
+      "destination": "context"
+    }
+  ]
+}

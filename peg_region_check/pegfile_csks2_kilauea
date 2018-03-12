@@ -1,0 +1,3 @@
+PegBandIndx  PathNo  Direction   LatStart   LatEnd     PegLat       PegLon    PegHeading
+csks1-4      9          asc       19.34      19.5       19            -155         0
+csks1-4      164        dsc       19.5       19.34      19            -155         0

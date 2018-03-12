@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<insarMH>
+    <component name="insarMH"> 
+        <property name="Sensor Name"> 
+            <value>COSMO_SKYMED</value> 
+        </property> 
+        <property name="unwrap"> 
+            <value>True</value> 
+        </property> 
+        <property name="useHighResolutionDemOnly"> 
+            <value>True</value> 
+        </property> 
+        <component name="Master"> 
+            <property name="HDF5"> 
+                <value>['CSKS1_RAW_B_HI_15_HH_RA_SF_20130525134401_20130525134407.h5', 'CSKS1_RAW_B_HI_15_HH_RA_SF_20130525134351_20130525134357.h5', 'CSKS1_RAW_B_HI_15_HH_RA_SF_20130525134356_20130525134402.h5']</value> 
+            </property> 
+            <property name="OUTPUT"> 
+                <value>output_0.raw</value> 
+            </property> 
+        </component> 
+        <component name="Slave"> 
+            <property name="HDF5"> 
+                <value>['CSKS1_RAW_B_HI_15_HH_RA_SF_20130712134335_20130712134341.h5', 'CSKS1_RAW_B_HI_15_HH_RA_SF_20130712134330_20130712134336.h5', 'CSKS1_RAW_B_HI_15_HH_RA_SF_20130712134340_20130712134346.h5']</value> 
+            </property> 
+            <property name="OUTPUT"> 
+                <value>output_1.raw</value> 
+            </property> 
+        </component> 
+    </component> 
+</insarMH> 

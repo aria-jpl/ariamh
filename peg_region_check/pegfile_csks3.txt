@@ -1,0 +1,5 @@
+PegBandIndx  PathNo  Direction   LatStart   LatEnd     PegLat       PegLon    PegHeading
+csks3        29        dsc       33.82        32.62       33.22        -115.03        8         -114.93       -115.13 
+csks3        29        dsc       32.62        31.41       32.01        -115.23        8         -115.13       -115.33 
+csks3        74        dsc       39.02        38.14       38.58        -122.89        5         -122.79       -122.99 
+csks3        74        dsc       38.14        37.55       37.84        -123.05        5         -122.99       -123.12 

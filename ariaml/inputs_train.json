@@ -1,0 +1,9 @@
+{
+    "clf_name":"phunw_clfv1.0_datav3.0_featv3.0",
+    "clf_type":"rf",
+    "classmap_file":"classmaps/classmap_datav3.0.json",
+    "feat_file":"features/featv3.0.json",
+    "saveclf":1,
+    "crossvalidate":1,
+    "cacheoutput":1
+}

@@ -1,0 +1,14 @@
+{
+  "datasets": [
+    {
+      "ipath": "ariamh::data/CSK",
+      "id_template": "${spacecraft}_${product_type}_${misc}_${year}${month}${day}${timestamp}",
+      "metadata_file_pattern": "(?P<spacecraft>CSKS\\d)_(?P<product_type>.*?)_(?P<calibrated>[BU])_(?P<misc>.*?)_(?P<orbits>[SF]F)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})(?P<timestamp>.*?)\\.h5\\.json$"
+    },
+    {
+      "ipath": "ariamh::data/ALOS",
+      "id_template": "${prod_instance}",
+      "metadata_file_pattern": "(?P<prod_instance>.*)\\.json$"
+    }
+  ]
+}

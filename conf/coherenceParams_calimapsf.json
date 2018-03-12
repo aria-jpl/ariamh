@@ -1,0 +1,6 @@
+{
+	"bCrit":400,
+	"tau":180,
+	"doppler":0.4,
+	"coherenceThreshold":0.3
+}
