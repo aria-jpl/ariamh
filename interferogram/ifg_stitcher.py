@@ -726,6 +726,11 @@ class IfgStitcher:
         self.zero_n2pi_full(mm1[:,1,:]) 
         self.remove_small_cc(cmm1,mm1[:,1,:])
         size1 = sizes[0]
+        #if there is only one image in the sequence the set is as the output product
+        if len(names) == 1:
+            self.generate_extra_memmaps(mm1.shape[2],mm1.shape[0],outname)
+            for i in range(len(self._extra_prds_in1)):
+                self._extra_prds_out[i] = self._extra_prds_in1[i].copy()
         for i in range(1,len(names)):
             im2 = get_image(names[i] + '.xml')
             shape = (sizes[i]['lat']['size'],im2.bands,sizes[i]['lon']['size'])
