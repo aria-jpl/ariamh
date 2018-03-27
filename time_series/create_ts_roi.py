@@ -198,7 +198,8 @@ def main(input_json_file):
             ifg_met = json.load(f)
 
         # filter out product from different subswath
-        if ifg_met['swath'] != input_json['subswath']:
+        swath = ifg_met['swath'][0] if isinstance(ifg_met['swath'], list) else ifg_met['swath']
+        if swath != input_json['subswath']:
             logger.info('Filtered out {}: unmatched subswath {}'.format(ifg_prod,
                         ifg_met['swath']))
             continue
