@@ -1,6 +1,6 @@
 {
   "label" : "Data Extract",
-  "recommended-queues" : [ "grfn-job_worker-small" ],
+  "recommended-queues" : [ "volcano-job_worker-small" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     { 

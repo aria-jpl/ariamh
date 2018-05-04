@@ -6,8 +6,8 @@
     { 
       "name": "project",
       "from": "submitter",
-      "type": "enum",
-      "enumerables": ["grfn", "aria", "dwr"]
+      "default": "volcano",
+      "enumerables": ["volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
     },
     { 
       "name": "sensor",
