@@ -6,6 +6,7 @@
     "/home/ops/.aws": "/home/ops/.aws",
     "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
+  "post": [ "hysds.utils.triage" ],
   "params" : [
     {
       "name": "uri",
