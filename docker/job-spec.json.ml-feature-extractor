@@ -11,6 +11,10 @@
     {
       "name": "uri",
       "destination": "positional"
+    },
+    {
+      "name": "uri",
+      "destination": "localize"
     }
   ]
 }

@@ -48,6 +48,7 @@ else
   exit 1
 fi
 
+/usr/bin/python3 $ML_HOME/update_context.py _context.json > update_context.log 2>&1
 
 echo "##########################################" 1>&2
 echo -n "Copying stitcher.xml: " 1>&2
