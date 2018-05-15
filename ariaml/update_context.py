@@ -6,6 +6,7 @@ def write_input(ctx_file):
         ctx = json.load(f)
 
     ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', 'datasets.json' ]
+    ctx['_triage_disabled'] = True
 
     with open(ctx_file, 'w') as f:
         json.dump(ctx, f, sort_keys=True, indent=2)
