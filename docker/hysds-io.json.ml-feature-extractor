@@ -5,7 +5,8 @@
   "params" : [
     {
       "name": "uri",
-      "from": "dataset_jpath:_source.urls.0"
+      "from": "dataset_jpath:_source",
+      "lambda": "lambda ds: filter(lambda x: x.startswith('s3://'), ds['urls'])[0]"
     }
   ]
 }
