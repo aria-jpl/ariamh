@@ -7,7 +7,7 @@
       "name": "project",
       "from": "submitter",
       "type": "enum",
-      "enumerables": ["grfn", "aria", "dwr"]
+      "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr", "chevron", "floodmap"]
     },
     { 
       "name": "subswath",

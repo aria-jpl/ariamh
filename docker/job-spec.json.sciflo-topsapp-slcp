@@ -10,6 +10,8 @@
     "aria-job_worker-small",
     "mem-job_worker-small",
     "dwr-job_worker-small",
+    "chevron-job_worker-small",
+    "floodmap-job_worker-small",
     "urgent-response-job_worker-small"
   ],
   "params" : [
