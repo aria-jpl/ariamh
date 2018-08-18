@@ -44,10 +44,6 @@
       "destination": "context"
     },
     {
-      "name": "subswaths",
-      "destination": "context"
-    },
-    {
       "name": "auto_bbox",
       "destination": "context"
     },

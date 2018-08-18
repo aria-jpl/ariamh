@@ -46,7 +46,7 @@
       "name": "precise_orbit_only",
       "from": "value",
       "type": "boolean",
-      "default": "true"
+      "value": "true"
     },
     { 
       "name": "azimuth_looks",
