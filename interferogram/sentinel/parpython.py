@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-import os, requests
+import os, requests, json
+from fetchOrbitES import fetch
+
 
 
 def create_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_orbit_url, 
@@ -70,6 +72,84 @@ def create_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_
         }
     } 
 
+
+def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master_zip_url, master_orbit_url, 
+		   slave_zip_url, slave_orbit_url, swathnums, bbox, dem_type, job_priority, wuid=None, job_num=None):
+    """Map function for create standard_product interferogram job json creation."""
+
+    if wuid is None or job_num is None:
+        raise RuntimeError("Need to specify workunit id and job num.")
+
+    job_type = "sentinel_standard-product-ifg-singlescene"
+    disk_usage = "300GB"
+
+    if stitched_arg:
+        job_type = "sentinel_ifg-stitched"
+        disk_usage = "300GB"
+    else:
+        job_type = "sentinel_ifg-singlescene"
+        disk_usage = "200GB"
+
+
+    # set job queue based on project
+    job_queue = "%s-job_worker-large" % project
+
+    # set localize urls
+    localize_urls = [
+        { 'url': master_orbit_url },
+        { 'url': slave_orbit_url },
+    ]
+    for m in master_zip_url: localize_urls.append({'url': m})
+    for s in slave_zip_url: localize_urls.append({'url': s})
+
+    return {
+        "job_name": "%s-%s" % (job_type, ifg_id),
+        "job_type": "job:%s" % job_type,
+        "job_queue": job_queue,
+        "container_mappings": {
+            "/home/ops/.netrc": "/home/ops/.netrc",
+            "/home/ops/.aws": "/home/ops/.aws",
+            "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+        },    
+        "soft_time_limit": 86400,
+        "time_limit": 86700,
+        "payload": {
+            # sciflo tracking info
+            "_sciflo_wuid": wuid,
+            "_sciflo_job_num": job_num,
+
+            # job params
+            "project": project,
+            "id": ifg_id,
+            "master_zip_url": master_zip_url,
+            "master_zip_file": [os.path.basename(i) for i in master_zip_url],
+            "master_orbit_url": master_orbit_url,
+            "master_orbit_file": os.path.basename(master_orbit_url),
+            "slave_zip_url": slave_zip_url,
+            "slave_zip_file": [os.path.basename(i) for i in slave_zip_url],
+            "slave_orbit_url": slave_orbit_url,
+            "slave_orbit_file": os.path.basename(slave_orbit_url),
+            "swathnum": [1,2,3],
+	    "azimuth_looks": 19,
+  	    "range_looks" : 7,
+	    "singlesceneOnly": True,
+ 	    "covth": 0.99,
+	    "dem_type": dem_type,
+	    "filter_strength": 0.5,
+	    "job_priority": job_priority,
+            "bbox": bbox,
+            "auto_bbox": auto_bbox,
+
+            # v2 cmd
+            "_command": "/home/ops/ariamh/interferogram/sentinel/create_ifg_standard_product.sh",
+
+            # disk usage
+            "_disk_usage": disk_usage,
+
+            # localize urls
+            "localize_urls": localize_urls,
+        }
+    } 
 def create_offset_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_orbit_url, 
                    slave_zip_url, slave_orbit_url, swathnum, bbox, ampcor_skip_width, ampcor_skip_height,
                    ampcor_src_win_width, ampcor_src_win_height, ampcor_src_width, ampcor_src_height,
@@ -240,6 +320,9 @@ def create_xtstitched_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_u
     for m in master_zip_url: localize_urls.append({'url': m})
     for s in slave_zip_url: localize_urls.append({'url': s})
 
+
+
+    print("job_name: %s-%s" % (job_type, ifg_id))
     return {
         "job_name": "%s-%s" % (job_type, ifg_id),
         "job_type": "job:%s" % job_type,
@@ -280,4 +363,4 @@ def create_xtstitched_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_u
             # localize urls
             "localize_urls": localize_urls,
         }
-    } 
+    }
