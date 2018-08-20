@@ -261,8 +261,10 @@ def initiate_standard_product_job(context_file):
 
     # get args
     project = context['project']
-    master_ids = [i.strip() for i in context['master_ids']]
-    slave_ids = [i.strip() for i in context['slave_ids']]
+    master_ids = [i.strip() for i in context['master_ids'].split()]
+    slave_ids = [i.strip() for i in context['slave_ids'].split()]
+    #master_ids = [i.strip() for i in context['master_ids']]
+    #slave_ids = [i.strip() for i in context['slave_ids']]
     subswaths = [1, 2, 3] #context['subswaths']
     azimuth_looks = int(context['azimuth_looks'])
     range_looks = int(context['range_looks'])

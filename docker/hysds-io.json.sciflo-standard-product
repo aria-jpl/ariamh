@@ -21,7 +21,7 @@
     { 
       "name": "master_ids",
       "from": "submitter",
-      "placeholder":  "list of master acquisitioin IDs, e.g. ['acquisition-S1A_IW_SLC__1SDV_20161201T141616_20161201T141643_014187_016EBB_0B78']"
+      "placeholder": "space-delimited list of slave SLC IDs, e.g. S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0
     },
     { 
       "name": "slave_ids",
