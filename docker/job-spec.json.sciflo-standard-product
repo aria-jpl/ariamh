@@ -40,10 +40,6 @@
       "destination": "context"
     },
     {
-      "name": "priority",
-      "destination": "context"
-    },
-    {
       "name": "auto_bbox",
       "destination": "context"
     },

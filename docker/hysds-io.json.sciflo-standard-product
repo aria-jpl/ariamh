@@ -28,12 +28,6 @@
       "from": "submitter",
       "placeholder": "space-delimited list of slave acquisition IDs, e.g. acquisition-S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 acquisition-S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0"
     },
-    {
-      "name": "priority",
-      "from": "submitter",
-      "type": "enum",
-      "enumerables": ["1","2","3","4","5","6","7","8","9"]
-    },
     { 
       "name": "auto_bbox",
       "from": "value",
