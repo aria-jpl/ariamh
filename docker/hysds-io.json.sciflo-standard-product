@@ -21,12 +21,12 @@
     { 
       "name": "master_ids",
       "from": "submitter",
-      "placeholder": "space-delimited list of slave SLC IDs, e.g. S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0
+      "placeholder": "space-delimited list of slave SLC IDs, e.g. S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0"
     },
     { 
       "name": "slave_ids",
       "from": "submitter",
-      "placeholder": "list of slave acquisition IDs, e.g. ['acquisition-S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8', 'acquisition-S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0']"
+      "placeholder": "space-delimited list of slave acquisition IDs, e.g. acquisition-S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 acquisition-S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0"
     },
     {
       "name": "priority",
