@@ -266,10 +266,23 @@ def initiate_standard_product_job(context_file):
     #master_ids = [i.strip() for i in context['master_ids']]
     #slave_ids = [i.strip() for i in context['slave_ids']]
     subswaths = [1, 2, 3] #context['subswaths']
-    azimuth_looks = int(context['azimuth_looks'])
-    range_looks = int(context['range_looks'])
-    filter_strength = float(context['filter_strength'])
-    precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
+    
+    azimuth_looks = 19
+    if 'azimuth_looks' in context:
+	azimuth_looks = int(context['azimuth_looks'])
+
+    range_looks = 7
+    if 'range_looks' in context:
+        range_looks = int(context['range_looks'])
+
+    filter_strength = 0.5
+    if 'filter_strength' in context:
+        filter_strength = int(context['filter_strength'])
+
+    precise_orbit_only = True
+    if 'precise_orbit_only' in context:
+	precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
+
     job_priority = int(context['priority'])
 
     subswaths = [1, 2, 3]
