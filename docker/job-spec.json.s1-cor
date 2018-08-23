@@ -1,0 +1,27 @@
+{
+  "command":"/home/ops/verdi/ops/slcp2cor/script/create_cor.sh",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws",
+    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "recommended-queues" : [
+    "aria-job_worker-small",
+    "volcano-job_worker-small",
+    "sealevel-job_worker-small",
+    "tectonics-job_worker-small",
+    "change_detection-job_worker-small",
+    "urgent_response-job_worker-small"
+  ],
+  "disk_usage":"100GB",
+  "params" : [
+    { 
+      "name": "localize_url",
+      "destination": "localize"
+    },
+    {
+      "name": "path",
+      "destination": "positional"
+    }
+  ]
+}

@@ -230,7 +230,7 @@ class IfgStitcher:
     #conncomps.
     #return which image convers the most [0 or 1] and the connected components
     #in the two image ovelaps, without the zero  
-    def ref_image(self,imo1,imo2):
+    def ref_image(self,imo1,imo2,factor=1):
         #find the connected components in the overlap
         uim1 = np.unique(imo1)
         #remove the -1
@@ -242,8 +242,8 @@ class IfgStitcher:
             cover1.append(np.nonzero(imo1 == i)[0].size)
         cover1 = np.array(cover1)
         cover1 = cover1
-        sel = cover1 > self._keepth
-        discard1 = uim1[np.logical_and(np.logical_not(sel),cover1 > self._keepth/2)]
+        sel = cover1 > self._keepth/factor
+        discard1 = uim1[np.logical_and(np.logical_not(sel),cover1 > self._keepth/(2*factor))]
         uim1 = uim1[sel]
         cover1 = cover1[sel]
         cover2 = []
@@ -251,8 +251,8 @@ class IfgStitcher:
             cover2.append(np.nonzero(imo2 == i)[0].size)
         cover2 = np.array(cover2)
         cover2 = cover2
-        sel = cover2 > self._keepth
-        discard2 = uim2[np.logical_and(np.logical_not(sel),cover2 > self._keepth/2)]
+        sel = cover2 > self._keepth/factor
+        discard2 = uim2[np.logical_and(np.logical_not(sel),cover2 > self._keepth/(2*factor))]
         uim2 = uim2[sel]
         cover2 = cover2[sel]
         sc1 = np.sum(cover1)
@@ -588,7 +588,14 @@ class IfgStitcher:
         cimo1 = cim1[over[0] - i2,over[1] - j2]
         
         #get the image that covers better with less conncomp
-        which,ucc1,ucc2,disc1,disc2 = self.ref_image(cimo, cimo1)
+        for i in range(1,4):
+            which,ucc1,ucc2,disc1,disc2 = self.ref_image(cimo, cimo1,i)
+            if which >= 0:
+                break
+        if which < 0:
+            print('Stitching failed')
+            raise Exception
+            
         ims = [im,im1]
         imos = [imo,imo1]
         cimos = [cimo,cimo1]
