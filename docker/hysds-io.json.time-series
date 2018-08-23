@@ -6,8 +6,8 @@
     { 
       "name": "project",
       "from": "submitter",
-      "default": "volcano",
-      "enumerables": ["volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
+      "default": "aria",
+      "enumerables": [ "aria", "volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
     },
     { 
       "name": "subswath",

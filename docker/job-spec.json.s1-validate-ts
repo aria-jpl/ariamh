@@ -6,6 +6,7 @@
     "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
+    "aria-job_worker-small",
     "volcano-job_worker-small",
     "sealevel-job_worker-small",
     "tectonics-job_worker-small",

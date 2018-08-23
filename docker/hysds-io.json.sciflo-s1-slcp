@@ -1,6 +1,6 @@
 {
   "label" : "Sentinel-1 Registered SLC Pair",
-  "recommended-queues" : [ "volcano-job_worker-large" ],
+  "recommended-queues" : [ "aria-job_worker-large" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     { 
@@ -14,8 +14,8 @@
       "name": "project",
       "from": "submitter",
       "type": "enum",
-      "default": "volcano",
-      "enumerables": ["volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
+      "default": "aria",
+      "enumerables": ["aria", "volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
     },
     { 
       "name": "singlesceneOnly",

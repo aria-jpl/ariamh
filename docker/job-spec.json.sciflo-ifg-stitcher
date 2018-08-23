@@ -6,11 +6,12 @@
     "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "volcano-job_worker-small",
-    "sealevel-job_worker-small",
-    "tectonics-job_worker-small",
-    "change_detection-job_worker-small",
-    "urgent_response-job_worker-small"
+    "aria-job_worker-large",
+    "volcano-job_worker-large",
+    "sealevel-job_worker-large",
+    "tectonics-job_worker-large",
+    "change_detection-job_worker-large",
+    "urgent_response-job_worker-large"
   ],
   "params" : [
     {

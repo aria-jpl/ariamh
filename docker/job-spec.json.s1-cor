@@ -1,9 +1,8 @@
 {
-  "command": "/home/ops/verdi/ops/spyddder-man/extract.py",
+  "command":"/home/ops/verdi/ops/slcp2cor/script/create_cor.sh",
   "imported_worker_files": {
     "/home/ops/.netrc": "/home/ops/.netrc",
     "/home/ops/.aws": "/home/ops/.aws",
-    "/home/ops/verdi/ops/spyddder-man/settings.json": "/home/ops/verdi/ops/spyddder-man/settings.json",
     "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
@@ -14,22 +13,14 @@
     "change_detection-job_worker-small",
     "urgent_response-job_worker-small"
   ],
-  "disk_usage": "50GB",
+  "disk_usage":"100GB",
   "params" : [
     { 
       "name": "localize_url",
       "destination": "localize"
     },
-    { 
-      "name": "file",
-      "destination": "positional"
-    },
-    { 
-      "name": "prod_name",
-      "destination": "positional"
-    },
-    { 
-      "name": "prod_date",
+    {
+      "name": "path",
       "destination": "positional"
     }
   ]

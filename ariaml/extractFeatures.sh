@@ -50,30 +50,30 @@ fi
 
 
 echo "##########################################" 1>&2
-echo -n "Copying stitcher.xml: " 1>&2
+echo -n "Creating stitcher.xml: " 1>&2
 date 1>&2
-cp -f $ML_HOME/stitcher.xml . > copy_stitcher.log 2>&1
+/usr/bin/python3 $ML_HOME/createStitcherXml.py stitcher.xml > createStitcherXml.log 2>&1
 STATUS=$?
-echo -n "Finished copying stitcher.xml: " 1>&2
+echo -n "Finished creating stitcher.xml: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
-  echo "Failed to copy stitcher.xml." 1>&2
-  cat copy_stitcher.log 1>&2
+  echo "Failed to create stitcher.xml." 1>&2
+  cat createStitcherXml.log 1>&2
   echo "{}"
   exit $STATUS
 fi
 
 
 echo "##########################################" 1>&2
-echo -n "Copying swbdStitcher.xml: " 1>&2
+echo -n "Creating swbdStitcher.xml: " 1>&2
 date 1>&2
-cp -f $ML_HOME/swbdStitcher.xml . > copy_swbdstitcher.log 2>&1
+/usr/bin/python3 $ML_HOME/createSwbdStitcherXml.py swbdStitcher.xml > createSwbdStitcherXml.log 2>&1
 STATUS=$?
-echo -n "Finished copying swbdStitcher.xml: " 1>&2
+echo -n "Finished creating swbdStitcher.xml: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
-  echo "Failed to copy swbdStitcher.xml." 1>&2
-  cat copy_swbdstitcher.log 1>&2
+  echo "Failed to create swbdStitcher.xml." 1>&2
+  cat createSwbdStitcherXml.log 1>&2
   echo "{}"
   exit $STATUS
 fi
