@@ -1,7 +1,7 @@
 {
   "label" : "Validated Interferogram Stack Stitcher",
   "submission_type": "individual",
-  "recommended-queues" : [ "volcano-job_worker-small" ],
+  "recommended-queues" : [ "aria-job_worker-small" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     { 
@@ -15,8 +15,8 @@
       "name": "project",
       "from": "submitter",
       "type": "enum",
-      "default": "volcano",
-      "enumerables": ["volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
+      "default":  "aria",
+      "enumerables": [ "aria", "volcano", "sealevel", "tectonics", "change_detection", "urgent_response"]
     },
     {
       "name": "direction",
