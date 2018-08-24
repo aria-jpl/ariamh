@@ -963,7 +963,8 @@ def main():
     create_dataset_json(id, version, met_file, ds_file)
     
     #print( json.dump(md, f, indent=2))
-    
+
+    '''    
     for swathnum in swath_list:
 
         print("\n\n\n Extra Portion: Stitched Dataset\n\n")
@@ -1032,7 +1033,7 @@ def main():
     print(met_json_file)
     create_stitched_met_json(id, version, env, starttime, endtime, met_files, met_json_file)
 
-
+    '''
     # move merged products to root of product directory
     #call_noerr("mv -f {}/* {}".format(prod_merged_dir, prod_dir))
     #shutil.rmtree(prod_merged_dir)
