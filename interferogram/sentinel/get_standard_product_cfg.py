@@ -108,9 +108,13 @@ def get_dem_type(info):
 	dem_type = "SRTM+v3"
         h = info[id]
         fields = h["_source"]
-	if fields['city'][0]['country_name'] is not None and fields['city'][0]['country_name'].lower() == "united states":
-            dem_type="Ned1"
-        dems.setdefault(dem_type, []).append(id)
+	try:
+	    if fields['city'][0]['country_name'] is not None and fields['city'][0]['country_name'].lower() == "united states":
+                dem_type="Ned1"
+            dems.setdefault(dem_type, []).append(id)
+	except:
+	    dem_type = "SRTM+v3"
+
     if len(dems) != 1:
 	logger.info("There are more than one type of dem, so selecting SRTM+v3")
 	dem_type = "SRTM+v3"
