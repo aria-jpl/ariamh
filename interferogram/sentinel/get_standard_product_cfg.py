@@ -109,9 +109,10 @@ def get_dem_type(info):
         h = info[id]
         fields = h["_source"]
 	try:
-	    if fields['city'][0]['country_name'] is not None and fields['city'][0]['country_name'].lower() == "united states":
-                dem_type="Ned1"
-            dems.setdefault(dem_type, []).append(id)
+	    if 'city' in fields:
+	        if fields['city'][0]['country_name'] is not None and fields['city'][0]['country_name'].lower() == "united states":
+                    dem_type="Ned1"
+                dems.setdefault(dem_type, []).append(id)
 	except:
 	    dem_type = "SRTM+v3"
 
