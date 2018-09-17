@@ -30,7 +30,7 @@
     {
       "name": "input_metadata",
       "destination": "context"
-    }
+    },
     {
       "name": "query",
       "destination": "context"
