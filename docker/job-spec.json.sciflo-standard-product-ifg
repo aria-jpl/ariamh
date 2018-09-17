@@ -28,37 +28,9 @@
       "destination": "context"
     },
     {
-      "name": "project",
+      "name": "input_metadata",
       "destination": "context"
-    },
-    {
-      "name": "master_ids",
-      "destination": "context"
-    },
-    {
-      "name": "slave_ids",
-      "destination": "context"
-    },
-    {
-      "name": "auto_bbox",
-      "destination": "context"
-    },
-    {
-      "name": "precise_orbit_only",
-      "destination": "context"
-    },
-    {
-      "name": "azimuth_looks",
-      "destination": "context"
-    },
-    {
-      "name": "range_looks",
-      "destination": "context"
-    },
-    { 
-      "name": "filter_strength",
-      "destination": "context"
-    },
+    }
     {
       "name": "query",
       "destination": "context"

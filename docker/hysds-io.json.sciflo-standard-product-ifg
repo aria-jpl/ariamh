@@ -12,54 +12,8 @@
       "placeholder": "A value to append to the dataset identifier"
     },
     {
-      "name": "project",
-      "from": "submitter",
-      "type": "enum",
-      "default": "grfn",
-      "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr"]
-    },
-    { 
-      "name": "master_ids",
-      "from": "submitter",
-      "placeholder": "space-delimited list of slave SLC IDs, e.g. S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0"
-    },
-    { 
-      "name": "slave_ids",
-      "from": "submitter",
-      "placeholder": "space-delimited list of slave acquisition IDs, e.g. acquisition-S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 acquisition-S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0"
-    },
-    { 
-      "name": "auto_bbox",
-      "from": "value",
-      "type": "boolean",
-      "value": "true"
-    },
-    { 
-      "name": "precise_orbit_only",
-      "from": "value",
-      "type": "boolean",
-      "value": "true"
-    },
-    { 
-      "name": "azimuth_looks",
-      "from": "value",
-      "type": "number",
-      "lambda": "lambda x: int(x)",
-      "value": "19"
-    },
-    { 
-      "name": "range_looks",
-      "from": "value",
-      "type": "number",
-      "lambda": "lambda x: int(x)",
-      "value": "7"
-    },
-    { 
-      "name": "filter_strength",
-      "from": "value",
-      "type": "number",
-      "lambda": "lambda x: float(x)",
-      "value": "0.5"
+      "name": "input_metadata",
+      "from": "dataset_jpath:_source.metadata"
     },
     { 
       "name": "query",
