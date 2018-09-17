@@ -243,8 +243,8 @@ def get_urls(info):
 def get_bool_param(ctx, param):
     """Return bool param from context."""
 
-    if param in ctx and isinstance(ctx[param], bool): return ctx[param]
-    return True if ctx.get(param, 'true').strip().lower() == 'true' else False
+    if param in ctx and isinstance(ctx['input_metadata'][param], bool): return ctx['input_metadata'][param]
+    return True if ctx.get('input_metadata').get(param, 'true').strip().lower() == 'true' else False
 
 def get_track(info):
     """Get track number."""
@@ -265,30 +265,30 @@ def initiate_standard_product_job(context_file):
         context = json.load(f)
 
     # get args
-    project = context['project']
-    master_ids = [i.strip() for i in context['master_ids'].split()]
-    slave_ids = [i.strip() for i in context['slave_ids'].split()]
+    project = context['input_metadata']['project']
+    master_ids = [i.strip() for i in context['input_metadata']['master_ids'].split()]
+    slave_ids = [i.strip() for i in context['input_metadata']['slave_ids'].split()]
     #master_ids = [i.strip() for i in context['master_ids']]
     #slave_ids = [i.strip() for i in context['slave_ids']]
     subswaths = [1, 2, 3] #context['subswaths']
     
     azimuth_looks = 19
     if 'azimuth_looks' in context:
-	azimuth_looks = int(context['azimuth_looks'])
+	azimuth_looks = int(context['input_metadata']['azimuth_looks'])
 
     range_looks = 7
     if 'range_looks' in context:
-        range_looks = int(context['range_looks'])
+        range_looks = int(context['input_metadata']['range_looks'])
 
     filter_strength = 0.5
     if 'filter_strength' in context:
-        filter_strength = int(context['filter_strength'])
+        filter_strength = int(context['input_metadata']['filter_strength'])
 
     precise_orbit_only = True
     if 'precise_orbit_only' in context:
 	precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
 
-    job_priority = int(context['priority'])
+    job_priority = int(context['input_metadata']['priority'])
 
     subswaths = [1, 2, 3]
 
