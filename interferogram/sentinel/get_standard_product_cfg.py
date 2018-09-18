@@ -243,8 +243,8 @@ def get_urls(info):
 def get_bool_param(ctx, param):
     """Return bool param from context."""
 
-    if param in ctx and isinstance(ctx['input_metadata'][param], bool): return ctx['input_metadata'][param]
-    return True if ctx.get('input_metadata').get(param, 'true').strip().lower() == 'true' else False
+    if param in ctx and isinstance(ctx[param], bool): return ctx[param]
+    return True if ctx.get(param, 'true').strip().lower() == 'true' else False
 
 def get_track(info):
     """Get track number."""
@@ -264,34 +264,39 @@ def initiate_standard_product_job(context_file):
     with open(context_file) as f:
         context = json.load(f)
 
+
+    input_metadata = context['input_metadata']
+    if type(input_metadata) is list:
+        input_metadata = input_metadata[0]
+
     # get args
-    project = context['input_metadata']['project']
+    project = input_metadata['project']
     if type(project) is list:
         project = project[0]
 
-    master_ids = [i.strip() for i in context['input_metadata']['master_ids'].split()]
-    slave_ids = [i.strip() for i in context['input_metadata']['slave_ids'].split()]
-    #master_ids = [i.strip() for i in context['master_ids']]
-    #slave_ids = [i.strip() for i in context['slave_ids']]
+    master_ids = [i.strip() for i in input_metadata['master_ids'].split()]
+    slave_ids = [i.strip() for i in input_metadata['slave_ids'].split()]
+    #master_ids = [i.strip() for i in input_metadata['master_ids']]
+    #slave_ids = [i.strip() for i in input_metadata['slave_ids']]
     subswaths = [1, 2, 3] #context['subswaths']
     
     azimuth_looks = 19
-    if 'azimuth_looks' in context:
-	azimuth_looks = int(context['input_metadata']['azimuth_looks'])
+    if 'azimuth_looks' in input_metadata:
+	azimuth_looks = int(input_metadata['azimuth_looks'])
 
     range_looks = 7
-    if 'range_looks' in context:
-        range_looks = int(context['input_metadata']['range_looks'])
+    if 'range_looks' in input_metadata:
+        range_looks = int(input_metadata['range_looks'])
 
     filter_strength = 0.5
-    if 'filter_strength' in context:
-        filter_strength = int(context['input_metadata']['filter_strength'])
+    if 'filter_strength' in input_metadata:
+        filter_strength = float(input_metadata['filter_strength'])
 
     precise_orbit_only = True
-    if 'precise_orbit_only' in context:
-	precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
+    if 'precise_orbit_only' in input_metadata:
+	precise_orbit_only = get_bool_param(input_metadata, 'precise_orbit_only')
 
-    job_priority = int(context['input_metadata']['priority'])
+    job_priority = int(input_metadata['priority'])
 
     subswaths = [1, 2, 3]
 
