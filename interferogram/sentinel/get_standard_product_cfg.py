@@ -266,6 +266,9 @@ def initiate_standard_product_job(context_file):
 
     # get args
     project = context['input_metadata']['project']
+    if type(project) is list:
+        project = project[0]
+
     master_ids = [i.strip() for i in context['input_metadata']['master_ids'].split()]
     slave_ids = [i.strip() for i in context['input_metadata']['slave_ids'].split()]
     #master_ids = [i.strip() for i in context['master_ids']]

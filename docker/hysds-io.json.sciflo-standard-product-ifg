@@ -13,6 +13,7 @@
     },
     {
       "name": "input_metadata",
+      "type": "text",
       "from": "dataset_jpath:_source.metadata"
     },
     { 
