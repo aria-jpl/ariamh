@@ -93,7 +93,7 @@ def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master
 
     # set job queue based on project
     job_queue = "%s-job_worker-large" % project
-    job_queue = "factotum-job_worker-small"
+    #job_queue = "factotum-job_worker-small"
     # set localize urls
     localize_urls = [
         { 'url': master_orbit_url },
