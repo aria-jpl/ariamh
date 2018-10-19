@@ -3,6 +3,7 @@
   "label" : "Standard Product Interferogram",
   "recommended-queues" : [ "grfn-job_worker-large" ],
   "allowed_accounts": [ "ops" ],
+  "enable_dedup": false,
   "params" : [
     { 
       "name": "dataset_tag",
