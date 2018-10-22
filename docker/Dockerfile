@@ -3,6 +3,8 @@ FROM hysds/pge-isce_giant
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
 
+USER ops
+
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 RUN set -ex \
@@ -16,6 +18,5 @@ RUN set -ex \
  && ./compile.sh
 
 # set entrypoint
-USER ops
 WORKDIR /home/ops
 CMD ["/bin/bash", "--login"]
