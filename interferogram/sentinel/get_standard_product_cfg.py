@@ -403,6 +403,9 @@ def initiate_standard_product_job(context_file):
     dem_types = []
     job_priorities =[]
     orbit_dict = {}
+    master_scenes = []
+    slave_scenes = []
+    
    
 
     # generate job configs
@@ -421,6 +424,10 @@ def initiate_standard_product_job(context_file):
     projects.append(project)
     dem_types.append(dem_type)
     job_priorities.append(job_priority)
+    master_scenes.append(master_ids)
+    slave_scenes.append(slave_ids)
+
+
 
     ifg_hash = hashlib.md5(json.dumps([
         id_tmpl,
@@ -446,7 +453,7 @@ def initiate_standard_product_job(context_file):
     logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types))
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
-             bboxes, dem_types, job_priorities)
+             bboxes, dem_types, job_priorities, master_scenes,slave_scenes)
 
 '''
 def initiate_sp2(context_file):

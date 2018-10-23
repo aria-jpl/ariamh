@@ -31,6 +31,8 @@
           <bboxes/>
 	  <dem_types/>
 	  <job_priorities/>
+          <master_scenes/>
+          <slave_scenes/>
         </sf:outputs>
         <sf:operator>
           <sf:description></sf:description>
@@ -54,6 +56,8 @@
           <bboxes from="@#previous"/>
 	  <dem_types from="@#previous"/>
 	  <job_priorities from="@#previous"/>
+          <master_scenes from="@#previous"/>
+          <slave_scenes from="@#previous"/>
         </sf:inputs>
         <sf:outputs>
           <interferograms/>

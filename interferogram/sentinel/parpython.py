@@ -74,7 +74,7 @@ def create_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_
 
 
 def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master_zip_url, master_orbit_url, 
-		   slave_zip_url, slave_orbit_url, swathnums, bbox, dem_type, job_priority, wuid=None, job_num=None):
+		   slave_zip_url, slave_orbit_url, swathnums, bbox, dem_type, job_priority, master_scenes, slave_scenes, wuid=None, job_num=None):
     """Map function for create standard_product interferogram job json creation."""
 
     if wuid is None or job_num is None:
@@ -139,6 +139,8 @@ def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master
 	    "job_priority": job_priority,
             "bbox": bbox,
             "auto_bbox": auto_bbox,
+            "slave_scenes" : slave_scenes,
+            "master_scenes" : master_scenes,
 
             # v2 cmd
             "_command": "/home/ops/ariamh/interferogram/sentinel/create_ifg_standard_product.sh",
