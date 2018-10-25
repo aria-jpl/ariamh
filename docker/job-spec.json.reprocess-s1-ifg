@@ -2,15 +2,17 @@
   "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_reprocess_ifg.sh",
   "disk_usage":"1GB",
   "imported_worker_files": {
-    "/home/ops/.netrc": "/home/ops/.netrc",
-    "/home/ops/.aws": "/home/ops/.aws",
-    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "$HOME/.netrc": "/home/ops/.netrc",
+    "$HOME/.aws": "/home/ops/.aws",
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
     "grfn-job_worker-small",
     "aria-job_worker-small",
     "mem-job_worker-small",
     "dwr-job_worker-small",
+    "chevron-job_worker-small",
+    "floodmap-job_worker-small",
     "urgent-response-job_worker-small"
   ],
   "params" : [

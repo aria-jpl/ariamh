@@ -2,9 +2,9 @@
   "command":"/home/ops/ariamh/ariaml/extractFeatures.sh",
   "disk_usage":"1GB",
   "imported_worker_files": {
-    "/home/ops/.netrc": "/home/ops/.netrc",
-    "/home/ops/.aws": "/home/ops/.aws",
-    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "$HOME/.netrc": "/home/ops/.netrc",
+    "$HOME/.aws": "/home/ops/.aws",
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "post": [ "hysds.utils.triage" ],
   "params" : [

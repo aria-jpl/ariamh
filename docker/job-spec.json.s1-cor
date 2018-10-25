@@ -1,17 +1,17 @@
 {
-  "command":"/home/ops/verdi/ops/slcp2pm/script/create_lar.sh",
+  "command":"/home/ops/verdi/ops/slcp2cor/script/create_cor.sh",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
+    "floodmap-job_worker-small",
     "grfn-job_worker-large",
     "aria-job_worker-large",
     "mem-job_worker-large",
     "dwr-job_worker-large",
     "chevron-job_worker-small",
-    "floodmap-job_worker-small",
     "urgent-response-job_worker-large"
   ],
   "disk_usage":"100GB",

@@ -15,7 +15,7 @@
       "from": "submitter",
       "type": "enum",
       "default": "pdf",
-      "enumerables": ["pdf", "aria", "grfn", "mem", "urgent-response", "dwr"]
+      "enumerables": ["pdf", "aria", "grfn", "mem", "urgent-response", "dwr", "chevron", "floodmap"]
     },
     { 
       "name": "singlesceneOnly",

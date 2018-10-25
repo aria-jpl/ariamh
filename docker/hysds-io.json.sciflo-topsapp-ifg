@@ -16,7 +16,7 @@
       "from": "submitter",
       "type": "enum",
       "default": "grfn",
-      "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr"]
+      "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr", "chevron", "floodmap"]
     },
     { 
       "name": "master_ids",

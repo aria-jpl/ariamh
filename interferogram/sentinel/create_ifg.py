@@ -274,6 +274,10 @@ def main():
             else: raise RuntimeError("Unknown dem type %s." % dem_type)
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
+            dem_S = dem_S - 1 if dem_S > -89 else dem_S
+            dem_N = dem_N + 1 if dem_N < 89 else dem_N
+            dem_W = dem_W - 1 if dem_W > -179 else dem_W
+            dem_E = dem_E + 1 if dem_E < 179 else dem_E
             dem_cmd = [
                 "{}/ned_dem.py".format(BASE_PATH), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
