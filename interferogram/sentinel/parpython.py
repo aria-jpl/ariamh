@@ -109,7 +109,7 @@ def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master
         "container_mappings": {
             "/home/ops/.netrc": "/home/ops/.netrc",
             "/home/ops/.aws": "/home/ops/.aws",
-            "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+            "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
         "soft_time_limit": 86400,
         "time_limit": 86700,
