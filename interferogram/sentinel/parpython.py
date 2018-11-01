@@ -37,7 +37,7 @@ def create_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_
         "container_mappings": {
             "/home/ops/.netrc": "/home/ops/.netrc",
             "/home/ops/.aws": "/home/ops/.aws",
-            "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+            "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
         "soft_time_limit": 86400,
         "time_limit": 86700,
@@ -187,7 +187,7 @@ def create_offset_job(project, stitched, auto_bbox, ifg_id, master_zip_url, mast
         "container_mappings": {
             "/home/ops/.netrc": "/home/ops/.netrc",
             "/home/ops/.aws": "/home/ops/.aws",
-            "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+            "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
         "soft_time_limit": 86400,
         "time_limit": 86700,
@@ -262,7 +262,7 @@ def create_rsp_job(project, stitched, auto_bbox, rsp_id, master_zip_url, master_
         "container_mappings": {
             "/home/ops/.netrc": "/home/ops/.netrc",
             "/home/ops/.aws": "/home/ops/.aws",
-            "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+            "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
         "soft_time_limit": 86400,
         "time_limit": 86700,
@@ -332,7 +332,7 @@ def create_xtstitched_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_u
         "container_mappings": {
             "/home/ops/.netrc": "/home/ops/.netrc",
             "/home/ops/.aws": "/home/ops/.aws",
-            "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+            "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
         "soft_time_limit": 86400,
         "time_limit": 86700,
