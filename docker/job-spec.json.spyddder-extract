@@ -3,8 +3,8 @@
   "imported_worker_files": {
     "/home/ops/.netrc": "/home/ops/.netrc",
     "/home/ops/.aws": "/home/ops/.aws",
-    "/home/ops/verdi/ops/spyddder-man/settings.json": "/home/ops/verdi/ops/spyddder-man/settings.json",
-    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "/home/ops/verdi/etc/settings.json": "/home/ops/verdi/ops/spyddder-man/settings.json",
+    "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
     "grfn-job_worker-small",
