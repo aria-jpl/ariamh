@@ -1,7 +1,6 @@
 {
   "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_create_ifg.sh",
   "imported_worker_files": {
-    "$HOME/.netrc": ["/home/ops/.netrc"],
     "$HOME/.aws": ["/home/ops/.aws", "ro"],
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
@@ -10,7 +9,6 @@
       "container_image_name": "aria/isce_giant:latest",
       "container_image_url": "s3s://iu.jetstream-cloud.org:8080/hysds-code-bucket/aria-isce_giant-latest.tar.gz",
       "container_mappings": {
-        "$HOME/.netrc": ["/root/.netrc"],
         "$HOME/.aws": ["/root/.aws", "ro"]
       }
     }

@@ -77,7 +77,6 @@ def stitch_ifg_job(project, direction, extra_products, filenames, filename_urls,
         "job_type": "job:%s" % job_type,
         "job_queue": job_queue,
         "container_mappings": {
-            "$HOME/.netrc": "/home/ops/.netrc",
             "$HOME/.aws": "/home/ops/.aws",
             "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    

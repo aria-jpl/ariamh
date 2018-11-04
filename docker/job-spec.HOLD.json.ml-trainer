@@ -2,7 +2,6 @@
   "command":"/home/ops/ariamh/ariaml/trainPredictor.sh",
   "disk_usage":"10GB",
   "imported_worker_files": {
-    "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },

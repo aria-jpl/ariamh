@@ -2,7 +2,6 @@
   "command":"/home/ops/ariamh/ariaml/predictor_wrapper.py",
   "disk_usage":"1GB",
   "imported_worker_files": {
-    "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },

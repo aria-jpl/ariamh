@@ -1,7 +1,6 @@
 {
   "command": "/home/ops/ariamh/interferogram/validate_ts.sh",
   "imported_worker_files": {
-    "$HOME/.netrc": ["/home/ops/.netrc"],
     "$HOME/.aws": ["/home/ops/.aws", "ro"],
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },

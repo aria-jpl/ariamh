@@ -33,7 +33,6 @@ def create_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_
         "job_type": "job:%s" % job_type,
         "job_queue": job_queue,
         "container_mappings": {
-            "$HOME/.netrc": "/home/ops/.netrc",
             "$HOME/.aws": "/home/ops/.aws",
             "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
@@ -103,7 +102,6 @@ def create_offset_job(project, stitched, auto_bbox, ifg_id, master_zip_url, mast
         "job_type": "job:%s" % job_type,
         "job_queue": job_queue,
         "container_mappings": {
-            "$HOME/.netrc": "/home/ops/.netrc",
             "$HOME/.aws": "/home/ops/.aws",
             "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
@@ -178,7 +176,6 @@ def create_rsp_job(project, stitched, auto_bbox, rsp_id, master_zip_url, master_
         "job_type": "job:%s" % job_type,
         "job_queue": job_queue,
         "container_mappings": {
-            "$HOME/.netrc": "/home/ops/.netrc",
             "$HOME/.aws": "/home/ops/.aws",
             "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
@@ -245,7 +242,6 @@ def create_xtstitched_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_u
         "job_type": "job:%s" % job_type,
         "job_queue": job_queue,
         "container_mappings": {
-            "$HOME/.netrc": "/home/ops/.netrc",
             "$HOME/.aws": "/home/ops/.aws",
             "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
