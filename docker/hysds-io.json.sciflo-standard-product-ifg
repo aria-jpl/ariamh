@@ -5,13 +5,6 @@
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,
   "params" : [
-    {
-      "name": "standard_product_ifg_version",
-      "from": "submitter",
-      "type": "jobspec_version",
-      "version_regex": "job-sciflo-standard-product-ifg",
-      "placeholder": "standard product interferogram job version"
-    },
     { 
       "name": "dataset_tag",
       "from": "submitter",

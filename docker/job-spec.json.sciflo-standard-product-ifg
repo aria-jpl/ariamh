@@ -24,10 +24,6 @@
   ],
   "params" : [
     {
-      "name": "standard_product_ifg_version",
-      "destination": "context"
-    },
-    {
       "name": "dataset_tag",
       "destination": "context"
     },
