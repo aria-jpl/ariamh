@@ -1,9 +1,9 @@
 {
   "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_topsapp_ifg.sh",
   "imported_worker_files": {
-    "/home/ops/.netrc": ["/home/ops/.netrc"],
-    "/home/ops/.aws": ["/home/ops/.aws", "ro"],
-    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "$HOME/.netrc": ["/home/ops/.netrc"],
+    "$HOME/.aws": ["/home/ops/.aws", "ro"],
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
     "aria-job_worker-small",
