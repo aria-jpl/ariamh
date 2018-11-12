@@ -274,10 +274,10 @@ def initiate_standard_product_job(context_file):
     if type(project) is list:
         project = project[0]
 
-    master_ids = [i.strip() for i in input_metadata['master_ids'].split()]
-    slave_ids = [i.strip() for i in input_metadata['slave_ids'].split()]
-    #master_ids = [i.strip() for i in input_metadata['master_ids']]
-    #slave_ids = [i.strip() for i in input_metadata['slave_ids']]
+    #master_ids = [i.strip() for i in input_metadata['master_ids'].split()]
+    #slave_ids = [i.strip() for i in input_metadata['slave_ids'].split()]
+    master_ids = input_metadata["master_scenes"]
+    slave_ids = input_metadata["slave_scenes"]
     subswaths = [1, 2, 3] #context['subswaths']
     
     azimuth_looks = 19
