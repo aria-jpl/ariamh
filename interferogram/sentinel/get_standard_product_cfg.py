@@ -276,8 +276,12 @@ def initiate_standard_product_job(context_file):
 
     #master_ids = [i.strip() for i in input_metadata['master_ids'].split()]
     #slave_ids = [i.strip() for i in input_metadata['slave_ids'].split()]
-    master_ids = input_metadata["master_scenes"]
-    slave_ids = input_metadata["slave_scenes"]
+    master_scenes = input_metadata["master_scenes"]
+    slave_scenes = input_metadata["slave_scenes"]
+    master_ids = input_metadata["master_slcs"]
+    slave_ids = input_metadata["slave_slcs"]
+
+
     subswaths = [1, 2, 3] #context['subswaths']
     
     azimuth_looks = 19
@@ -303,6 +307,8 @@ def initiate_standard_product_job(context_file):
 
     # log inputs
     logger.info("project: {}".format(project))
+    logger.info("master_scenes: {}".format(master_scenes))
+    logger.info("slave_scenes: {}".format(slave_scenes))
     logger.info("master_ids: {}".format(master_ids))
     logger.info("slave_ids: {}".format(slave_ids))
     logger.info("subswaths: {}".format(subswaths))
