@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topsApp>
+  <!--<component name="bbox">-->
+  <!--<property name="snwe"></property>-->
+  <!--<property name="projection code">EPSG:3031</property>-->
+  <!--</component>-->
+  <component name="topsinsar">
+    <component name="master">
+      <property name="orbit file">$MASTER_ORBIT_FILE</property>
+      <property name="auxiliary data directory">aux_cal</property>
+      <property name="output directory">master</property>
+      <property name="safe">$MASTER_SAFE_DIR</property>
+      <property name="polarization">$MASTER_POL</property>
+    </component>
+    <component name="slave">
+      <property name="orbit file">$SLAVE_ORBIT_FILE</property>
+      <property name="auxiliary data directory">aux_cal</property>
+      <property name="output directory">slave</property>
+      <property name="safe">$SLAVE_SAFE_DIR</property>
+      <property name="polarization">$SLAVE_POL</property>
+    </component>
+    <property name="swaths">[$SWATHNUM]</property>
+    <property name="range looks">$RANGE_LOOKS</property>
+    <property name="azimuth looks">$AZIMUTH_LOOKS</property>
+    <property name="filter strength">$FILTER_STRENGTH</property>
+    <!--<property name="region of interest">$BBOX</property>-->
+    <property name="demFilename">$DEM_FILE</property>
+    <property name="geocodeDemFilename">$GEOCODE_DEM_FILE</property>
+    <property name="do unwrap">True</property>
+    <property name="unwrapper name">snaphu_mcf</property>
+    <!--<property name="geocode bounding box">$BBOX</property>-->
+    <property name="do ESD">$DO_ESD</property>
+    <property name="ESD coherence threshold">$ESD_COHERENCE_THRESHOLD</property>
+    <property name="use virtual files">$USE_VIRTUAL_FILES</property>
+    <property name="geocode list">['merged/phsig.cor', 'merged/filt_topophase.unw', 'merged/los.rdr', 'merged/topophase.flat', 'merged/filt_topophase.flat', 'merged/filt_topophase_2stage.unw', 'merged/topophase.cor', 'merged/filt_topophase.unw.conncomp']</property>
+  </component>
+</topsApp>
