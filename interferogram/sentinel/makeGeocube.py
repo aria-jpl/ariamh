@@ -557,26 +557,26 @@ def processCube(inps, fid, no_data=-9999):
                           dtype=lonvector.dtype, mode='w+')
 
     # calculate geocube metadata in parallel
-    cube = Cube(inps, lookangle, incangle, azangle, azimuthtime, slantrange,
+    md_cube = Cube(inps, lookangle, incangle, azangle, azimuthtime, slantrange,
                 bpar, bperp, slavetime, slaverange, latvector, lonvector)
     Parallel(n_jobs=-1, max_nbytes=1e6)(
-        delayed(cube.calc_row)(ii) for ii in range(inps.Ny))
+        delayed(md_cube.calc_row)(ii) for ii in range(inps.Ny))
 
     # dump metadata arrays
-    cube.create_dataset('bparallel', data=cube.bpar)
-    cube.create_dataset('bperp', data=cube.bperp)
-    cube.create_dataset('lookangle', data=cube.lookangle)
-    cube.create_dataset('incangle', data=cube.incangle)
-    cube.create_dataset('azangle', data=cube.azangle)
-    cube.create_dataset('secondsofday', data=cube.azimuthtime)
-    cube.create_dataset('slantrange', data=cube.slantrange)
-    cube.create_dataset('slavetime', data=cube.slavetime)
-    cube.create_dataset('slaverange', data=cube.slaverange)
+    cube.create_dataset('bparallel', data=md_cube.bpar)
+    cube.create_dataset('bperp', data=md_cube.bperp)
+    cube.create_dataset('lookangle', data=md_cube.lookangle)
+    cube.create_dataset('incangle', data=md_cube.incangle)
+    cube.create_dataset('azangle', data=md_cube.azangle)
+    cube.create_dataset('secondsofday', data=md_cube.azimuthtime)
+    cube.create_dataset('slantrange', data=md_cube.slantrange)
+    cube.create_dataset('slavetime', data=md_cube.slavetime)
+    cube.create_dataset('slaverange', data=md_cube.slaverange)
     cube.create_dataset('yspacing', data=inps.yspacing)
     cube.create_dataset('xspacing', data=inps.xspacing)
     cube.create_dataset('heights', data=inps.heights)
-    cube.create_dataset('lons', data=cube.lonvector)
-    cube.create_dataset('lats', data=cube.latvector)
+    cube.create_dataset('lons', data=md_cube.lonvector)
+    cube.create_dataset('lats', data=md_cube.latvector)
     cube.create_dataset('nodata', data=np.float(no_data))
 
     try: shutil.rmtree(memmap_dir)
