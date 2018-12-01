@@ -257,9 +257,9 @@ def generateSummary(inps):
 
     inps.vsch = vsch
 
-    logger.info('Platform LLH: ', inps.llh)
-    logger.info('Platform heading: ', inps.hdg)
-    logger.info('Platform velocity (SCH): ', inps.vsch)
+    logger.info('Platform LLH: {}'.format(inps.llh))
+    logger.info('Platform heading: {}'.format(inps.hdg))
+    logger.info('Platform velocity (SCH): {}'.format(inps.vsch))
 
 
 @simple_time_tracker(_log)
