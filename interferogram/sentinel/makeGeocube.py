@@ -9,8 +9,10 @@ import datetime
 import pyproj
 import pdb
 import logging
+import shutil
 from time import time
 from functools import wraps
+from joblib import Parallel, delayed, dump, load
 
 from iscesys.Component.ProductManager import ProductManager as PM
 from isceobj.Orbit.Orbit import Orbit
@@ -364,13 +366,27 @@ def writeSummary(inps, fid):
     grp.create_dataset('vsch', data=inps.vsch)
 
 
-@simple_time_tracker(_log)
-def processCube(inps, fid, no_data=-9999):
+class Cube(object):
     '''
-    Start generating the cube.
+    Cube object encapsulating all metadata arrays.
     '''
 
-    def nvector(llh):
+    def __init__(self, inps, lookangle, incangle, azangle, azimuthtime, slantrange,
+                 bpar, bperp, slavetime, slaverange, latvector, lonvector):
+        self.inps = inps
+        self.lookangle = lookangle
+        self.incangle = incangle
+        self.azangle = azangle
+        self.azimuthtime = azimuthtime
+        self.slantrange = slantrange
+        self.bpar = bpar
+        self.bperp = bperp
+        self.slavetime = slavetime
+        self.slaverange = slaverange
+        self.latvector = latvector
+        self.lonvector = lonvector
+     
+    def nvector(self, llh):
         '''
         Return n-vector at a given target.
         '''
@@ -382,6 +398,93 @@ def processCube(inps, fid, no_data=-9999):
 
         return np.array([clat * clon, clat * slon, slat])
 
+    def calc_row(self, ii):
+        '''
+        Set metadata array values for a row in the cube.
+        '''
+
+        yval = self.inps.y1 - ii * self.inps.yspacing
+        #satutm = np.array( pyproj.transform( lla, utm, satllh[0], satllh[1], satllh[2]))
+        self.latvector[ii] = yval
+    
+        logger.info("Running ROW: " + str(ii+1) + " of " + str(self.inps.Ny))
+    
+        for jj in range(self.inps.Nx):
+            xval = self.inps.x0 + jj * self.inps.xspacing
+            if ii == 0:
+                self.lonvector[jj] = xval
+    
+            for ind, hh in enumerate(self.inps.heights):
+                targproj = pyproj.transform(self.inps.proj, self.inps.lla, xval, yval, hh)
+                targ = [targproj[1], targproj[0], targproj[2]]
+                targxyz = pyproj.transform(self.inps.proj, self.inps.ecef, xval, yval, hh)
+                targutm = pyproj.transform(self.inps.proj, self.inps.utmproj, xval, yval,
+                                           hh)
+                targnorm = self.nvector(targ)
+    
+                try:
+                    mtaz, mrng = self.inps.orbit.geo2rdr(targ)
+                except:
+                    mtaz = None
+                    mrng = None
+    
+                if mrng is not None:
+    
+                    sv = self.inps.orbit.interpolateOrbit(mtaz, method='hermite')
+                    satpos = np.array(sv.getPosition())
+                    satvel = np.array(sv.getVelocity())
+                    satllh = np.array(
+                        pyproj.transform(self.inps.ecef, self.inps.lla, satpos[0],
+                                         satpos[1], satpos[2]))
+                    satutm = np.array(
+                        pyproj.transform(self.inps.lla, self.inps.utmproj, satllh[0],
+                                         satllh[1], satllh[2]))
+                    satnorm = self.nvector(satllh)
+    
+                    self.azimuthtime[ind, ii, jj] = (
+                        mtaz - self.inps.midnight).total_seconds()
+                    self.slantrange[ind, ii, jj] = mrng
+    
+                    losvec = (targxyz - satpos) / mrng
+                    losvec = losvec / np.linalg.norm(losvec)
+    
+                    staz = None
+                    srng = None
+                    try:
+                        staz, srng = self.inps.slaveorbit.geo2rdr(targ)
+                        slavesat = self.inps.slaveorbit.interpolateOrbit(
+                            staz, method='hermite')
+                        slavexyz = np.array(slavesat.getPosition())
+                    except:
+                        slavexyz = np.nan * np.ones(3)
+    
+                    if srng is not None:
+                        direction = np.sign(
+                            np.dot(np.cross(losvec, slavexyz - satpos), satvel))
+                        baseline = np.linalg.norm(slavexyz - satpos)
+                        bparval = np.dot(losvec, slavexyz - satpos)
+                        self.bpar[ind, ii, jj] = bparval
+                        self.bperp[ind, ii, jj] = direction * np.sqrt(
+                            baseline * baseline - bparval * bparval)
+                        self.slavetime[ind, ii, jj] = (
+                            staz - self.inps.slaveMidnight).total_seconds()
+                        self.slaverange[ind, ii, jj] = srng
+    
+                    self.lookangle[ind, ii, jj] = np.degrees(
+                        np.arccos(np.dot(satnorm, -losvec)))
+                    self.incangle[ind, ii, jj] = np.degrees(
+                        np.arccos(np.dot(targnorm, -losvec)))
+                    self.azangle[ind, ii, jj] = np.degrees(
+                        np.arctan2(satutm[1] - targutm[1],
+                                   satutm[0] - targutm[0]))
+
+
+@simple_time_tracker(_log)
+def processCube(inps, fid, no_data=-9999):
+    '''
+    Start generating the cube.
+    '''
+
     logger.info('Output grid size: {0} x {1} x {2}'.format(
         len(inps.heights), inps.Ny, inps.Nx))
 
@@ -391,6 +494,7 @@ def processCube(inps, fid, no_data=-9999):
     cube.create_dataset('y0', data=inps.y0)
     cube.create_dataset('y1', data=inps.y1)
 
+    # initialize metadata arrays
     lookangle = np.ones(
         (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float32) * no_data
     incangle = np.ones(
@@ -412,97 +516,71 @@ def processCube(inps, fid, no_data=-9999):
     latvector = np.zeros((inps.Ny), dtype=np.float64)
     lonvector = np.zeros((inps.Nx), dtype=np.float64)
 
-    for ii in range(inps.Ny):
-        yval = inps.y1 - ii * inps.yspacing
-        #satutm = np.array( pyproj.transform( lla, utm, satllh[0], satllh[1], satllh[2]))
-        latvector[ii] = yval
+    # create memmap directory
+    memmap_dir = "./joblib_memmap"
+    try: os.mkdir(memmap_dir)
+    except FileExistsError: pass
 
-        logger.info("Running ROW: " + str(ii) + " of " + str(inps.Ny))
+    # create output memmap for each metadata array
+    lookangle = np.memmap(os.path.join(memmap_dir, "lookangle"),
+                          shape=lookangle.shape,
+                          dtype=lookangle.dtype, mode='w+')
+    incangle = np.memmap(os.path.join(memmap_dir, "incangle"),
+                         shape=incangle.shape,
+                         dtype=incangle.dtype, mode='w+')
+    azangle = np.memmap(os.path.join(memmap_dir, "azangle"),
+                        shape=azangle.shape,
+                        dtype=azangle.dtype, mode='w+')
+    azimuthtime = np.memmap(os.path.join(memmap_dir, "azimuthtime"),
+                            shape=azimuthtime.shape,
+                            dtype=azimuthtime.dtype, mode='w+')
+    slantrange = np.memmap(os.path.join(memmap_dir, "slantrange"),
+                           shape=slantrange.shape,
+                           dtype=slantrange.dtype, mode='w+')
+    bpar = np.memmap(os.path.join(memmap_dir, "bpar"),
+                     shape=bpar.shape,
+                     dtype=bpar.dtype, mode='w+')
+    bperp = np.memmap(os.path.join(memmap_dir, "bperp"),
+                      shape=bperp.shape,
+                      dtype=bperp.dtype, mode='w+')
+    slavetime = np.memmap(os.path.join(memmap_dir, "slavetime"),
+                          shape=slavetime.shape,
+                          dtype=slavetime.dtype, mode='w+')
+    slaverange = np.memmap(os.path.join(memmap_dir, "slaverange"),
+                           shape=slaverange.shape,
+                           dtype=slaverange.dtype, mode='w+')
+    latvector = np.memmap(os.path.join(memmap_dir, "latvector"),
+                          shape=latvector.shape,
+                          dtype=latvector.dtype, mode='w+')
+    lonvector = np.memmap(os.path.join(memmap_dir, "lonvector"),
+                          shape=lonvector.shape,
+                          dtype=lonvector.dtype, mode='w+')
 
-        for jj in range(inps.Nx):
-            xval = inps.x0 + jj * inps.xspacing
-            if ii == 0:
-                lonvector[jj] = xval
+    # calculate geocube metadata in parallel
+    cube = Cube(inps, lookangle, incangle, azangle, azimuthtime, slantrange,
+                bpar, bperp, slavetime, slaverange, latvector, lonvector)
+    Parallel(n_jobs=-1, max_nbytes=1e6)(
+        delayed(cube.calc_row)(ii) for ii in range(inps.Ny))
 
-            for ind, hh in enumerate(inps.heights):
-                targproj = pyproj.transform(inps.proj, inps.lla, xval, yval, hh)
-                targ = [targproj[1], targproj[0], targproj[2]]
-                targxyz = pyproj.transform(inps.proj, inps.ecef, xval, yval, hh)
-                targutm = pyproj.transform(inps.proj, inps.utmproj, xval, yval,
-                                           hh)
-                targnorm = nvector(targ)
-
-                try:
-                    mtaz, mrng = inps.orbit.geo2rdr(targ)
-                except:
-                    mtaz = None
-                    mrng = None
-
-                if mrng is not None:
-
-                    sv = inps.orbit.interpolateOrbit(mtaz, method='hermite')
-                    satpos = np.array(sv.getPosition())
-                    satvel = np.array(sv.getVelocity())
-                    satllh = np.array(
-                        pyproj.transform(inps.ecef, inps.lla, satpos[0],
-                                         satpos[1], satpos[2]))
-                    satutm = np.array(
-                        pyproj.transform(inps.lla, inps.utmproj, satllh[0],
-                                         satllh[1], satllh[2]))
-                    satnorm = nvector(satllh)
-
-                    azimuthtime[ind, ii, jj] = (
-                        mtaz - inps.midnight).total_seconds()
-                    slantrange[ind, ii, jj] = mrng
-
-                    losvec = (targxyz - satpos) / mrng
-                    losvec = losvec / np.linalg.norm(losvec)
-
-                    staz = None
-                    srng = None
-                    try:
-                        staz, srng = inps.slaveorbit.geo2rdr(targ)
-                        slavesat = inps.slaveorbit.interpolateOrbit(
-                            staz, method='hermite')
-                        slavexyz = np.array(slavesat.getPosition())
-                    except:
-                        slavexyz = np.nan * np.ones(3)
-
-                    if srng is not None:
-                        direction = np.sign(
-                            np.dot(np.cross(losvec, slavexyz - satpos), satvel))
-                        baseline = np.linalg.norm(slavexyz - satpos)
-                        bparval = np.dot(losvec, slavexyz - satpos)
-                        bpar[ind, ii, jj] = bparval
-                        bperp[ind, ii, jj] = direction * np.sqrt(
-                            baseline * baseline - bparval * bparval)
-                        slavetime[ind, ii, jj] = (
-                            staz - inps.slaveMidnight).total_seconds()
-                        slaverange[ind, ii, jj] = srng
-
-                    lookangle[ind, ii, jj] = np.degrees(
-                        np.arccos(np.dot(satnorm, -losvec)))
-                    incangle[ind, ii, jj] = np.degrees(
-                        np.arccos(np.dot(targnorm, -losvec)))
-                    azangle[ind, ii, jj] = np.degrees(
-                        np.arctan2(satutm[1] - targutm[1],
-                                   satutm[0] - targutm[0]))
-
-    cube.create_dataset('bparallel', data=bpar)
-    cube.create_dataset('bperp', data=bperp)
-    cube.create_dataset('lookangle', data=lookangle)
-    cube.create_dataset('incangle', data=incangle)
-    cube.create_dataset('azangle', data=azangle)
-    cube.create_dataset('secondsofday', data=azimuthtime)
-    cube.create_dataset('slantrange', data=slantrange)
-    cube.create_dataset('slavetime', data=slavetime)
-    cube.create_dataset('slaverange', data=slaverange)
+    # dump metadata arrays
+    cube.create_dataset('bparallel', data=cube.bpar)
+    cube.create_dataset('bperp', data=cube.bperp)
+    cube.create_dataset('lookangle', data=cube.lookangle)
+    cube.create_dataset('incangle', data=cube.incangle)
+    cube.create_dataset('azangle', data=cube.azangle)
+    cube.create_dataset('secondsofday', data=cube.azimuthtime)
+    cube.create_dataset('slantrange', data=cube.slantrange)
+    cube.create_dataset('slavetime', data=cube.slavetime)
+    cube.create_dataset('slaverange', data=cube.slaverange)
     cube.create_dataset('yspacing', data=inps.yspacing)
     cube.create_dataset('xspacing', data=inps.xspacing)
     cube.create_dataset('heights', data=inps.heights)
-    cube.create_dataset('lons', data=lonvector)
-    cube.create_dataset('lats', data=latvector)
+    cube.create_dataset('lons', data=cube.lonvector)
+    cube.create_dataset('lats', data=cube.latvector)
     cube.create_dataset('nodata', data=np.float(no_data))
+
+    try: shutil.rmtree(memmap_dir)
+    except: pass
 
 
 if __name__ == '__main__':
