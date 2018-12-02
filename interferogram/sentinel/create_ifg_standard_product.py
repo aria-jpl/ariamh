@@ -714,7 +714,8 @@ def main():
     # create standard product packaging
     std_prod_file = "{}.hdf5".format(id)
     std_cmd = [
-        "{}/standard_product_packaging.py {}".format(BASE_PATH, std_prod_file)
+        "{}/standard_product_packaging.py".format(BASE_PATH),
+        std_prod_file
     ]
     std_cmd_line = " ".join(std_cmd)
     logger.info("Calling standard_product_packaging.py: {}".format(std_cmd_line))
