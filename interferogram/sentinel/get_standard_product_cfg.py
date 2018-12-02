@@ -280,7 +280,7 @@ def initiate_standard_product_job(context_file):
     slave_scenes = input_metadata["slave_scenes"]
     master_ids = input_metadata["master_slcs"]
     slave_ids = input_metadata["slave_slcs"]
-
+    union_geojson = input_metadata["union_geojson"]
 
     subswaths = [1, 2, 3] #context['subswaths']
     
@@ -411,6 +411,8 @@ def initiate_standard_product_job(context_file):
     orbit_dict = {}
     master_scenes = []
     slave_scenes = []
+    union_geojsons = []
+    union_geojsons.append(union_geojson)
     
    
 
@@ -456,10 +458,10 @@ def initiate_standard_product_job(context_file):
                                       ifg_slave_dt, orbit_type, ifg_hash[0:4]))
                             
 
-    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types))
+    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons))
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
-             bboxes, dem_types, job_priorities, master_scenes,slave_scenes)
+             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons)
 
 '''
 def initiate_sp2(context_file):

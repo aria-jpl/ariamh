@@ -33,6 +33,7 @@
 	  <job_priorities/>
           <master_scenes/>
           <slave_scenes/>
+          <union_geojsons/>
         </sf:outputs>
         <sf:operator>
           <sf:description></sf:description>
@@ -58,6 +59,7 @@
 	  <job_priorities from="@#previous"/>
           <master_scenes from="@#previous"/>
           <slave_scenes from="@#previous"/>
+          <union_geojsons from="@#previous"/>
         </sf:inputs>
         <sf:outputs>
           <interferograms/>

@@ -62,8 +62,17 @@ def create_dataset_json(id, version, met_file, ds_file):
     with open(met_file) as f:
         md = json.load(f)
 
-    print("create_dataset_json : met['bbox']: %s" %md['bbox'])
-    coordinates = [
+    # build dataset
+    ds = {
+        'creation_timestamp': "%sZ" % datetime.utcnow().isoformat(),
+        'version': version,
+        'label': id
+    }
+
+    try:
+        '''
+        print("create_dataset_json : met['bbox']: %s" %md['bbox'])
+        coordinates = [
                     [
                       [ md['bbox'][0][1], md['bbox'][0][0] ],
                       [ md['bbox'][3][1], md['bbox'][3][0] ],
@@ -72,27 +81,29 @@ def create_dataset_json(id, version, met_file, ds_file):
                       [ md['bbox'][0][1], md['bbox'][0][0] ]
                     ] 
                   ]
-    cord_area = get_area(coordinates[0])
-    if not cord_area>0:
-        logger.info("creating dataset json. coordinates are not clockwise, reversing it")
-        coordinates = [coordinates[0][::-1]] 
-        logger.info(coordinates)
+        '''
+
+        coordinates = md['union_geojson']['coordinates']
+    
         cord_area = get_area(coordinates[0])
         if not cord_area>0:
-            logger.info("creating dataset json. coordinates are STILL NOT  clockwise")
-    else:
-        logger.info("creating dataset json. coordinates are already clockwise")
-            
-    # build dataset
-    ds = {
-        'creation_timestamp': "%sZ" % datetime.utcnow().isoformat(),
-        'version': version,
-        'label': id,
-        'location': {
-            'type': 'Polygon',
-            'coordinates': coordinates
-        }
-    }
+            logger.info("creating dataset json. coordinates are not clockwise, reversing it")
+            coordinates = [coordinates[0][::-1]]
+            logger.info(coordinates)
+            cord_area = get_area(coordinates[0])
+            if not cord_area>0:
+                logger.info("creating dataset json. coordinates are STILL NOT  clockwise")
+        else:
+            logger.info("creating dataset json. coordinates are already clockwise")
+
+        ds['location'] =  {'type': 'Polygon', 'coordinates': coordinates}
+        logger.info("create_dataset_json location : %s" %ds['location'])
+
+    except Exception as err:
+        logger.info("create_dataset_json: Exception : ")
+        logger.warn(str(err))
+        logger.warn("Traceback: {}".format(traceback.format_exc()))
+
 
     # set earliest sensing start to starttime and latest sensing stop to endtime
     if isinstance(md['sensingStart'], str):
@@ -949,7 +960,7 @@ def main():
 
     # add filter strength
     md['filter_strength'] = float(ctx['filter_strength'])
-
+    md['union_geojson'] = ctx['union_geojson']
     # add dem_type
     md['dem_type'] = dem_type
 
@@ -964,76 +975,6 @@ def main():
     
     #print( json.dump(md, f, indent=2))
 
-    '''    
-    for swathnum in swath_list:
-
-        print("\n\n\n Extra Portion: Stitched Dataset\n\n")
-
-        met_file = os.path.join(prod_dir, "{}_s{}.met.json".format(id, swathnum))
-        print(met_file)
-
-        extract_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..',
-                                                    '..', 'frameMetadata',
-                                                    'sentinel'))
-
-        extract_cmd_tmpl = "{}/extractMetadata_s1.sh -i {}/annotation/s1?-iw{}-slc-{}-*.xml -o {}"
-        check_call(extract_cmd_tmpl.format(extract_cmd_path, master_safe_dirs[0],
-                                       swathnum, master_pol, met_file),shell=True)
-
-        # update met JSON
-        update_met_cmd = "{}/update_met_json.py {} {} {} {} {} {}/{} {}/{} {}/{} {}/{} {}"
-        check_call(update_met_cmd.format(BASE_PATH, orbit_type, scene_count,
-                                     swathnum, master_mission,
-                                     slave_mission, prod_dir, 'PICKLE',
-                                     prod_dir, fine_int_xml,
-                                     prod_merged_dir, unw_vrt,
-                                     prod_merged_dir, unw_xml,
-                                     met_file), shell=True)
-
- 
-
-        # master/slave ids and orbits
-
-        with open(met_file) as f: md = json.load(f)
-        md['master_scenes'] = master_ids
-        md['slave_scenes'] = slave_ids
-        md['orbitNumber'] = [master_orbit_number, slave_orbit_number]
-        if ctx.get('stitch_subswaths_xt', False): md['swath'] = [1, 2, 3]
-        md['esd_threshold'] = esd_coh_th if do_esd else -1.  # add ESD coherence threshold
-
-        # add range_looks and azimuth_looks to metadata for stitching purposes
-        md['azimuth_looks'] = int(ctx['azimuth_looks'])
-        md['range_looks'] = int(ctx['range_looks'])
-
-        # add filter strength
-        md['filter_strength'] = float(ctx['filter_strength'])
-
-        # add dem_type
-        md['dem_type'] = dem_type
-
-        # write met json
-        with open(met_file, 'w') as f: json.dump(md, f, indent=2)
-    
-        # generate dataset JSON
-        ds_file = os.path.join(prod_dir, "{}_s{}.dataset.json".format(id,swathnum))
-        print(ds_file)
-        create_dataset_json(id, version, met_file, ds_file)
-        
-        ds_files.append(ds_file)
-        met_files.append(met_file)
-    
-    # create stitched dataset json
-    ds_json_file= os.path.join(prod_dir, "{}.dataset.json".format("stitched"))
-    print(ds_json_file)
-    env, starttime, endtime = create_stitched_dataset_json(id, version, ds_files, ds_json_file)      
-    
-
-    # create stitched met json
-    met_json_file = os.path.join(prod_dir, "{}.met.json".format("stitched"))
-    print(met_json_file)
-    create_stitched_met_json(id, version, env, starttime, endtime, met_files, met_json_file)
-
-    '''
     # move merged products to root of product directory
     #call_noerr("mv -f {}/* {}".format(prod_merged_dir, prod_dir))
     #shutil.rmtree(prod_merged_dir)
