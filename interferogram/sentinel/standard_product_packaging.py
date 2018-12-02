@@ -2,6 +2,7 @@
 # By David Bekaert - Jet Propulsion Laboratory
 
 import json
+import logging
 from collections import OrderedDict
 import os
 from netCDF4 import Dataset
@@ -11,6 +12,14 @@ import osgeo
 from osgeo import gdal
 import collections
 import pdb
+
+
+log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
+logging.basicConfig(format=log_format, level=logging.INFO)
+logger = logging.getLogger('standard_product_packaging')
+
+
+BASE_PATH = os.path.dirname(__file__)
 
 
 class content_properties:
@@ -53,7 +62,7 @@ def netdf4_dtype_check(dtype):
        11: 'complex128',
     """
 
-    print("testing")
+    logger.info("testing")
 
 
 def create_group(fid, group, fid_parent=None):
@@ -158,14 +167,14 @@ def write_dataset(fid, data, properties_data):
             count = 0
             for data_line in data:
                 dset[count] = data_line
-                print(properties_data.name + " count = " + str(count) + '  ' +
-                      data_line)
+                logger.info(properties_data.name + " count = " + str(count) + '  ' +
+                            data_line)
 
                 count = +1
         else:
-            print('i am a collection, not yet programmed')
+            logger.info('i am a collection, not yet programmed')
     elif data is None:
-        print("Action failed...")
+        logger.info("Action failed...")
         dset = None
     else:
         data = np.array([data])
@@ -210,7 +219,7 @@ def create_dataset(fid, dataset, fid_parent=None):
     import copy
 
     name = dataset["name"]
-    print("dataset name = " + name)
+    logger.info("dataset name = " + name)
 
     # extracting the data properties
     properties_data = content_properties(dataset)
@@ -436,7 +445,7 @@ def data_loading(filename, out_data_type=None, data_band=None):
     # converting to the absolute path
     filename = os.path.abspath(filename)
     if not os.path.isfile(filename):
-        print(filename + " does not exist")
+        logger.info(filename + " does not exist")
         out_data = None
         return out_data
 
@@ -444,7 +453,7 @@ def data_loading(filename, out_data_type=None, data_band=None):
     try:
         data = gdal.Open(filename, gdal.GA_ReadOnly)
     except:
-        print(filename + " is not a gdal supported file")
+        logger.info(filename + " is not a gdal supported file")
         out_data = None
         return out_data
 
@@ -463,7 +472,7 @@ def data_loading(filename, out_data_type=None, data_band=None):
     # getting the no-data value
     try:
         NoData = data.GetNoDataValue()
-        print(NoData)
+        logger.info(NoData)
     except:
         NoData = None
 
@@ -476,8 +485,8 @@ def data_loading(filename, out_data_type=None, data_band=None):
 
 
 def extract_key(data_dict, key):
-    #print(data_dict)
-    #print(key)
+    #logger.info(data_dict)
+    #logger.info(key)
     if key in data_dict:
         dict_value = data_dict[key]
 
@@ -523,7 +532,7 @@ if __name__ == '__main__':
     #inps = cmdLineParse(iargs=None)
     #filename = inps.filename
 
-    filename = 'tops.json'
+    filename = os.path.join(BASE_PATH, 'tops_groups.json')
 
     # open the file
     f = open(filename)
@@ -533,10 +542,10 @@ if __name__ == '__main__':
     f.close
 
     # initalize the netcdf4 file
-    netcdf_outfile = structure["filename"]
+    netcdf_outfile = 'S1-IFG.nc'
     # Check for existing netcdf file
     if os.path.exists(netcdf_outfile):
-        print('{0} file already exists'.format(netcdf_outfile))
+        logger.info('{0} file already exists'.format(netcdf_outfile))
         os.remove(netcdf_outfile)
 #        raise Exception('Output file already exists')
     fid = Dataset(netcdf_outfile, 'w')

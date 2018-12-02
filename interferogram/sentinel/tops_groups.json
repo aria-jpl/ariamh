@@ -1,0 +1,470 @@
+{
+  "global_attribute" : [
+    {
+      "name" : "product_type",
+      "value" : "UNW GEO IFG"
+    },{
+      "name" : "Conventions",
+      "value" : "CF-1.6"
+    },{
+      "name" : "title",
+      "value" : "ARIA sample standard product"
+    },{
+      "name" : "version",
+      "value" : "1b"
+    },{
+      "name" : "author",
+      "value" : "David Bekaert"
+    },{
+      "name" : "institution",
+      "value" : "Jet Propulsion Laboratory"
+    },{
+      "name" : "source",
+      "value" : "ARIA"
+    },{
+      "name" : "references",
+      "value" : "https://aria.jpl.nasa.gov/"
+    }],
+  "group" : [
+    {
+      "name" : "science",
+      "content" : [
+        {
+          "group" : [
+            {
+              "name" : "grids",
+              "content" : [
+                {
+                  "group" : [
+                    {
+                      "name" : "data",
+                      "content" : [
+                        {
+                          "dataset" : [
+                            {
+                              "name" : "GEOCOOR2",
+                              "python_action" : "isce_functions.get_geocoded_coords",
+                              "python_action_args" : ["filt_topophase.unw.geo.vrt",["longitude","longitude"],["latitude","latitude"]],
+                              "type" : "float64",
+                              "crs_name" : "crs",
+                              "crs_attribute" : [
+                                {
+                                  "name" : "grid_mapping_name",
+                                  "value" : "latitude_longitude"
+                                },{
+                                  "name" : "longitude_of_prime_meridian",
+                                  "value" : 0.0
+                                },{
+                                  "name" : "semi_major_axis",
+                                  "value" : 6378137.0
+                                },{
+                                  "name" : "inverse_flattening",
+                                  "value" : 298.257223563
+                                }]
+                            },{
+                              "name" : "unwrapped_phase",
+                              "src_file" : "filt_topophase.unw.geo.vrt",
+                              "type" : "float32",
+                              "nodata" : 0,
+                              "band" : 2,
+                              "dims" : ["latitude","longitude"],
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Unwrapped phase"
+                                },{
+                                  "name" : "units",
+                                  "value" : "rad"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs"
+                                }]
+                            },{
+                              "name" : "coherence",
+                              "src_file" : "phsig.cor.geo.vrt",
+                              "nodata" : 0,
+                              "band" : 1,
+                              "type" : "float32",
+                              "dims" : ["latitude","longitude"],
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Coherence"
+                                },{
+                                  "name" : "units",
+                                  "value" : "unitless"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs"
+                                }]
+                            },{
+                              "name" : "connected_components",
+                              "src_file" : "filt_topophase.unw.conncomp.geo.vrt",
+                              "python_action" : "isce_functions.get_conncomp",
+                              "python_action_args" : ["filt_topophase.unw.conncomp.geo.vrt",-1,"phsig.cor.geo.vrt",0],
+                              "nodata" : -1,
+                              "type" : "float32",
+                              "dims" : ["latitude","longitude"],
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Snaphu connected components"
+                                },{
+                                  "name" : "units",
+                                  "value" : "unitless"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs"
+                                }]
+                            },{
+                              "name" : "amplitude",
+                              "src_file" : "filt_topophase.unw.geo.vrt",
+                              "nodata" : 0,
+                              "band" : 1,
+                              "type" : "float32",
+                              "dims" : ["latitude","longitude"],
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Amplitude"
+                                },{
+                                  "name" : "units",
+                                  "value" : "watt"
+                                 },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs"
+                                }]
+                            }]
+                        }]
+                    },{
+                      "name" : "imagingGeometry",
+                      "content" : [
+                        {
+                          "dataset" : [
+                            {
+                              "name" : "GEOCOOR3",
+                              "python_action" : "isce_functions.get_h5_dataset_coords",
+                              "python_action_args" : ["metadata.h5",["/cube/lons","longitude_meta"],["/cube/lats","latitude_meta"],["/cube/heights","heights_meta"]],
+                              "type" : "float64",
+                              "crs_name" : "crs_meta",
+                              "crs_attribute" : [
+                                {
+                                  "name" : "grid_mapping_name",
+                                  "value" : "latitude_longitude"
+                                },{
+                                  "name" : "longitude_of_prime_meridian",
+                                  "value" : 0.0
+                                },{
+                                  "name" : "semi_major_axis",
+                                  "value" : 6378137.0
+                                },{
+                                  "name" : "inverse_flattening",
+                                  "value" : 298.257223563
+                                }]
+                            },{
+                              "name" : "bperpendicular",
+                              "python_action" : "isce_functions.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/bperp"],
+                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Perpendicular baseline"
+                                },{
+                                  "name" : "units",
+                                  "value" : "meter"
+                                 },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs_meta"
+                                }]
+                            },{
+                              "name" : "bparallel",
+                              "python_action" : "isce_functions.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/bparallel"],
+                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Parallel baseline"
+                                },{
+                                  "name" : "units",
+                                  "value" : "meter"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs_meta"
+                                }]
+                            },{
+                              "name" : "incidence_angle",
+                              "python_action" : "isce_functions.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/incangle"],
+                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Incidence angle"
+                                },{
+                                  "name" : "units",
+                                  "value" : "degrees"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs_meta"
+                                }]
+                            },{
+                              "name" : "look_angle",
+                              "python_action" : "isce_functions.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/lookangle"],
+                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Look angle"
+                                },{
+                                  "name" : "units",
+                                  "value" : "degrees"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs_meta"
+                                }]
+                            },{
+                              "name" : "azimuth_angle",
+                              "python_action" : "isce_functions.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/azangle"],
+                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Azimuth angle"
+                                },{
+                                  "name" : "units",
+                                  "value" : "degrees"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crs_meta"
+                                }]
+                            }]
+                        }]
+                    },{
+                      "name" : "corrections",
+                      "content" : [
+                        {
+                          "group" : [
+                            {
+                              "name" : "derived",
+                              "content" : [
+                                {
+                                  "group" : [
+                                    {
+                                      "name" : "ionosphere",
+                                      "content" : [
+                                        {
+                                          "dataset" : [
+                                            {
+                                              "name" : "iono",
+                                              "type" : "str",
+                                              "description" : "placeholder dummy: [2D]"
+                                            }]
+                                        }]
+                                    }]
+                                }]
+                            },{
+                              "name" : "external",
+                              "content" : [
+                                {
+                                  "group" : [
+                                    {
+                                      "name" : "troposphere",
+                                      "content" : [
+                                        {
+                                          "dataset" : [
+                                            {
+                                              "name" : "tropo_hydro",
+                                              "type" : "str",
+                                              "description" : "placeholder dummy: [3D]"
+                                            },{
+                                              "name" : "tropo_wet",
+                                              "type" : "str",
+                                              "description" : "placeholder dummy: [3D]"
+                                            }]
+                                        }]
+                                    },{
+                                      "name" : "tides",
+                                      "content" : [
+                                        {
+                                          "dataset" : [
+                                            {
+                                              "name" : "solid_earth_tide",
+                                              "type" : "str",
+                                              "description" : "placeholder dummy: [2D]"
+                                            }]
+                                        }]
+                                    }]
+                                }]
+                            }]
+                        }]
+                    }]
+                }]
+            },{
+              "name" : "radarMetaData",
+              "content" : [
+                {
+                  "group" : [
+                    {
+                      "name" : "inputSLC",
+                      "content" : [
+                        {
+                          "group": [
+                            {
+                              "name" : "reference",
+                              "content" : [
+                                {
+                                  "dataset" : [
+                                    {
+                                      "name" : "l1_input_granules",
+                                      "python_action" : "isce_functions.get_topsApp_variable",
+                                      "python_action_args" : ["../topsApp.xml","master.safe"],
+                                      "attribute" : [
+                                        {
+                                          "name" : "description",
+                                          "value" : "Reference input granules"
+                                        }]
+                                    }]
+                                }]
+                            },{
+                              "name" : "secondary",
+                              "content" : [
+                                {
+                                  "dataset" : [
+                                    {
+                                      "name" : "l1_input_granules",
+                                      "python_action" : "isce_functions.get_topsApp_variable",
+                                      "python_action_args" : ["../topsApp.xml","slave.safe"],
+                                      "attribute" : [
+                                        {
+                                          "name" : "description",
+                                          "value" : "Secondary input granules"
+                                        }]
+                                    }]
+                                }]
+                            }]
+                        }]
+                    }],
+                  "dataset" : [  
+                    {
+                      "name" : "mission_id",
+                      "type" : "str",
+                      "description" : "Sentinel-1"
+                    },{
+                      "name" : "wavelength",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","wavelength"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Radar wavelength"
+                        },{
+                          "name" : "units",
+                          "value" : "meter"
+                        }]
+                    },{
+                      "name" : "center_frequency",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","frequency"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Radar center frequency"
+                        },{
+                          "name" : "units",
+                          "value" : "Hertz"
+                        }]
+                    },{
+                      "name" : "product_type",
+                      "type" : "str",
+                      "description" : "UNW GEO IFG"
+                    },{
+                      "name" : "DEM",
+                      "type" : "str",
+                      "description" : "placeholder dummy: [SRTM or NED]"
+                    },{
+                      "name" : "zerodoppler_start_az_time",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","sensingStart"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Zero Doppler azimuth start time"
+                        },{
+                          "name" : "units",
+                          "value" : "Time ISO 8601 format"
+                        }]
+                    },{
+                      "name" : "zerodoppler_end_az_time",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","sensingStop"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Zero Doppler azimuth end time"
+                        },{
+                          "name" : "units",
+                          "value" : "Time ISO 8601 format"
+                        }]
+                    },{
+                      "name" : "az_time_interval",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","azimuthTimeInterval"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Azimuth time interval"
+                        },{
+                          "name" : "units",
+                          "value" : "seconds"
+                        }]
+                    },{
+                      "name" : "slant_range_spacing",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","rangePixelSize"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Slant range pixel spacing"
+                        },{
+                          "name" : "units",
+                          "value" : "meter"
+                        }]
+                    },{
+                      "name" : "slant_range_end",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","farRange"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Slant range end"
+                        },{
+                          "name" : "units",
+                          "value" : "meter"
+                        }]
+                    },{
+                      "name" : "slant_range_start",
+                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action_args" : ["../master","startingRange"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Slant range start"
+                        },{
+                          "name" : "units",
+                          "value" : "meter"
+                        }]
+                    }]
+                }]
+            }]
+        }]
+    }]
+}
