@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # By David Bekaert - Jet Propulsion Laboratory
 
+import sys
 import json
 import logging
 from collections import OrderedDict
