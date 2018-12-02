@@ -20,7 +20,7 @@
       "value" : "Jet Propulsion Laboratory"
     },{
       "name" : "source",
-      "value" : "ARIA"
+      "value" : "Contains modified Copernicus Sentinel data processed by ESA and ARIA NASA/JPL"
     },{
       "name" : "references",
       "value" : "https://aria.jpl.nasa.gov/"
@@ -62,7 +62,7 @@
                                   "value" : 298.257223563
                                 }]
                             },{
-                              "name" : "unwrapped_phase",
+                              "name" : "unwrappedPhase",
                               "src_file" : "filt_topophase.unw.geo.vrt",
                               "type" : "float32",
                               "nodata" : 0,
@@ -98,7 +98,7 @@
                                   "value" : "crs"
                                 }]
                             },{
-                              "name" : "connected_components",
+                              "name" : "connectedComponents",
                               "src_file" : "filt_topophase.unw.conncomp.geo.vrt",
                               "python_action" : "isce_functions.get_conncomp",
                               "python_action_args" : ["filt_topophase.unw.conncomp.geo.vrt",-1,"phsig.cor.geo.vrt",0],
@@ -144,9 +144,9 @@
                             {
                               "name" : "GEOCOOR3",
                               "python_action" : "isce_functions.get_h5_dataset_coords",
-                              "python_action_args" : ["metadata.h5",["/cube/lons","longitude_meta"],["/cube/lats","latitude_meta"],["/cube/heights","heights_meta"]],
+                              "python_action_args" : ["metadata.h5",["/cube/lons","longitudeMeta"],["/cube/lats","latitudeMeta"],["/cube/heights","heightsMeta"]],
                               "type" : "float64",
-                              "crs_name" : "crs_meta",
+                              "crs_name" : "crsMeta",
                               "crs_attribute" : [
                                 {
                                   "name" : "grid_mapping_name",
@@ -162,10 +162,10 @@
                                   "value" : 298.257223563
                                 }]
                             },{
-                              "name" : "bperpendicular",
+                              "name" : "perpendicularBaseline",
                               "python_action" : "isce_functions.get_h5_dataset",
                               "python_action_args" : ["metadata.h5","/cube/bperp"],
-                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
                               "nodata" : 0,
                               "attribute" : [
                                 {
@@ -176,13 +176,13 @@
                                   "value" : "meter"
                                  },{
                                   "name" : "grid_mapping",
-                                  "value" : "crs_meta"
+                                  "value" : "crsMeta"
                                 }]
                             },{
-                              "name" : "bparallel",
+                              "name" : "parallelBaseline",
                               "python_action" : "isce_functions.get_h5_dataset",
                               "python_action_args" : ["metadata.h5","/cube/bparallel"],
-                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
                               "nodata" : 0,
                               "attribute" : [
                                 {
@@ -193,13 +193,13 @@
                                   "value" : "meter"
                                 },{
                                   "name" : "grid_mapping",
-                                  "value" : "crs_meta"
+                                  "value" : "crsMeta"
                                 }]
                             },{
-                              "name" : "incidence_angle",
+                              "name" : "incidenceAngle",
                               "python_action" : "isce_functions.get_h5_dataset",
                               "python_action_args" : ["metadata.h5","/cube/incangle"],
-                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
                               "nodata" : 0,
                               "attribute" : [
                                 {
@@ -210,13 +210,13 @@
                                   "value" : "degrees"
                                 },{
                                   "name" : "grid_mapping",
-                                  "value" : "crs_meta"
+                                  "value" : "crsMeta"
                                 }]
                             },{
-                              "name" : "look_angle",
+                              "name" : "lookAngle",
                               "python_action" : "isce_functions.get_h5_dataset",
                               "python_action_args" : ["metadata.h5","/cube/lookangle"],
-                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
                               "nodata" : 0,
                               "attribute" : [
                                 {
@@ -227,13 +227,13 @@
                                   "value" : "degrees"
                                 },{
                                   "name" : "grid_mapping",
-                                  "value" : "crs_meta"
+                                  "value" : "crsMeta"
                                 }]
                             },{
-                              "name" : "azimuth_angle",
+                              "name" : "azimuthAngle",
                               "python_action" : "isce_functions.get_h5_dataset",
                               "python_action_args" : ["metadata.h5","/cube/azangle"],
-                              "dims" : ["heights_meta","latitude_meta","longitude_meta"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
                               "nodata" : 0,
                               "attribute" : [
                                 {
@@ -244,7 +244,7 @@
                                   "value" : "degrees"
                                 },{
                                   "name" : "grid_mapping",
-                                  "value" : "crs_meta"
+                                  "value" : "crsMeta"
                                 }]
                             }]
                         }]
@@ -264,7 +264,7 @@
                                         {
                                           "dataset" : [
                                             {
-                                              "name" : "iono",
+                                              "name" : "ionosphere",
                                               "type" : "str",
                                               "description" : "placeholder dummy: [2D]"
                                             }]
@@ -282,11 +282,11 @@
                                         {
                                           "dataset" : [
                                             {
-                                              "name" : "tropo_hydro",
+                                              "name" : "troposphereHydrostatic",
                                               "type" : "str",
                                               "description" : "placeholder dummy: [3D]"
                                             },{
-                                              "name" : "tropo_wet",
+                                              "name" : "troposphereWet",
                                               "type" : "str",
                                               "description" : "placeholder dummy: [3D]"
                                             }]
@@ -297,7 +297,7 @@
                                         {
                                           "dataset" : [
                                             {
-                                              "name" : "solid_earth_tide",
+                                              "name" : "solidEarthTide",
                                               "type" : "str",
                                               "description" : "placeholder dummy: [2D]"
                                             }]
@@ -324,7 +324,7 @@
                                 {
                                   "dataset" : [
                                     {
-                                      "name" : "l1_input_granules",
+                                      "name" : "L1InputGranules",
                                       "python_action" : "isce_functions.get_topsApp_variable",
                                       "python_action_args" : ["../topsApp.xml","master.safe"],
                                       "attribute" : [
@@ -332,6 +332,10 @@
                                           "name" : "description",
                                           "value" : "Reference input granules"
                                         }]
+                                    },{
+                                       "name" : "orbitType",
+                                       "type" : "str",
+                                       "description" : "ARIA PLACEHOLDER for either [precise or restituted]"
                                     }]
                                 }]
                             },{
@@ -340,7 +344,7 @@
                                 {
                                   "dataset" : [
                                     {
-                                      "name" : "l1_input_granules",
+                                      "name" : "L1InputGranules",
                                       "python_action" : "isce_functions.get_topsApp_variable",
                                       "python_action_args" : ["../topsApp.xml","slave.safe"],
                                       "attribute" : [
@@ -348,6 +352,10 @@
                                           "name" : "description",
                                           "value" : "Secondary input granules"
                                         }]
+                                    },{
+                                       "name" : "orbitType",                                                                                            
+                                       "type" : "str",
+                                       "description" : "ARIA PLACEHOLDER for either [precise or restituted]"
                                     }]
                                 }]
                             }]
@@ -355,7 +363,7 @@
                     }],
                   "dataset" : [  
                     {
-                      "name" : "mission_id",
+                      "name" : "missionID",
                       "type" : "str",
                       "description" : "Sentinel-1"
                     },{
@@ -371,7 +379,7 @@
                           "value" : "meter"
                         }]
                     },{
-                      "name" : "center_frequency",
+                      "name" : "centerFrequency",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
                       "python_action_args" : ["../master","frequency"],
                       "attribute" : [
@@ -383,17 +391,21 @@
                           "value" : "Hertz"
                         }]
                     },{
-                      "name" : "product_type",
+                      "name" : "productType",
                       "type" : "str",
                       "description" : "UNW GEO IFG"
                     },{
                       "name" : "DEM",
                       "type" : "str",
-                      "description" : "placeholder dummy: [SRTM or NED]"
+                      "description" : "ARIA PLACEHOLDER either SRTM or NED"
                     },{
-                      "name" : "zerodoppler_start_az_time",
+                      "name" : "ESDthreshold",
+                      "type" : "str",
+                      "description" : "ARIA PLACEHOLDER [would make it a float and report the value, come up with a value when its none or not used]"
+                    },{
+                      "name" : "azimuthZeroDopplerStartTime",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","sensingStart"],
+                      "python_action_args" : ["../fine_interferogram","sensingStart"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -403,9 +415,9 @@
                           "value" : "Time ISO 8601 format"
                         }]
                     },{
-                      "name" : "zerodoppler_end_az_time",
+                      "name" : "azimuthZeroDopplerEndTime",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","sensingStop"],
+                      "python_action_args" : ["../fine_interferogram","sensingStop"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -415,9 +427,9 @@
                           "value" : "Time ISO 8601 format"
                         }]
                     },{
-                      "name" : "az_time_interval",
+                      "name" : "azimuthTimeInterval",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","azimuthTimeInterval"],
+                      "python_action_args" : ["../fine_interferogram","azimuthTimeInterval"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -427,9 +439,9 @@
                           "value" : "seconds"
                         }]
                     },{
-                      "name" : "slant_range_spacing",
+                      "name" : "slantRangeSpacing",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","rangePixelSize"],
+                      "python_action_args" : ["../fine_interferogram","rangePixelSize"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -439,9 +451,9 @@
                           "value" : "meter"
                         }]
                     },{
-                      "name" : "slant_range_end",
+                      "name" : "slantRangeEnd",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","farRange"],
+                      "python_action_args" : ["../fine_interferogram","farRange"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -451,9 +463,9 @@
                           "value" : "meter"
                         }]
                     },{
-                      "name" : "slant_range_start",
+                      "name" : "slantRangeStart",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","startingRange"],
+                      "python_action_args" : ["../fine_interferogram","startingRange"],
                       "attribute" : [
                         {
                           "name" : "description",
