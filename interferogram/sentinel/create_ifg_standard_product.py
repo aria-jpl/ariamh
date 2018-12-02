@@ -704,9 +704,6 @@ def main():
     rad = 4 * np.pi * .05 / wv
     logger.info("Radian value for 5-cm wrap is: {}".format(rad))
 
-
-
-
     # create product directory
     prod_dir = id
     os.makedirs(prod_dir, 0o755)
@@ -715,6 +712,31 @@ def main():
     prod_merged_dir = os.path.join(prod_dir, 'merged')
     os.makedirs(prod_merged_dir, 0o755)
 
+    # make metadata geocube
+    os.chdir("merged")
+    mgc_cmd = [
+        "{}/makeGeocube.py".format(BASE_PATH), "-m", "../master",
+        "-s", "../slave", "-o", "metadata.h5"
+    ]
+    mgc_cmd_line = " ".join(mgc_cmd)
+    logger.info("Calling makeGeocube.py: {}".format(mgc_cmd_line))
+    check_call(mgc_cmd_line, shell=True)
+
+    # create standard product packaging
+    std_prod_file = "{}.hdf5".format(id)
+    std_cmd = [
+        "{}/standard_product_packaging.py".format(BASE_PATH),
+        std_prod_file
+    ]
+    std_cmd_line = " ".join(std_cmd)
+    logger.info("Calling standard_product_packaging.py: {}".format(std_cmd_line))
+    check_call(std_cmd_line, shell=True)
+
+    # chdir back up to work directory
+    os.chdir(cwd)
+
+    # move standard product to product directory
+    shutil.move(os.path.join('merged', std_prod_file), prod_dir)
 
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (
@@ -766,8 +788,6 @@ def main():
         if os.path.exists(gdal_vrt): shutil.move(gdal_vrt, prod_merged_dir)
         else: logger.warn("{} wasn't generated.".format(gdal_vrt))
 
-
-
     # save other files to product directory
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
     shutil.copyfile("topsApp.xml", os.path.join(prod_dir, "topsApp.xml"))
@@ -775,7 +795,6 @@ def main():
         shutil.copyfile("topsProc.xml", os.path.join(prod_dir, "topsProc.xml"))
     if os.path.exists('isce.log'):
         shutil.copyfile("isce.log", os.path.join(prod_dir, "isce.log"))
-
 
     # move PICKLE to product directory
     shutil.move('PICKLE', prod_dir)
