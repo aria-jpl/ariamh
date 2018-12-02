@@ -13,11 +13,9 @@ from osgeo import gdal
 import collections
 import pdb
 
-
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 logger = logging.getLogger('standard_product_packaging')
-
 
 BASE_PATH = os.path.dirname(__file__)
 
@@ -167,8 +165,8 @@ def write_dataset(fid, data, properties_data):
             count = 0
             for data_line in data:
                 dset[count] = data_line
-                logger.info(properties_data.name + " count = " + str(count) + '  ' +
-                            data_line)
+                logger.info(properties_data.name + " count = " + str(count) +
+                            '  ' + data_line)
 
                 count = +1
         else:
@@ -532,6 +530,11 @@ if __name__ == '__main__':
     #inps = cmdLineParse(iargs=None)
     #filename = inps.filename
 
+    # initalize the netcdf4 file
+    if len(sys.argv) != 2:
+        raise SystemExit("usage: %s <output HDF5 file>" % sys.argv[0])
+    netcdf_outfile = sys.argv[1]
+
     filename = os.path.join(BASE_PATH, 'tops_groups.json')
 
     # open the file
@@ -541,8 +544,6 @@ if __name__ == '__main__':
     # close the file
     f.close
 
-    # initalize the netcdf4 file
-    netcdf_outfile = 'S1-IFG.hdf5'
     # Check for existing netcdf file
     if os.path.exists(netcdf_outfile):
         logger.info('{0} file already exists'.format(netcdf_outfile))

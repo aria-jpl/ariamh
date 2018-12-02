@@ -712,8 +712,9 @@ def main():
     check_call(mgc_cmd_line, shell=True)
 
     # create standard product packaging
+    std_prod_file = "{}.hdf5".format(id)
     std_cmd = [
-        "{}/standard_product_packaging.py".format(BASE_PATH)
+        "{}/standard_product_packaging.py {}".format(BASE_PATH, std_prod_file)
     ]
     std_cmd_line = " ".join(std_cmd)
     logger.info("Calling standard_product_packaging.py: {}".format(std_cmd_line))
@@ -723,7 +724,7 @@ def main():
     os.chdir(cwd)
 
     # move standard product to product directory
-    shutil.move('merged/S1-IFG.hdf5', prod_dir)
+    shutil.move(os.path.join('merged', std_prod_file), prod_dir)
 
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (
