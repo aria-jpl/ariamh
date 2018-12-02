@@ -723,7 +723,7 @@ def main():
     os.chdir(cwd)
 
     # move standard product to product directory
-    shutil.move('merged/S1-IFG.nc', prod_dir)
+    shutil.move('merged/S1-IFG.hdf5', prod_dir)
 
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (

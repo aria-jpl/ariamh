@@ -542,7 +542,7 @@ if __name__ == '__main__':
     f.close
 
     # initalize the netcdf4 file
-    netcdf_outfile = 'S1-IFG.nc'
+    netcdf_outfile = 'S1-IFG.hdf5'
     # Check for existing netcdf file
     if os.path.exists(netcdf_outfile):
         logger.info('{0} file already exists'.format(netcdf_outfile))
