@@ -4,6 +4,7 @@
 import sys
 import json
 import logging
+import traceback
 from collections import OrderedDict
 import os
 from netCDF4 import Dataset
@@ -258,7 +259,7 @@ def create_dataset(fid, dataset, fid_parent=None):
             data = properties_data.description
 
     # special case to parse the connected component data
-    if properties_data.name == "connected_components":
+    if properties_data.name == "connectedComponents":
         '''
         # tracking the projection information
         if data["data_proj"] is not None and data["data_transf"] is not None:
@@ -559,21 +560,27 @@ if __name__ == '__main__':
     try:
         global_attribute = structure["global_attribute"]
         add_attributes(fid, global_attribute)
-    except:
-        pase
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
+        pass
 
     # iterate over the different datasets
     try:
         for dataset in structure["dataset"]:
             create_dataset(fid, dataset, fid_parent=fid)
-    except:
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         pass
 
     # iterate over the different groups
     try:
         for group in structure["group"]:
             create_group(fid, group, fid_parent=fid)
-    except:
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
         pass
 
     # close the file
