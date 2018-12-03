@@ -724,9 +724,13 @@ def main():
 
     # create standard product packaging
     std_prod_file = "{}.hdf5".format(id)
+    with open(os.path.join(BASE_PATH, "tops_groups.json")) as f:
+        std_cfg = json.load(f)
+    std_cfg['filename'] = std_prod_file
+    with open('tops_groups.json', 'w') as f:
+        json.dump(std_cfg, f, indent=2, sort_keys=True)
     std_cmd = [
-        "{}/standard_product_packaging.py".format(BASE_PATH),
-        std_prod_file
+        "{}/standard_product_packaging.py".format(BASE_PATH)
     ]
     std_cmd_line = " ".join(std_cmd)
     logger.info("Calling standard_product_packaging.py: {}".format(std_cmd_line))

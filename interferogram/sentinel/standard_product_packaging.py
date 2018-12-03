@@ -528,16 +528,10 @@ if __name__ == '__main__':
     '''
         Main driver.
     '''
-    # Argparse conflicts with isce internals..., hash back out!
-    #inps = cmdLineParse(iargs=None)
-    #filename = inps.filename
 
-    # initalize the netcdf4 file
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: %s <output HDF5 file>" % sys.argv[0])
-    netcdf_outfile = sys.argv[1]
-
-    filename = os.path.join(BASE_PATH, 'tops_groups.json')
+    # get config json file
+    cwd = os.getcwd()
+    filename = os.path.join(cwd, 'tops_groups.json')
 
     # open the file
     f = open(filename)
@@ -545,6 +539,9 @@ if __name__ == '__main__':
     structure = json.load(f, object_pairs_hook=OrderedDict)
     # close the file
     f.close
+
+    # set netcdf file
+    netcdf_outfile = structure["filename"]
 
     # Check for existing netcdf file
     if os.path.exists(netcdf_outfile):
