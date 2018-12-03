@@ -498,28 +498,6 @@ def processCube(inps, fid, no_data=-9999):
     cube.create_dataset('y0', data=inps.y0)
     cube.create_dataset('y1', data=inps.y1)
 
-    # initialize metadata arrays
-    lookangle = np.ones(
-        (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float32) * no_data
-    incangle = np.ones(
-        (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float32) * no_data
-    azangle = np.ones(
-        (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float32) * no_data
-    azimuthtime = np.zeros((len(inps.heights), inps.Ny, inps.Nx),
-                           dtype=np.float64)
-    slantrange = np.zeros(
-        (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float64) * no_data
-    bpar = np.ones(
-        (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float32) * no_data
-    bperp = np.ones(
-        (len(inps.heights), inps.Ny, inps.Nx), dtype=np.float32) * no_data
-    slavetime = np.zeros((len(inps.heights), inps.Ny, inps.Nx),
-                         dtype=np.float64)
-    slaverange = np.zeros((len(inps.heights), inps.Ny, inps.Nx),
-                          dtype=np.float64)
-    latvector = np.zeros((inps.Ny), dtype=np.float64)
-    lonvector = np.zeros((inps.Nx), dtype=np.float64)
-
     # create memmap directory
     memmap_dir = "./joblib_memmap"
     try:
@@ -527,61 +505,67 @@ def processCube(inps, fid, no_data=-9999):
     except FileExistsError:
         pass
 
-    # create output memmap for each metadata array
+    # create output memmap for each metadata array and initialize
     lookangle = np.memmap(
         os.path.join(memmap_dir, "lookangle"),
-        shape=lookangle.shape,
-        dtype=lookangle.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float32,
         mode='w+')
+    lookangle[:] = no_data
     incangle = np.memmap(
         os.path.join(memmap_dir, "incangle"),
-        shape=incangle.shape,
-        dtype=incangle.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float32,
         mode='w+')
+    incangle[:] = no_data
     azangle = np.memmap(
         os.path.join(memmap_dir, "azangle"),
-        shape=azangle.shape,
-        dtype=azangle.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float32,
         mode='w+')
+    azangle[:] = no_data
     azimuthtime = np.memmap(
         os.path.join(memmap_dir, "azimuthtime"),
-        shape=azimuthtime.shape,
-        dtype=azimuthtime.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float64,
         mode='w+')
     slantrange = np.memmap(
         os.path.join(memmap_dir, "slantrange"),
-        shape=slantrange.shape,
-        dtype=slantrange.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float64,
         mode='w+')
+    slantrange[:] = no_data
     bpar = np.memmap(
         os.path.join(memmap_dir, "bpar"),
-        shape=bpar.shape,
-        dtype=bpar.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float32,
         mode='w+')
+    bpar[:] = no_data
     bperp = np.memmap(
         os.path.join(memmap_dir, "bperp"),
-        shape=bperp.shape,
-        dtype=bperp.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float32,
         mode='w+')
+    bperp[:] = no_data
     slavetime = np.memmap(
         os.path.join(memmap_dir, "slavetime"),
-        shape=slavetime.shape,
-        dtype=slavetime.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float64,
         mode='w+')
     slaverange = np.memmap(
         os.path.join(memmap_dir, "slaverange"),
-        shape=slaverange.shape,
-        dtype=slaverange.dtype,
+        shape=(len(inps.heights), inps.Ny, inps.Nx),
+        dtype=np.float64,
         mode='w+')
     latvector = np.memmap(
         os.path.join(memmap_dir, "latvector"),
-        shape=latvector.shape,
-        dtype=latvector.dtype,
+        shape=(inps.Ny,),
+        dtype=np.float64,
         mode='w+')
     lonvector = np.memmap(
         os.path.join(memmap_dir, "lonvector"),
-        shape=lonvector.shape,
-        dtype=lonvector.dtype,
+        shape=(inps.Nx,),
+        dtype=np.float64,
         mode='w+')
 
     # calculate geocube metadata in parallel
