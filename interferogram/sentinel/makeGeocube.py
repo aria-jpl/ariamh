@@ -423,7 +423,7 @@ class Cube(object):
                                            yval, hh)
                 targutm = pyproj.transform(self.inps.proj, self.inps.utmproj,
                                            xval, yval, hh)
-                targnorm = self.nvector(targ)
+                targnorm = self.nvector(targproj)
 
                 try:
                     mtaz, mrng = self.inps.orbit.geo2rdr(targ)
