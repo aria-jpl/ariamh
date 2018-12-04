@@ -475,6 +475,7 @@ def main():
     '''
     # get DEM configuration
     dem_type = ctx.get("context", {}).get("dem_type", "SRTM+v3")
+    dem_type_simple = "SRTM"
     dem_url = uu.dem_url
     srtm3_dem_url = uu.srtm3_dem_url
     ned1_dem_url = uu.ned1_dem_url
@@ -491,6 +492,7 @@ def main():
         s.auth = (dem_user, dem_pass)
         download_file(KILAUEA_DEM_XML, session=s)
         download_file(KILAUEA_DEM, session=s)
+        dem_type_simple = "KILAUEA"
         preprocess_dem_file = os.path.basename(KILAUEA_DEM)
     else:
         # get DEM bbox
@@ -502,8 +504,10 @@ def main():
         
 
         if dem_type.startswith("SRTM"):
+            dem_type_simple = "SRTM"
             if dem_type.startswith("SRTM3"):
                 dem_url = srtm3_dem_url
+                dem_type_simple = "SRTM3"
   
             dem_cmd = [
                 "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
@@ -517,8 +521,12 @@ def main():
             preprocess_dem_file = glob("*.dem.wgs84")[0]
             
         else:
-            if dem_type == "NED1": dem_url = ned1_dem_url
-            elif dem_type.startswith("NED13"): dem_url = ned13_dem_url
+            if dem_type == "NED1": 
+                dem_url = ned1_dem_url
+                dem_type_simple = "NED1"
+            elif dem_type.startswith("NED13"): 
+                dem_url = ned13_dem_url
+                dem_type_simple = "NED13"
             else: raise RuntimeError("Unknown dem type %s." % dem_type)
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
@@ -535,10 +543,13 @@ def main():
             logger.info("Calling ned_dem.py: {}".format(dem_cmd_line))
             check_call(dem_cmd_line, shell=True)
             preprocess_dem_file = "stitched.dem"
-    logger.info("Using Preprocess DEM file: {}".format(preprocess_dem_file))
+    logger.info("Preprocess DEM file: {}".format(preprocess_dem_file))
+
+    preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
 
     move_dem_separate_dir(preprocess_dem_dir)
     preprocess_dem_file = os.path.join(preprocess_dem_dir, preprocess_dem_file)
+    logger.info("Using Preprocess DEM file: {}".format(preprocess_dem_file))
 
     # fix file path in Preprocess DEM xml
     fix_cmd = [
@@ -578,7 +589,7 @@ def main():
     if not os.path.isfile(preprocess_vrt_file):
         print("%s does not exists. Exiting")
     
-    geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_preprocess_dem")
+    geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
 
     dem_cmd = [
@@ -589,6 +600,8 @@ def main():
     logger.info("Calling downsampleDEM.py: {}".format(dem_cmd_line))
     check_call(dem_cmd_line, shell=True)
     geocode_dem_file = ""
+
+    logger.info("geocode_dem_dir : {}".format(geocode_dem_dir))
 
     if dem_type.startswith("SRTM"):
         geocode_dem_file = glob(os.path.join(geocode_dem_dir, "*.dem.wgs84"))[0]
