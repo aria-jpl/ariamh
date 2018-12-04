@@ -23,13 +23,13 @@ BASE_PATH = os.path.dirname(__file__)
 
 
 class content_properties:
-    names = ('type', 'src_file', 'nodata', 'chunks', 'band', 'description',
-             'dims', 'python_action', 'python_action_args', 'attribute',
-             'description', 'name', 'crs_name', 'crs_attribute')
+    names = ('type','src_file','nodata','chunks','band','description',
+             'dims','python_action','python_action_args','attribute',
+             'description','name','crs_name','crs_attribute')
 
-    def __init__(self, dataset):
+    def __init__(self,dataset):
         for property_name in self.names:
-            setattr(self, property_name, extract_key(dataset, property_name))
+            setattr(self,property_name,extract_key(dataset,property_name))
 
 
 def netdf4_dtype_check(dtype):
@@ -61,37 +61,37 @@ def netdf4_dtype_check(dtype):
        10: 'CFLOAT',
        11: 'complex128',
     """
-
+    
     logger.info("testing")
 
 
-def create_group(fid, group, fid_parent=None):
+def create_group(fid,group,fid_parent=None):
     '''
        Create a group within the fid 
     '''
 
-    name = group["name"]
+    name = group["name"] 
     contents = group["content"]
-
+    
     # create a group with the provided name
     grp_id = fid.createGroup(name)
-
-    # track the parent fid
+ 
+    # track the parent fid 
     if fid_parent is None:
         fid_parent = fid
-
+    
     for content in contents:
-        dataset_flag = extract_key(content, "dataset")
-        group_flag = extract_key(content, "group")
+        dataset_flag = extract_key(content,"dataset")
+        group_flag = extract_key(content,"group")
         if dataset_flag is not None:
             for dataset in content["dataset"]:
-                create_dataset(grp_id, dataset, fid_parent)
+                create_dataset(grp_id,dataset,fid_parent)
         if group_flag is not None:
             for subgroup in content["group"]:
-                create_group(grp_id, subgroup, fid_parent)
+                create_group(grp_id,subgroup,fid_parent)
 
 
-def python_execution(python_string, python_args=None):
+def python_execution(python_string,python_args=None):
     ''' 
         Executing a python function using a module.function string and provided arguments
     '''
@@ -115,62 +115,46 @@ def python_execution(python_string, python_args=None):
     return output
 
 
-def write_dataset(fid, data, properties_data):
+def write_dataset(fid,data,properties_data):
     '''
         Writing out the data in netcdf arrays or strings depending on the type of data.
     '''
-
+    
     import numpy as np
-
-    if isinstance(data, (str,)):
-        dset = fid.createVariable(
-            properties_data.name, str, ('matchup',), zlib=True)
-        dset[0] = data
-    elif isinstance(data, (np.ndarray,)):
-
+   
+    if isinstance(data,(str,)):
+        dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
+        dset[0]=data
+    elif isinstance(data,(np.ndarray,)):
+        
         #pdb.set_trace()
         # make sure the _fillvalue is formatted the same as the data_type
         if properties_data.type is None:
             properties_data.type = data.dtype.name
         if properties_data.nodata is not None:
-            nodata = np.array(
-                properties_data.nodata, dtype=properties_data.type)
+            nodata = np.array(properties_data.nodata,dtype=properties_data.type)
         else:
             nodata = None
 
-        if len(properties_data.dims) == 1:
-            dset = fid.createVariable(
-                properties_data.name,
-                properties_data.type, (properties_data.dims[0]),
-                fill_value=nodata,
-                zlib=True)
-        elif len(properties_data.dims) == 2:
-            dset = fid.createVariable(
-                properties_data.name,
-                properties_data.type,
-                (properties_data.dims[0], properties_data.dims[1]),
-                fill_value=nodata,
-                zlib=True)
-        elif len(properties_data.dims) == 3:
-            dset = fid.createVariable(
-                properties_data.name,
-                properties_data.type,
-                (properties_data.dims[0], properties_data.dims[1],
-                 properties_data.dims[2]),
-                fill_value=nodata,
-                zlib=True)
+         
+        if len(properties_data.dims)==1:
+            dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0]), fill_value=nodata, zlib=True)
+        elif len(properties_data.dims)==2:
+            dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0], properties_data.dims[1]), fill_value=nodata, zlib=True)
+        elif len(properties_data.dims)==3:
+            dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
+        elif properties_data.dims is None:
+            dset = fid.createVariable(properties_data.name, properties_data.type)
         dset[:] = data
     elif isinstance(data, collections.Iterable):
-        if isinstance(data[0], (str,)):
-            dset = fid.createVariable(
-                properties_data.name, str, ('matchup',), zlib=True)
+        if isinstance(data[0],(str,)):
+            dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
             count = 0
             for data_line in data:
-                dset[count] = data_line
-                logger.info(properties_data.name + " count = " + str(count) +
-                            '  ' + data_line)
-
-                count = +1
+                dset[count]=data_line
+                logger.info(properties_data.name + " count = " + str(count) + '  ' + data_line)
+               
+                count =+1
         else:
             logger.info('i am a collection, not yet programmed')
     elif data is None:
@@ -179,13 +163,13 @@ def write_dataset(fid, data, properties_data):
     else:
         data = np.array([data])
         if properties_data.type is None:
-            properties_data.type = 'float32'
+            properties_data.type='float32'
         #dset = fid.createVariable(properties_data.name,properties_data.type,('matchup',),fill_value=-9999., zlib=True)
-        dset = fid.createVariable(properties_data.name, properties_data.type)
+        dset = fid.createVariable(properties_data.name,properties_data.type)
         dset[:] = data
     # adding attributes if inputted
     if properties_data.attribute is not None and dset is not None:
-        add_attributes(dset, properties_data.attribute)
+        add_attributes(dset,properties_data.attribute)
 
 
 def expand_attrdict(attr_dict, attr_name, attr_value):
@@ -199,46 +183,44 @@ def expand_attrdict(attr_dict, attr_name, attr_value):
 
     for count in range(len(attr_name)):
         attr_temp = {}
-        attr_temp["name"] = attr_name[count]
-        attr_temp["value"] = attr_value[count]
+        attr_temp["name"]=attr_name[count]
+        attr_temp["value"]=attr_value[count]
 
         # adding it to the original dictionary
-        if len(attr_dict) == 0:
+        if len(attr_dict)==0:
             attr_dict = [attr_temp]
         else:
             attr_dict.append(attr_temp)
 
     return attr_dict
 
-
-def create_dataset(fid, dataset, fid_parent=None):
+def create_dataset(fid,dataset,fid_parent=None):
     """ 
         Creating a dataset, either a gdal readable file, or a string, or an action
     """
-
+    
     import copy
 
     name = dataset["name"]
     logger.info("dataset name = " + name)
 
+
     # extracting the data properties
     properties_data = content_properties(dataset)
-
+ 
     # Considering the different data parsing methods
     # running a python function
     if properties_data.python_action is not None:
-        data = python_execution(properties_data.python_action,
-                                properties_data.python_action_args)
-        #pdb.set_trace()
+       data = python_execution(properties_data.python_action,properties_data.python_action_args)
+       #pdb.set_trace()
 
     # loading data from a src file
     elif properties_data.src_file is not None:
+        
+       # loading the data
+       data, data_transf, data_proj, data_nodata = data_loading(properties_data.src_file,properties_data.type,properties_data.band)
 
-        # loading the data
-        data, data_transf, data_proj, data_nodata = data_loading(
-            properties_data.src_file, properties_data.type,
-            properties_data.band)
-        """
+       """
        # tracking the projection information
        if data_transf is not None and data_proj is not None:
            attr_name = ['GDAL_projection','GDAL_transformation']
@@ -246,20 +228,20 @@ def create_dataset(fid, dataset, fid_parent=None):
            properties_data.attribute = expand_attrdict(properties_data.attribute, attr_name, attr_value)
        """
 
-        # setting the no-data value in case the user is not overwriting it
-        if data_nodata is not None and properties_data.nodata is None:
-            properties_data.nodata = data_nodata
-        # check if the user is not over-writing the no-data value with something different.
-        elif data_nodata is not None and properties_data.nodata is not None:
-            data[data == data_nodata] = properties_data.nodata
+       # setting the no-data value in case the user is not overwriting it
+       if data_nodata is not None and properties_data.nodata is None:
+           properties_data.nodata = data_nodata
+       # check if the user is not over-writing the no-data value with something different.
+       elif data_nodata is not None and properties_data.nodata is not None:
+           data[data==data_nodata]=properties_data.nodata
 
     # data is a string
     elif properties_data.type == "str":
-        if properties_data.description is not None:
-            data = properties_data.description
+       if properties_data.description is not None:
+           data = properties_data.description
 
     # special case to parse the connected component data
-    if properties_data.name == "connectedComponents":
+    if properties_data.name.lower()=="connected_components" or properties_data.name.lower() =="connectedcomponents" :
         '''
         # tracking the projection information
         if data["data_proj"] is not None and data["data_transf"] is not None:
@@ -267,16 +249,15 @@ def create_dataset(fid, dataset, fid_parent=None):
             attr_value = [data["data_proj"],data["data_transf"]]
             properties_data.attribute = expand_attrdict(properties_data.attribute, attr_name, attr_value)
         '''
-
+        
         #pdb.set_trace()
         # setting the no-data value in case the user is not overwriting it
         if data["data_nodata"] is not None and properties_data.nodata is None:
             properties_data.nodata = data["data_nodata"]
         # check if the user is not over-writing the no-data value with something different.
-        elif data[
-                "data_nodata"] is not None and properties_data.nodata is not None:
+        elif data["data_nodata"] is not None and properties_data.nodata is not None:
             temp = data["data"]
-            temp[temp == data["data_nodata"]] = properties_data.nodata
+            temp[temp==data["data_nodata"]]=properties_data.nodata
             data["data"] = temp
 
         # extract again the actual data to be written to file
@@ -286,10 +267,10 @@ def create_dataset(fid, dataset, fid_parent=None):
         # change the dataype if provided
         if properties_data.type is not None:
             # changing the format if needed
-            data = data.astype(dtype=properties_data.type)
+            data = data.astype(dtype=properties_data.type) 
 
-    # tracking if its a regular dataset, 2D geocoordinates, or 3D geocoordinates and make the CF compliance for these datasets
-    if properties_data.name == "GEOCOOR2" or properties_data.name == "GEOCOOR3":
+    # tracking if its a regular dataset, 2D geocoordinates, or 3D geocoordinates and make the CF compliance for these datasets 
+    if properties_data.name=="GEOCOOR2" or properties_data.name=="GEOCOOR3":
         # setting the coordinate system
         crs_name = properties_data.crs_name
         crs_attribute = properties_data.crs_attribute
@@ -307,13 +288,13 @@ def create_dataset(fid, dataset, fid_parent=None):
             if data["data_proj"] is not None:
                 attr_name = ['crs_wkt']
                 attr_value = [data["data_proj"]]
-                crs_attribute = expand_attrdict(crs_attribute, attr_name,
-                                                attr_value)
+                crs_attribute = expand_attrdict(crs_attribute, attr_name, attr_value)
         except:
             pass
 
+
         dset = fid_parent.createVariable(crs_name, 'i4')
-        add_attributes(dset, crs_attribute)
+        add_attributes(dset,crs_attribute)
 
         ## START with 2D: LON LAT
         # defining the scales of the data at the parent level of the file for 2D coordinates
@@ -326,37 +307,34 @@ def create_dataset(fid, dataset, fid_parent=None):
         fid_parent.createDimension(lats_dim, rows_ds)
         fid_parent.createDimension(lons_dim, cols_ds)
 
+     
         # defining the lon lat datasets
         # Longitude
         properties_londata = copy.deepcopy(properties_data)
         #properties_londata.name = 'longitude'
         properties_londata.name = lons_dim
-        attr_name = [
-            '_CoordinateAxisType', 'units', 'long_name', 'standard_name'
-        ]
-        attr_value = ['Lon', 'degrees_east', 'longitude', 'longitude']
-        properties_londata.attribute = expand_attrdict(
-            properties_londata.attribute, attr_name, attr_value)
+        attr_name = ['_CoordinateAxisType','units','long_name','standard_name']
+        attr_value = ['Lon','degrees_east','longitude','longitude']
+        properties_londata.attribute = expand_attrdict(properties_londata.attribute, attr_name, attr_value)
         properties_londata.dims = [lons_dim]
         data_lon = np.array(lons)
-        write_dataset(fid, data_lon, properties_londata)
+        write_dataset(fid,data_lon,properties_londata)
 
         # latitude
         properties_latdata = copy.deepcopy(properties_data)
         #properties_latdata.name = 'latitude'
-        properties_latdata.name = lats_dim
-        attr_name = [
-            '_CoordinateAxisType', 'units', 'long_name', 'standard_name'
-        ]
-        attr_value = ['Lat', 'degrees_north', 'latitude', 'latitude']
-        properties_latdata.attribute = expand_attrdict(
-            properties_latdata.attribute, attr_name, attr_value)
-        data_lat = np.array(lats)
+        properties_latdata.name =lats_dim
+        attr_name = ['_CoordinateAxisType','units','long_name','standard_name']  
+        attr_value = ['Lat','degrees_north','latitude','latitude']
+        #attr_name = ['_CoordinateAxisType','units','long_name','standard_name','bounds']
+        #attr_value = ['Lat','degrees_north','latitude','latitude',lats_dim+'_bnds']
+        properties_latdata.attribute = expand_attrdict(properties_latdata.attribute, attr_name, attr_value)
+        data_lat =  np.array(lats)
         properties_latdata.dims = [lats_dim]
-        write_dataset(fid, data_lat, properties_latdata)
+        write_dataset(fid,data_lat,properties_latdata)
 
         ## ADD 3D if needed: HGT
-        if properties_data.name == "GEOCOOR3":
+        if properties_data.name=="GEOCOOR3":
             # defining the scales of the data at the parent level of the file for 3D coordinate
             hgts = data['hgts']
             hgts_dim = data['hgts_map']
@@ -367,27 +345,21 @@ def create_dataset(fid, dataset, fid_parent=None):
             properties_hgtdata = copy.deepcopy(properties_data)
             #properties_hgtdata.name = 'heights'
             properties_hgtdata.name = hgts_dim
-            attr_name = [
-                '_CoordinateAxisType', 'units', 'long_name', 'standard_name',
-                'positive'
-            ]
-            attr_value = ['Lev', 'meter', 'height', 'height', 'up']
-            properties_hgtdata.attribute = expand_attrdict(
-                properties_hgtdata.attribute, attr_name, attr_value)
+            attr_name = ['_CoordinateAxisType','units','long_name','standard_name','positive']
+            attr_value = ['Lev','meter','height','height','up']
+            properties_hgtdata.attribute = expand_attrdict(properties_hgtdata.attribute, attr_name, attr_value)        
             data_hgt = np.array(hgts)
             properties_hgtdata.dims = [hgts_dim]
-            write_dataset(fid, data_hgt, properties_hgtdata)
+            write_dataset(fid,data_hgt,properties_hgtdata)
 
     else:
-        #pdb.set_trace()
         # for CF compliance make sure few attributes are provided
-        properties_data = CF_attribute_compliance(properties_data, name)
+        properties_data = CF_attribute_compliance(properties_data,name)
 
-        # write the dataset
-        write_dataset(fid, data, properties_data)
+        # write the dataset 
+        write_dataset(fid,data,properties_data)
 
-
-def CF_attribute_compliance(properties_data, name):
+def CF_attribute_compliance(properties_data,name):
     """ 
         Ensuring that few CF attributes are added
     """
@@ -396,31 +368,28 @@ def CF_attribute_compliance(properties_data, name):
     CF_current_dict = {}
     if properties_data.attribute is not None:
         for attribute in properties_data.attribute:
-            CF_current_dict[extract_key(attribute, "name")] = extract_key(
-                attribute, "value")
+            CF_current_dict[extract_key(attribute,"name")] = extract_key(attribute,"value")
+
 
     # ensure the required CF attributes are present
     CF_missing_attr_name = []
     CF_missing_attr_value = []
-    for CF_key in ["long_name", "standard_name"]:
+    for CF_key in ["long_name","standard_name"]:
         try:
             CF_current_dict[CF_key]
         except:
-            try:
+            try: 
                 CF_missing_attr_name.append(CF_key)
                 CF_missing_attr_value.append(name)
             except:
                 pass
-
-    if len(CF_missing_attr_name) > 0:
-        properties_data.attribute = expand_attrdict(properties_data.attribute,
-                                                    CF_missing_attr_name,
-                                                    CF_missing_attr_value)
+    
+    if len(CF_missing_attr_name)>0:
+        properties_data.attribute = expand_attrdict(properties_data.attribute, CF_missing_attr_name, CF_missing_attr_value)
 
     return properties_data
 
-
-def add_attributes(fid, attributes):
+def add_attributes(fid,attributes):
     """
         Adding attributes to a group/dataset
     """
@@ -428,12 +397,12 @@ def add_attributes(fid, attributes):
     # looping over the attributes
     if attributes is not None:
         for attribute in attributes:
-            attribute_name = extract_key(attribute, "name")
-            attribute_value = extract_key(attribute, "value")
+            attribute_name = extract_key(attribute,"name")
+            attribute_value = extract_key(attribute,"value")
             setattr(fid, attribute_name, attribute_value)
 
 
-def data_loading(filename, out_data_type=None, data_band=None):
+def data_loading(filename,out_data_type=None,data_band=None):
     """
         GDAL READER of the data
         filename: the gdal readable file that needs to be loaded
@@ -451,7 +420,7 @@ def data_loading(filename, out_data_type=None, data_band=None):
 
     # open the GDAL file and get typical data information
     try:
-        data = gdal.Open(filename, gdal.GA_ReadOnly)
+        data =  gdal.Open(filename, gdal.GA_ReadOnly)
     except:
         logger.info(filename + " is not a gdal supported file")
         out_data = None
@@ -468,9 +437,9 @@ def data_loading(filename, out_data_type=None, data_band=None):
     # getting the gdal transform and projection
     geoTrans = str(data.GetGeoTransform())
     projectionRef = str(data.GetProjection())
-
+    
     # getting the no-data value
-    try:
+    try: 
         NoData = data.GetNoDataValue()
         logger.info(NoData)
     except:
@@ -481,18 +450,17 @@ def data_loading(filename, out_data_type=None, data_band=None):
         # changing the format if needed
         out_data = out_data.astype(dtype=out_data_type)
 
-    return out_data, geoTrans, projectionRef, NoData
+    return out_data, geoTrans,projectionRef, NoData
 
-
-def extract_key(data_dict, key):
+def extract_key(data_dict,key):
     #logger.info(data_dict)
     #logger.info(key)
     if key in data_dict:
         dict_value = data_dict[key]
 
         # convert the chunks string to a tuple
-        if key == "chunks":
-            dict_value = tuple(map(int, dict_value.split(",")))
+        if key=="chunks":
+           dict_value = tuple(map(int,dict_value.split(",")))
 
         return dict_value
     else:
@@ -504,35 +472,26 @@ def createParser():
         Create command line parser.
     '''
 
-    parser = argparse.ArgumentParser(
-        description='Unwrap interferogram using snaphu')
-    parser.add_argument(
-        '-i',
-        '--input',
-        dest='filename',
-        type=str,
-        required=True,
-        help='Input json file to be used for packing')
+    parser = argparse.ArgumentParser(description='Unwrap interferogram using snaphu')
+    parser.add_argument('-i', '--input', dest='filename', type=str, required=True, help='Input json file to be used for packing')
     return parser
-
 
 def cmdLineParse(iargs=None):
     '''
         Command line parser.
     '''
     parser = createParser()
-    return parser.parse_args(args=iargs)
-
+    return parser.parse_args(args = iargs)
 
 if __name__ == '__main__':
     '''
         Main driver.
     '''
-
+    
     # get config json file
     cwd = os.getcwd()
     filename = os.path.join(cwd, 'tops_groups.json')
-
+    
     # open the file
     f = open(filename)
     # read the json file with planned netcdf4 structure and put the content in a dictionary
@@ -540,20 +499,21 @@ if __name__ == '__main__':
     # close the file
     f.close
 
+
     # set netcdf file
     netcdf_outfile = structure["filename"]
-
+    
     # Check for existing netcdf file
     if os.path.exists(netcdf_outfile):
         logger.info('{0} file already exists'.format(netcdf_outfile))
         os.remove(netcdf_outfile)
-#        raise Exception('Output file already exists')
     fid = Dataset(netcdf_outfile, 'w')
 
     # create a variable scale for strings in case these are being generated
     fid.createDimension('matchup', None)
 
-    # adding the golbal attributes to the file
+
+    # adding the global attributes to the file
     try:
         global_attribute = structure["global_attribute"]
         add_attributes(fid, global_attribute)
@@ -561,7 +521,7 @@ if __name__ == '__main__':
         logger.error(e)
         logger.error(traceback.format_exc())
         pass
-
+ 
     # iterate over the different datasets
     try:
         for dataset in structure["dataset"]:

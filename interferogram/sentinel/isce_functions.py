@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # David Bekaert - Jet Propulsion Laboratory
-# set of functions that are leveraged in hthe packaging of the ARIA standard product
+# set of functions that are leveraged in the packaging of the ARIA standard product 
 
-
-def data_loading(filename, out_data_type=None, data_band=None):
+def data_loading(filename,out_data_type=None,data_band=None):
     """
         GDAL READER of the data
         filename: the gdal readable file that needs to be loaded
@@ -14,7 +13,7 @@ def data_loading(filename, out_data_type=None, data_band=None):
 
     import gdal
     import numpy
-    import os
+    import os 
 
     # converting to the absolute path
     filename = os.path.abspath(filename)
@@ -25,7 +24,7 @@ def data_loading(filename, out_data_type=None, data_band=None):
 
     # open the GDAL file and get typical data information
     try:
-        data = gdal.Open(filename, gdal.GA_ReadOnly)
+        data =  gdal.Open(filename, gdal.GA_ReadOnly)
     except:
         print(filename + " is not a gdal supported file")
         out_data = None
@@ -52,7 +51,8 @@ def data_loading(filename, out_data_type=None, data_band=None):
         # changing the format if needed
         out_data = out_data.astype(dtype=out_data_type)
 
-    return out_data, geoTrans, projectionRef, NoData
+    return out_data, geoTrans,projectionRef, NoData
+
 
 
 def get_conncomp(args):
@@ -71,20 +71,18 @@ def get_conncomp(args):
     vrt_file_aux = args[2]
 
     # load connected comp
-    conn_comp_data, geoTrans, projectionRef, NoData = data_loading(
-        vrt_file_conn, out_data_type="float32", data_band=1)
-
+    conn_comp_data, geoTrans,projectionRef, NoData =  data_loading(vrt_file_conn,out_data_type="float32",data_band=1)
+    
     # load the aux file
-    aux_data, geoTrans, projectionRef, no_data_aux = data_loading(
-        vrt_file_aux, out_data_type=None, data_band=1)
+    aux_data, geoTrans,projectionRef, no_data_aux =  data_loading(vrt_file_aux,out_data_type=None,data_band=1)
     if no_data_aux is None:
-        try:
+        try: 
             no_data_aux = args[3]
         except:
-            no_data_aux = 0.0
+            no_data_aux = 0.0    
 
     # update the connected comp no-data value
-    conn_comp_data[aux_data == no_data_aux] = no_data_conn
+    conn_comp_data[aux_data==no_data_aux]=no_data_conn
 
     # return a dictionary
     output_dict = {}
@@ -95,8 +93,66 @@ def get_conncomp(args):
     return output_dict
 
 
+
+
+def get_geocoded_coords_ISCE2(args):
+    """Return geo-coordinates center pixel of a GDAL readable file. Note this function is specific for ISCE 2.0 where there is an inconsistency for the pixel definition in the vrt's. Isce assumes center pixel while the coordinate and transf reconstruction required the input to be edge defined."""
+
+    import gdal
+    import numpy as np
+    import pdb
+    vrt_file = args[0]
+    geovariables = args[1:]
+
+    # extract geo-coded corner coordinates
+    ds = gdal.Open(vrt_file)
+    gt = ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    
+    # getting the gdal transform and projection
+    geoTrans = str(ds.GetGeoTransform())
+    projectionRef = str(ds.GetProjection())
+    
+    pdb.set_trace()    
+    count=0
+    for geovariable in geovariables:
+        variable = geovariable[0]
+        if variable == 'longitude' or variable == 'Longitude' or variable == 'lon' or variable == 'Lon':
+            lon_arr = list(range(0, cols))
+            lons = np.empty((cols,),dtype='float64')
+            for px in lon_arr:
+                lons[px] = gt[0] + (px * gt[1])
+            count+=1
+            lons_map = geovariable[1]
+        elif variable == 'latitude' or variable == 'Latitude' or variable == 'lat' or variable == 'Lat':
+            lat_arr = list(range(0, rows))
+            lats = np.empty((rows,),dtype='float64') 
+            for py in lat_arr:
+                lats[py] = gt[3] + (py * gt[5])
+            count+=1
+            lats_map = geovariable[1]
+        else:
+            raise Exception("arguments are either longitude or lattitude")
+
+    # making sure both lon and lat were querried
+    if count !=2:
+        raise Exception("Did not provide a longitude and latitude argument")
+
+    coordinate_dict = {}
+    coordinate_dict['lons'] = lons
+    coordinate_dict['lats'] = lats
+    coordinate_dict['lons_map'] = lons_map
+    coordinate_dict['lats_map'] = lats_map
+    coordinate_dict['data_proj'] = projectionRef
+    coordinate_dict['data_transf'] = geoTrans
+    return coordinate_dict
+
+
+
+
 def get_geocoded_coords(args):
-    """Return geocoded of a GDAL file."""
+    """Return geo-coordinates center pixel of a GDAL readable file."""
 
     import gdal
     import numpy as np
@@ -110,33 +166,33 @@ def get_geocoded_coords(args):
     gt = ds.GetGeoTransform()
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-
+    
     # getting the gdal transform and projection
     geoTrans = str(ds.GetGeoTransform())
     projectionRef = str(ds.GetProjection())
 
-    count = 0
+    count=0
     for geovariable in geovariables:
         variable = geovariable[0]
         if variable == 'longitude' or variable == 'Longitude' or variable == 'lon' or variable == 'Lon':
             lon_arr = list(range(0, cols))
-            lons = np.empty((cols,), dtype='float64')
+            lons = np.empty((cols,),dtype='float64')
             for px in lon_arr:
-                lons[px] = gt[0] + (px * gt[1])
-            count += 1
+                lons[px] = gt[0]+gt[1]/2 + (px * gt[1])
+            count+=1
             lons_map = geovariable[1]
         elif variable == 'latitude' or variable == 'Latitude' or variable == 'lat' or variable == 'Lat':
             lat_arr = list(range(0, rows))
-            lats = np.empty((rows,), dtype='float64')
+            lats = np.empty((rows,),dtype='float64') 
             for py in lat_arr:
-                lats[py] = gt[3] + (py * gt[5])
-            count += 1
+                lats[py] = gt[3]-gt[5]/2 + (py * gt[5])
+            count+=1
             lats_map = geovariable[1]
         else:
             raise Exception("arguments are either longitude or lattitude")
 
     # making sure both lon and lat were querried
-    if count != 2:
+    if count !=2:
         raise Exception("Did not provide a longitude and latitude argument")
 
     coordinate_dict = {}
@@ -147,7 +203,6 @@ def get_geocoded_coords(args):
     coordinate_dict['data_proj'] = projectionRef
     coordinate_dict['data_transf'] = geoTrans
     return coordinate_dict
-
 
 def get_topsApp_data(topsapp_xml='topsApp'):
     '''  
@@ -166,17 +221,16 @@ def get_topsApp_data(topsapp_xml='topsApp'):
 
     os.chdir(filedir)
     #pdb.set_trace()
-    insar = TopsInSAR(name=filename)
+    insar = TopsInSAR(name = filename)
     insar.configure()
     os.chdir(curdir)
     return insar
-
 
 def get_topsApp_variable(args):
     '''
         return the value of the requested variable
     '''
-
+   
     import os
     import pdb
     topsapp_xml = args[0]
@@ -184,20 +238,30 @@ def get_topsApp_variable(args):
 
     #pdb.set_trace()
     insar = get_topsApp_data(topsapp_xml)
-
-    # tops has issues with calling a nested variable, will need to loop over it
-    variables = variable.split('.')
-    insar_temp = insar
-    for variable in variables:
-        insar_temp = insar_temp.__getattribute__(variable)
-    data = insar_temp
+    # ESD specific
+    if variable == 'ESD':
+        import numpy as np
+        if insar.__getattribute__('doESD'):
+            insar_temp = insar.__getattribute__('esdCoherenceThreshold')
+        else:
+            insar_temp = -1.0 
+        data = np.float(insar_temp)
+    # other variables
+    else:
+        # tops has issues with calling a nested variable, will need to loop over it
+        variables = variable.split('.')
+        insar_temp = insar
+        for variable in variables:
+            insar_temp = insar_temp.__getattribute__(variable)
+        data = insar_temp
 
     # further processing if needed
     # removing any paths and only re-ruturning a list of files
     if variable == 'safe':
-        data = [os.path.basename(SAFE) for SAFE in data]
+        data  = [os.path.basename(SAFE) for SAFE in data]
 
     return data
+
 
 
 def get_tops_subswath_xml(masterdir):
@@ -207,10 +271,10 @@ def get_tops_subswath_xml(masterdir):
 
     import os
     import glob
-
+    
     masterdir = os.path.abspath(masterdir)
-    IWs = glob.glob(os.path.join(masterdir, 'IW*.xml'))
-    if len(IWs) < 1:
+    IWs = glob.glob(os.path.join(masterdir,'IW*.xml'))
+    if len(IWs)<1:
         raise Exception("Could not find a IW*.xml file in " + masterdir)
     return IWs
 
@@ -218,43 +282,43 @@ def get_tops_subswath_xml(masterdir):
 def get_h5_dataset_coords(args):
     '''
        Getting the coordinates from the meta hdf5 file which is longitude, latitude and height
-    '''
+    '''    
     import pdb
     h5_file = args[0]
     geovariables = args[1:]
 
     # loop over the variables and track the variable names
-    count = 0
+    count=0
     for geovariable in geovariables:
         variable = geovariable[0]
-        varname = variable.split('/')[-1]
-        if varname == 'longitude' or varname == 'Longitude' or varname == 'lon' or varname == 'Lon' or varname == 'lons' or varname == 'Lons':
-            lons = get_h5_dataset([h5_file, variable])
-            count += 1
+        varname = variable.split('/')[-1] 
+        if varname == 'longitude' or varname == 'Longitude' or varname == 'lon' or varname == 'Lon' or  varname == 'lons' or varname == 'Lons':
+            lons = get_h5_dataset([h5_file,variable])
+            count+=1
             lons_map = geovariable[1]
-        elif varname == 'latitude' or varname == 'Latitude' or varname == 'lat' or varname == 'Lat' or varname == 'lats' or varname == 'Lats':
-            lats = get_h5_dataset([h5_file, variable])
-            count += 1
+        elif varname == 'latitude' or varname == 'Latitude' or varname == 'lat' or varname == 'Lat' or  varname == 'lats' or varname == 'Lats':
+            lats = get_h5_dataset([h5_file,variable])
+            count+=1
             lats_map = geovariable[1]
-        elif varname == 'height' or varname == 'Height' or varname == 'h' or varname == 'H' or varname == 'heights' or varname == 'Heights':
-            hgts = get_h5_dataset([h5_file, variable])
-            count += 1
+        elif varname == 'height' or varname == 'Height' or varname == 'h' or varname == 'H' or  varname == 'heights' or varname == 'Heights':
+            hgts = get_h5_dataset([h5_file,variable])
+            count+=1
             hgts_map = geovariable[1]
         else:
-            raise Exception(
-                "arguments are either longitude, lattitude, or height")
+            raise Exception("arguments are either longitude, lattitude, or height")
 
     # making sure both lon and lat were querried
-    if count != 3:
+    if count !=3:
         raise Exception("Did not provide a longitude and latitude argument")
+
 
     #pdb.set_trace()
     # getting the projection string
     try:
-        proj4 = get_h5_dataset([h5_file, "/inputs/projection"])
+        proj4 = get_h5_dataset([h5_file,"/inputs/projection"])
     except:
-        try:
-            proj4 = get_h5_dataset([h5_file, "/projection"])
+        try: 
+            proj4 = get_h5_dataset([h5_file,"/projection"])
         except:
             raise Exception
 
@@ -267,13 +331,14 @@ def get_h5_dataset_coords(args):
 
     coordinate_dict = {}
     coordinate_dict['lons'] = lons.astype(dtype='float64')
-    coordinate_dict['lats'] = lats.astype(dtype='float64')
-    coordinate_dict['hgts'] = hgts.astype(dtype='float64')
+    coordinate_dict['lats'] = lats.astype(dtype='float64') 
+    coordinate_dict['hgts'] = hgts.astype(dtype='float64') 
     coordinate_dict['lons_map'] = lons_map
     coordinate_dict['lats_map'] = lats_map
     coordinate_dict['hgts_map'] = hgts_map
     coordinate_dict['data_proj'] = projectionRef
     return coordinate_dict
+
 
 
 def get_h5_dataset(args):
@@ -284,12 +349,12 @@ def get_h5_dataset(args):
         variable    str describing the path within the hdf5 file: e.g. cube/dataset1
     '''
 
-    import h5py
-    import numpy as np
-
-    file_name = args[0]
+    import h5py    
+    import numpy as np    
+   
+    file_name=  args[0]
     path_variable = args[1]
-    datafile = h5py.File(file_name, 'r')
+    datafile = h5py.File(file_name,'r') 
     data = datafile[path_variable].value
 
     return data
@@ -306,7 +371,6 @@ def get_tops_metadata_variable(args):
 
     return data
 
-
 def get_tops_metadata(masterdir):
     import pdb
     from scipy.constants import c
@@ -315,32 +379,38 @@ def get_tops_metadata(masterdir):
     IWs = get_tops_subswath_xml(masterdir)
 
     # append all swaths togheter
-    frames = []
-    for IW in IWs:
+    frames=[]
+    for IW  in IWs:
         obj = read_isce_product(IW)
         frames.append(obj)
-
-    output = {}
+   
+    output={}
     dt = min(frame.sensingStart for frame in frames)
-    output['sensingStart'] = dt.isoformat('T') + 'Z'
+    output['sensingStart'] =  dt.isoformat('T') + 'Z'
     dt = max(frame.sensingStop for frame in frames)
     output['sensingStop'] = dt.isoformat('T') + 'Z'
     output['farRange'] = max(frame.farRange for frame in frames)
     output['startingRange'] = min(frame.startingRange for frame in frames)
-    output['spacecraftName'] = obj.spacecraftName
-    burst = obj.bursts[0]
+    output['spacecraftName'] = obj.spacecraftName 
+    burst = obj.bursts[0]   
     output['rangePixelSize'] = burst.rangePixelSize
     output['azimuthTimeInterval'] = burst.azimuthTimeInterval
     output['wavelength'] = burst.radarWavelength
-    output['frequency'] = c / output['wavelength']
-
-    # geo transform grt for x y
+    output['frequency']  = c/output['wavelength']
+    if "POEORB" in obj.orbit.getOrbitSource():
+        output['orbittype'] = "precise"
+    elif "RESORB" in obj.orbit.getOrbitSource():
+        output['orbittype'] = "restituted"
+    else:
+        output['orbittype'] = ""
+    # geo transform grt for x y 
     # bandwith changes per swath - placeholder c*b/2 or delete
     # tops xml file
     # refer to safe files frame doppler centroid burst[middle].doppler
-    # extract from topsapp.xml
+    # extract from topsapp.xml 
 
     return output
+
 
 
 def check_file_exist(infile):
@@ -348,10 +418,9 @@ def check_file_exist(infile):
     if not os.path.isfile(infile):
         raise Exception(infile + " does not exist")
 
-
 def read_isce_product(xmlfile):
     import os
-    import isce
+    import isce 
     from iscesys.Component.ProductManager import ProductManager as PM
 
     # check if the file does exist

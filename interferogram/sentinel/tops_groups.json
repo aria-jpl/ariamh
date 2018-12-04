@@ -43,7 +43,7 @@
                           "dataset" : [
                             {
                               "name" : "GEOCOOR2",
-                              "python_action" : "isce_functions.get_geocoded_coords",
+                              "python_action" : "isce_functions.get_geocoded_coords_ISCE2",
                               "python_action_args" : ["filt_topophase.unw.geo.vrt",["longitude","longitude"],["latitude","latitude"]],
                               "type" : "float64",
                               "crs_name" : "crs",
@@ -332,11 +332,16 @@
                                           "name" : "description",
                                           "value" : "Reference input granules"
                                         }]
-                                    },{
+                                     },{
                                        "name" : "orbitType",
-                                       "type" : "str",
-                                       "description" : "ARIA PLACEHOLDER for either [precise or restituted]"
-                                    }]
+                                       "python_action" : "isce_functions.get_tops_metadata_variable",
+                                       "python_action_args" : ["../master","orbittype"],
+                                       "attribute" : [
+                                         {
+                                           "name" : "description",
+                                           "value" : "Reference orbit type"
+                                         }]
+                                     }]
                                 }]
                             },{
                               "name" : "secondary",
@@ -353,9 +358,14 @@
                                           "value" : "Secondary input granules"
                                         }]
                                     },{
-                                       "name" : "orbitType",                                                                                            
-                                       "type" : "str",
-                                       "description" : "ARIA PLACEHOLDER for either [precise or restituted]"
+                                      "name" : "orbitType",
+                                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                                      "python_action_args" : ["../slave","orbittype"],
+                                      "attribute" : [
+                                        {
+                                            "name" : "description",                                             
+                                            "value" : "Secondary orbit type"
+                                        }]
                                     }]
                                 }]
                             }]
@@ -400,8 +410,17 @@
                       "description" : "ARIA PLACEHOLDER either SRTM or NED"
                     },{
                       "name" : "ESDthreshold",
-                      "type" : "str",
-                      "description" : "ARIA PLACEHOLDER [would make it a float and report the value, come up with a value when its none or not used]"
+                      "python_action" : "isce_functions.get_topsApp_variable",
+                      "python_action_args" : ["../topsApp.xml","ESD"],
+                      "attribute" : [
+                        { 
+                          "name" : "description",
+                          "value" : "ESD threshold, -1 = no ESD applied"
+                        },{
+                          "name" : "units",
+                          "value" : "unitless"
+                        }]
+
                     },{
                       "name" : "azimuthZeroDopplerStartTime",
                       "python_action" : "isce_functions.get_tops_metadata_variable",
