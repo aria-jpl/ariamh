@@ -114,7 +114,6 @@ def get_geocoded_coords_ISCE2(args):
     geoTrans = str(ds.GetGeoTransform())
     projectionRef = str(ds.GetProjection())
     
-    pdb.set_trace()    
     count=0
     for geovariable in geovariables:
         variable = geovariable[0]
