@@ -281,7 +281,7 @@ def initiate_standard_product_job(context_file):
     master_ids = input_metadata["master_slcs"]
     slave_ids = input_metadata["slave_slcs"]
     union_geojson = input_metadata["union_geojson"]
-
+    direction = input_metadata["direction"]
     subswaths = [1, 2, 3] #context['subswaths']
     
     azimuth_looks = 19
@@ -316,7 +316,7 @@ def initiate_standard_product_job(context_file):
     logger.info("range_looks: {}".format(range_looks))
     logger.info("filter_strength: {}".format(filter_strength))
     logger.info("precise_orbit_only: {}".format(precise_orbit_only))
-
+    logger.info("direction : {}".format(direction))
 
     # query docs
     uu = UU()
