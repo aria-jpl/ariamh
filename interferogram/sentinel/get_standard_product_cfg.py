@@ -443,8 +443,13 @@ def initiate_standard_product_job(context_file):
     slave_scenes = []
     union_geojsons = []
     union_geojsons.append(union_geojson)
-    
-   
+    west_lats = []
+    west_lats.append(west_lat)   
+    ifg_hashes = [] 
+    directions = []
+    directions.append(direction)
+    platforms = []
+    platforms.append(platform)
 
     # generate job configs
     bbox = [-90., 90., -180., 180.]
@@ -469,9 +474,7 @@ def initiate_standard_product_job(context_file):
     if direction.lower()=="asc":
         satelite_orientation = "A"
     satelite_look_direction = "R"
-    
- 
-
+        
 
     ifg_hash = hashlib.md5(json.dumps([
         id_tmpl,
@@ -489,15 +492,17 @@ def initiate_standard_product_job(context_file):
         filter_strength,
 	dem_type
     ])).hexdigest()
+    ifg_hashes.append(ifg_hash[0:4])
+
     ifg_ids.append(id_tmpl.format('M', len(master_ids), len(slave_ids),
                                       track, ifg_master_dt,
                                       ifg_slave_dt, orbit_type, ifg_hash[0:4]))
                             
 
-    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons))
+    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats))
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
-             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons)
+             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats)
 
 '''
 def initiate_sp2(context_file):

@@ -37,6 +37,7 @@
           <ifg_hashes/>
           <platforms/>
           <directions/>
+          <west_lats/>
         </sf:outputs>
         <sf:operator>
           <sf:description></sf:description>
@@ -66,6 +67,7 @@
           <ifg_hashes from="@#previous"/>
           <platforms from="@#previous"/>
           <directions from="@#previous"/>
+          <west_lats from="@#previous"/>
         </sf:inputs>
         <sf:outputs>
           <interferograms/>
