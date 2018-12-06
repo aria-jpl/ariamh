@@ -450,6 +450,10 @@ def initiate_standard_product_job(context_file):
     directions.append(direction)
     platforms = []
     platforms.append(platform)
+    tracks = []
+    tracks.append(track)
+    orbit_types = []
+    orbit_types.append(orbit_type)
 
     # generate job configs
     bbox = [-90., 90., -180., 180.]
@@ -488,7 +492,7 @@ def initiate_standard_product_job(context_file):
         #auto_bboxes[-1],
         projects[-1],
         #azimuth_looks,
-        #range_looks,
+        track,
         filter_strength,
 	dem_type
     ])).hexdigest()
@@ -499,10 +503,10 @@ def initiate_standard_product_job(context_file):
                                       ifg_slave_dt, orbit_type, ifg_hash[0:4]))
                             
 
-    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats))
+    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types))
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
-             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats)
+             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types)
 
 '''
 def initiate_sp2(context_file):

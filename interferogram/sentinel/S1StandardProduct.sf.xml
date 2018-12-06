@@ -38,6 +38,8 @@
           <platforms/>
           <directions/>
           <west_lats/>
+          <tracks/> 
+          <orbit_types/>
         </sf:outputs>
         <sf:operator>
           <sf:description></sf:description>
@@ -68,6 +70,8 @@
           <platforms from="@#previous"/>
           <directions from="@#previous"/>
           <west_lats from="@#previous"/>
+          <tracks from="@#previous"/> 
+          <orbit_types from="@#previous"/>
         </sf:inputs>
         <sf:outputs>
           <interferograms/>
