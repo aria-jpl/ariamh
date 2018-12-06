@@ -34,6 +34,9 @@
           <master_scenes/>
           <slave_scenes/>
           <union_geojsons/>
+          <ifg_hashes/>
+          <platforms/>
+          <directions/>
         </sf:outputs>
         <sf:operator>
           <sf:description></sf:description>
@@ -60,6 +63,9 @@
           <master_scenes from="@#previous"/>
           <slave_scenes from="@#previous"/>
           <union_geojsons from="@#previous"/>
+          <ifg_hashes from="@#previous"/>
+          <platforms from="@#previous"/>
+          <directions from="@#previous"/>
         </sf:inputs>
         <sf:outputs>
           <interferograms/>

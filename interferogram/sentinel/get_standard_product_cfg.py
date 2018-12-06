@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 #from hysds.celery import app
 from utils.UrlUtils import UrlUtils as UU
 from fetchOrbitES import fetch
-
+from shapely.geometry import shape, Polygon
 
 # set logger and custom filter to handle being run from sciflo
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -31,8 +31,10 @@ SLC_RE = re.compile(r'(?P<mission>S1\w)_IW_SLC__.*?' +
 
 IFG_ID_TMPL = "S1-IFG_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s123-{}-{}-standard_product"
 RSP_ID_TMPL = "S1-SLCP_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s{}-{}-{}"
+ifg_id_example = "S1-D_R_172-tops-20170925_20170919-120910_14951N-19415N_PP_v2.[nc,hdf5]"
+IFG_ID_SP_TMPL = "S1-{}_{}_{:03d}-tops-{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}-{%H%M%S}_{}N_{}S_PP_{}-{}"
 
-BASE_PATH = os.path.dirname(__file__)
+
 MOZART_ES_ENDPOINT = "MOZART"
 GRQ_ES_ENDPOINT = "GRQ"
 
@@ -207,6 +209,25 @@ def get_ifg_dates(master_ids, slave_ids):
     if master_day_dt < slave_day_dt: return master_all_dts[0], slave_all_dts[-1]
     else: return master_all_dts[-1], slave_all_dts[0]
 
+def convert_number(x):
+    data = ''
+    y = abs(x)
+    if y>0 and y<10:
+        data = str(int(y*100))
+    elif y>=10 and y<100:
+        data = str(int(y*10))
+    elif y>100 and y<1000:
+        data = str(y)
+       
+    elif y>1000:
+        data=str(y)[:3]
+
+    if x<0:
+        data = data+"S"
+    else:
+        data = data+"N"
+
+    return data.rjust(5, '0')
 
 def get_orbit(ids):
     """Get orbit for a set of SLC ids. They need to belong to the same day."""
@@ -282,6 +303,7 @@ def initiate_standard_product_job(context_file):
     slave_ids = input_metadata["slave_slcs"]
     union_geojson = input_metadata["union_geojson"]
     direction = input_metadata["direction"]
+    platform = input_metadata["platform"]
     subswaths = [1, 2, 3] #context['subswaths']
     
     azimuth_looks = 19
@@ -317,6 +339,7 @@ def initiate_standard_product_job(context_file):
     logger.info("filter_strength: {}".format(filter_strength))
     logger.info("precise_orbit_only: {}".format(precise_orbit_only))
     logger.info("direction : {}".format(direction))
+    logger.info("platform : {}".format(platform))
 
     # query docs
     uu = UU()
@@ -391,6 +414,13 @@ def initiate_standard_product_job(context_file):
 
 
 
+    cord = union_geojson["coordinates"][0]
+    polygon = Polygon(cord)
+    x = polygon.bounds
+    west_lat1 = convert_number(x[1])
+    west_lat2 = convert_number(x[3])
+    west_lat= "{}_{}".format(west_lat1, west_lat2)
+    logger.info("west_latitude : {}".format(west_lat))
 
     # get ifg start and end dates
     ifg_master_dt, ifg_slave_dt = get_ifg_dates(master_ids, slave_ids)
@@ -435,6 +465,12 @@ def initiate_standard_product_job(context_file):
     master_scenes.append(master_ids)
     slave_scenes.append(slave_ids)
 
+    satelite_orientation = "D"
+    if direction.lower()=="asc":
+        satelite_orientation = "A"
+    satelite_look_direction = "R"
+    
+ 
 
 
     ifg_hash = hashlib.md5(json.dumps([
