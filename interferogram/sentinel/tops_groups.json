@@ -406,8 +406,17 @@
                       "description" : "UNW GEO IFG"
                     },{
                       "name" : "DEM",
-                      "type" : "str",
-                      "description" : "ARIA PLACEHOLDER either SRTM or NED"
+                      "python_action" : "isce_functions.get_topsApp_variable",
+                      "python_action_args" : ["../topsApp.xml","DEM"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Dem Type"
+                        },{
+                          "name" : "units",
+                          "value" : "unitless"
+                        }]
+
                     },{
                       "name" : "ESDthreshold",
                       "python_action" : "isce_functions.get_topsApp_variable",

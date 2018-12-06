@@ -246,6 +246,20 @@ def get_topsApp_variable(args):
             insar_temp = -1.0 
         data = np.float(insar_temp)
     # other variables
+    elif variable == 'DEM':
+        import numpy as np
+        print("isce_function: variable = DEM")
+        if insar.__getattribute__('demFilename'):
+            insar_temp = insar.__getattribute__('demFilename')
+            print("isce_function: demFilename Found. insar_temp : %s" %insar_temp)
+            if insar_temp.startswith("NED"):
+                data = "NED"
+            else:
+                data = "SRTM"
+            
+        else:
+            print("isce_function : demFilename NOT Found. Defaulting to SRTM")
+            data = "SRTM"
     else:
         # tops has issues with calling a nested variable, will need to loop over it
         variables = variable.split('.')
