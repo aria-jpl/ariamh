@@ -920,7 +920,7 @@ def main():
     call_noerr("{}/create_kmz.py {} {}.png {}".format(BASE_PATH, unw_kml, unw_file, unw_kmz))
 
     # move all browse images to root of product directory
-    call_noerr("mv -f *.png *.kmz ..")
+    #call_noerr("mv -f *.png *.kmz ..")
 
     # remove kml
     call_noerr("rm -f *.kml")
