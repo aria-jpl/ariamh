@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 #from hysds.celery import app
 from utils.UrlUtils import UrlUtils as UU
 from fetchOrbitES import fetch
-from shapely.geometry import shape, Polygon
 from datetime import datetime
 
 # set logger and custom filter to handle being run from sciflo
