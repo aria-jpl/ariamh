@@ -1171,9 +1171,10 @@ def main():
     #                                                        ${preprocess_dem_file}.xml $preprocess_dem_file $WORK_DIR \
     #                                                        ${id}/${id}.prov_es.json > create_prov_es.log 2>&1
     
-    # clean out SAFE directories and DEM files
-    #for i in chain(master_safe_dirs, slave_safe_dirs): shutil.rmtree(i)
+    # clean out SAFE directories, DEM files and water masks
+    for i in chain(master_safe_dirs, slave_safe_dirs): shutil.rmtree(i)
     for i in glob("dem*"): os.unlink(i)
+    for i in glob("wbdmask*"): os.unlink(i)
 
     #topsApp End Time
     complete_end_time=datetime.now()
