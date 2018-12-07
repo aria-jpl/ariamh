@@ -1096,9 +1096,9 @@ def main():
     os.unlink("tmp.tif")
 
     # move masked standard product to product directory
-    shutil.move(masked_filt, prod_dir)
-    shutil.move(masked_filt_xml, prod_dir)
-    shutil.move(vrt_prod_file, prod_dir)
+    shutil.move(masked_filt, prod_merged_dir)
+    shutil.move(masked_filt_xml, prod_merged_dir)
+    shutil.move(vrt_prod_file, prod_merged_dir)
 
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
