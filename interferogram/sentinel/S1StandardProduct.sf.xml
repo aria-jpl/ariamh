@@ -40,6 +40,8 @@
           <west_lats/>
           <tracks/> 
           <orbit_types/>
+          <ifg_master_dts/> 
+          <ifg_slave_dts/>
         </sf:outputs>
         <sf:operator>
           <sf:description></sf:description>
@@ -72,6 +74,8 @@
           <west_lats from="@#previous"/>
           <tracks from="@#previous"/> 
           <orbit_types from="@#previous"/>
+          <ifg_master_dts from="@#previous"/> 
+          <ifg_slave_dts from="@#previous"/>
         </sf:inputs>
         <sf:outputs>
           <interferograms/>

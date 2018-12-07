@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from utils.UrlUtils import UrlUtils as UU
 from fetchOrbitES import fetch
 from shapely.geometry import shape, Polygon
+from datetime import datetime
 
 # set logger and custom filter to handle being run from sciflo
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -31,8 +32,6 @@ SLC_RE = re.compile(r'(?P<mission>S1\w)_IW_SLC__.*?' +
 
 IFG_ID_TMPL = "S1-IFG_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s123-{}-{}-standard_product"
 RSP_ID_TMPL = "S1-SLCP_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s{}-{}-{}"
-ifg_id_example = "S1-D_R_172-tops-20170925_20170919-120910_14951N-19415N_PP_v2.[nc,hdf5]"
-IFG_ID_SP_TMPL = "S1-{}_{}_{:03d}-tops-{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}-{%H%M%S}_{}N_{}S_PP_{}-{}"
 
 
 MOZART_ES_ENDPOINT = "MOZART"
@@ -229,6 +228,21 @@ def convert_number(x):
 
     return data.rjust(5, '0')
 
+
+def get_minmax(geojson):
+    '''returns the minmax tuple of a geojson'''
+    lats = [x[1] for x in geojson['coordinates'][0]]
+    return min(lats), max(lats)
+
+def lat_convert(value):
+    '''convert floating point value into proper string'''
+    return '{}{}'.format(str(abs(int(value * 100))).zfill(4),'N' if value > 0 else 'S')
+
+def get_minmax_s(geojson):
+    '''returns the minmax tuple of a geojson'''
+    return (min(geojson['coordinates'][0], key=lambda x: x[1])[1], max(geojson['coordinates'][0], key=lambda x: x[1])[1])
+
+
 def get_orbit(ids):
     """Get orbit for a set of SLC ids. They need to belong to the same day."""
 
@@ -413,13 +427,15 @@ def initiate_standard_product_job(context_file):
         #raise RuntimeError("Precise orbit required.")
 
 
-
+    '''
     cord = union_geojson["coordinates"][0]
     polygon = Polygon(cord)
     x = polygon.bounds
     west_lat1 = convert_number(x[1])
     west_lat2 = convert_number(x[3])
-    west_lat= "{}_{}".format(west_lat1, west_lat2)
+    '''
+    minlat, maxlat = get_minmax(union_geojson)
+    west_lat= "{}_{}".format(lat_convert(minlat), lat_convert(maxlat))
     logger.info("west_latitude : {}".format(west_lat))
 
     # get ifg start and end dates
@@ -473,6 +489,10 @@ def initiate_standard_product_job(context_file):
     job_priorities.append(job_priority)
     master_scenes.append(master_ids)
     slave_scenes.append(slave_ids)
+    ifg_master_dts = []
+    ifg_master_dts.append(ifg_master_dt.strftime("%Y%m%d"))
+    ifg_slave_dts = []
+    ifg_slave_dts.append(ifg_slave_dt.strftime("%Y%m%d"))
 
     satelite_orientation = "D"
     if direction.lower()=="asc":
@@ -503,10 +523,10 @@ def initiate_standard_product_job(context_file):
                                       ifg_slave_dt, orbit_type, ifg_hash[0:4]))
                             
 
-    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types))
+    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types, ifg_master_dts, ifg_slave_dts))
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
-             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types)
+             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types, ifg_master_dts, ifg_slave_dts)
 
 '''
 def initiate_sp2(context_file):
