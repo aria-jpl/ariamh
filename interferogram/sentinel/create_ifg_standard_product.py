@@ -1036,7 +1036,8 @@ def main():
 
     # mask out water from the product data
     vrt_prod_shape = (vrt_prod_size['lat']['size'], vrt_prod.bands, vrt_prod_size['lon']['size'])
-    vrt_prod_im = np.memmap(vrt_prod.filename, dtype=vrt_prod.toNumpyDataType(),
+    vrt_prod_im = np.memmap("{}/{}".format(prod_dir, vrt_prod.filename),
+                            dtype=vrt_prod.toNumpyDataType(),
                             mode='c', shape=vrt_prod_shape)
     im1 = vrt_prod_im[:,:,:]
     for i in range(vrt_prod.bands):
