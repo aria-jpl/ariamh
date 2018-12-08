@@ -15,6 +15,11 @@ from utils.imutils import get_image, get_size, crop_mask
 from check_interferogram import check_int
 from create_input_xml_standard_product import create_input_xml
 
+import os
+from scipy.constants import c
+import isce
+from iscesys.Component.ProductManager import ProductManager as PM
+
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -30,6 +35,77 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
+IFG_ID_SP_TMPL = "S1-{}_{}_{:03d}-tops-{}_{}-{}_{}_PP_{}-{}"
+
+def get_date(t):
+    try:
+        return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except:
+        try:
+            return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S")
+        except:
+            return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
+
+def get_center_time(t1, t2):
+    a = get_date(t1)
+    b = get_date(t2)
+    t = a + (b - a)/2
+    return t.strftime("%H%M%S")
+
+def get_tops_subswath_xml(masterdir):
+    ''' 
+        Find all available IW[1-3].xml files
+    '''
+
+    logger.info("get_tops_subswath_xml from : %s" %masterdir)
+
+    masterdir = os.path.abspath(masterdir)
+    IWs = glob(os.path.join(masterdir,'IW*.xml'))
+    if len(IWs)<1:
+        raise Exception("Could not find a IW*.xml file in " + masterdir)
+
+    return IWs
+
+def read_isce_product(xmlfile):
+    logger.info("read_isce_product: %s" %xmlfile)
+
+    # check if the file does exist
+    check_file_exist(xmlfile)
+
+    # loading the xml file with isce
+    pm = PM()
+    pm.configure()
+    obj = pm.loadProduct(xmlfile)
+    return obj
+
+def check_file_exist(infile):
+    logger.info("check_file_exist : %s" %infile)
+    if not os.path.isfile(infile):
+        raise Exception(infile + " does not exist")
+    else:
+        logger.info("%s Exists" %infile)
+
+
+def get_tops_metadata(masterdir):
+
+    logger.info("get_tops_metadata from : %s" %masterdir)
+    # get a list of avialble xml files for IW*.xml
+    IWs = get_tops_subswath_xml(masterdir)
+    # append all swaths togheter
+    frames=[]
+    for IW  in IWs:
+        logger.info("get_tops_metadata processing : %s" %IW)
+        obj = read_isce_product(IW)
+        frames.append(obj)
+
+    output={}
+    dt = min(frame.sensingStart for frame in frames)
+    output['sensingStart'] =  dt.isoformat('T') + 'Z'
+    logger.info(dt)
+    dt = max(frame.sensingStop for frame in frames)
+    output['sensingStop'] = dt.isoformat('T') + 'Z'
+    logger.info(dt)
+    return output
 
 
 def get_version():
@@ -320,7 +396,11 @@ def get_polarization(id):
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
 
-def move_dem_separate_dir (dir_name):
+def move_dem_separate_dir(dir_name):
+    move_dem_separate_dir_SRTM(dir_name)
+    move_dem_separate_dir_NED(dir_name)
+
+def move_dem_separate_dir_SRTM(dir_name):
     create_dir(dir_name)
 
     move_cmd=["mv", "demLat*", dir_name]
@@ -328,6 +408,7 @@ def move_dem_separate_dir (dir_name):
     logger.info("Calling {}".format(move_cmd_line))
     call_noerr(move_cmd_line)
 
+def move_dem_separate_dir_NED(dir_name):
     move_cmd=["mv", "stitched.*", dir_name]
     move_cmd_line=" ".join(move_cmd)
     logger.info("Calling {}".format(move_cmd_line))
@@ -549,7 +630,13 @@ def main():
 
     preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
 
-    move_dem_separate_dir(preprocess_dem_dir)
+    if dem_type.startswith("NED"):
+        move_dem_separate_dir_NED(preprocess_dem_dir)
+    elif dem_type.startswith("SRTM"):
+        move_dem_separate_dir_SRTM(preprocess_dem_dir)
+    else:
+        move_dem_separate_dir(preprocess_dem_dir)
+
     preprocess_dem_file = os.path.join(preprocess_dem_dir, preprocess_dem_file)
     logger.info("Using Preprocess DEM file: {}".format(preprocess_dem_file))
 
@@ -596,7 +683,7 @@ def main():
 
     dem_cmd = [
         "{}/applications/downsampleDEM.py".format(os.environ['ISCE_HOME']), "-i",
-        "{}".format(preprocess_vrt_file), "-r", "90"
+        "{}".format(preprocess_vrt_file), "-rsec", "3"
     ]
     dem_cmd_line = " ".join(dem_cmd)
     logger.info("Calling downsampleDEM.py: {}".format(dem_cmd_line))
@@ -719,7 +806,36 @@ def main():
     rad = 4 * np.pi * .05 / wv
     logger.info("Radian value for 5-cm wrap is: {}".format(rad))
 
-    # create product directory
+    # create id and product directory
+
+    output = get_tops_metadata('fine_interferogram')
+    sensing_start= output['sensingStart']
+    sensing_stop = output['sensingStop']
+    logger.info("sensing_start : %s" %sensing_start)
+    logger.info("sensing_stop : %s" %sensing_stop)
+
+    acq_center_time = get_center_time(sensing_start, sensing_stop)
+
+
+    ifg_hash = ctx["ifg_hash"]
+    direction = ctx["direction"]
+    west_lat = ctx["west_lat"]
+    platform = ctx["platform"]
+    orbit_type = ctx["orbit_type"]
+    track= ctx["track"]
+    slave_ifg_dt = ctx['slave_ifg_dt']
+    master_ifg_dt = ctx['master_ifg_dt']
+
+    sat_direction = "D"
+    if direction.lower() == 'asc':
+        sat_direction = "A"
+
+    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt, slave_ifg_dt, acq_center_time, west_lat, ifg_hash, version)
+
+    id = ifg_id
+
+    logger.info("id : %s" %id)
+
     prod_dir = id
     os.makedirs(prod_dir, 0o755)
 
@@ -1118,14 +1234,14 @@ def main():
     slave_mission = MISSION_RE.search(slave_safe_dirs[0]).group(1)
     unw_vrt = "filt_topophase.unw.geo.vrt"
     #fine_int_xml = "fine_interferogram.xml"
-    update_met_cmd = '{}/update_met_json_standard_product.py {} {} "{}" {} {} {}/{} "{}" {}/{} {}/{} {}'
+    update_met_cmd = '{}/update_met_json_standard_product.py {} {} "{}" {} {} {}/{} "{}" {}/{} {}/{} {} {} {}'
     check_call(update_met_cmd.format(BASE_PATH, orbit_type, scene_count,
                                      ctx['swathnum'], master_mission,
                                      slave_mission, prod_dir, 'PICKLE',
                                      fine_int_xmls,
                                      prod_merged_dir, unw_vrt,
                                      prod_merged_dir, unw_xml,
-                                     met_file), shell=True)
+                                     met_file, sensing_start, sensing_stop), shell=True)
 
     # add master/slave ids and orbits to met JSON (per ASF request)
     master_ids = [i.replace(".zip", "") for i in ctx['master_zip_file']]
@@ -1150,6 +1266,8 @@ def main():
     md['union_geojson'] = ctx['union_geojson']
     # add dem_type
     md['dem_type'] = dem_type
+    md['sensingStart'] = sensing_start
+    md['sensingStop'] = sensing_stop
 
     # write met json
     print("creating met file : %s" %met_file)
