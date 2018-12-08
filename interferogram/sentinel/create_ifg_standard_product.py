@@ -7,13 +7,16 @@ from glob import glob
 from lxml.etree import parse
 import numpy as np
 from datetime import datetime
-from osgeo import ogr
+from osgeo import ogr, gdal
 
 from isceobj.Image.Image import Image
 from utils.UrlUtils_standard_product import UrlUtils
 from utils.imutils import get_image, get_size, crop_mask
 from check_interferogram import check_int
 from create_input_xml_standard_product import create_input_xml
+
+
+gdal.UseExceptions() # make GDAL raise python exceptions
 
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -73,7 +76,7 @@ def create_dataset_json(id, version, met_file, ds_file):
 
     try:
         '''
-        print("create_dataset_json : met['bbox']: %s" %md['bbox'])
+        logger.info("create_dataset_json : met['bbox']: %s" %md['bbox'])
         coordinates = [
                     [
                       [ md['bbox'][0][1], md['bbox'][0][0] ],
@@ -585,11 +588,11 @@ def main():
         preprocess_vrt_file = glob(os.path.join(preprocess_dem_dir, "*.dem.wgs84.vrt"))[0]
     elif dem_type.startswith("NED1"):
         preprocess_vrt_file = os.path.join(preprocess_dem_dir, "combinedDEM.vrt")
-        print("preprocess_vrt_file : %s"%preprocess_vrt_file)
+        logger.info("preprocess_vrt_file : %s"%preprocess_vrt_file)
     else: raise RuntimeError("Unknown dem type %s." % dem_type)
 
     if not os.path.isfile(preprocess_vrt_file):
-        print("%s does not exists. Exiting")
+        logger.info("%s does not exists. Exiting")
     
     geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
@@ -990,7 +993,7 @@ def main():
     # determine downsample ratio and dowsample water mask
     lon_rat = 1./(vrt_prod_size['lon']['delta']/wmask_size['lon']['delta'])*100
     lat_rat = 1./(vrt_prod_size['lat']['delta']/wmask_size['lat']['delta'])*100
-    print("lon_rat/lat_rat: {} {}".format(lon_rat, lat_rat))
+    logger.info("lon_rat/lat_rat: {} {}".format(lon_rat, lat_rat))
     wbd_ds_file = "wbdmask_ds.wbd"
     wbd_ds_vrt = "wbdmask_ds.vrt"
     check_call("gdal_translate -of ENVI -outsize {}% {}% {} {}".format(lon_rat, lat_rat, wbd_file, wbd_ds_file), shell=True)
@@ -1019,20 +1022,20 @@ def main():
     wmask_ds = get_image(wbd_ds_xml)
     wmask_ds_size = get_size(wmask_ds)
 
-    print("vrt_prod.filename: {}".format(vrt_prod.filename))
-    print("vrt_prod.bands: {}".format(vrt_prod.bands))
-    print("vrt_prod size: {}".format(vrt_prod_size))
-    print("wmask.filename: {}".format(wmask.filename))
-    print("wmask.bands: {}".format(wmask.bands))
-    print("wmask size: {}".format(wmask_size))
-    print("wmask_ds.filename: {}".format(wmask_ds.filename))
-    print("wmask_ds.bands: {}".format(wmask_ds.bands))
-    print("wmask_ds size: {}".format(wmask_ds_size))
+    logger.info("vrt_prod.filename: {}".format(vrt_prod.filename))
+    logger.info("vrt_prod.bands: {}".format(vrt_prod.bands))
+    logger.info("vrt_prod size: {}".format(vrt_prod_size))
+    logger.info("wmask.filename: {}".format(wmask.filename))
+    logger.info("wmask.bands: {}".format(wmask.bands))
+    logger.info("wmask size: {}".format(wmask_size))
+    logger.info("wmask_ds.filename: {}".format(wmask_ds.filename))
+    logger.info("wmask_ds.bands: {}".format(wmask_ds.bands))
+    logger.info("wmask_ds size: {}".format(wmask_ds_size))
 
     # crop the downsampled water mask
     wbd_cropped_file = "wbdmask_cropped.wbd"
     wmask_cropped = crop_mask(vrt_prod, wmask_ds, wbd_cropped_file)
-    print("wmask_cropped shape: {}".format(wmask_cropped.shape))
+    logger.info("wmask_cropped shape: {}".format(wmask_cropped.shape))
 
     # mask out water from the product data
     vrt_prod_shape = (vrt_prod_size['lat']['size'], vrt_prod.bands, vrt_prod_size['lon']['size'])
@@ -1043,6 +1046,17 @@ def main():
     for i in range(vrt_prod.bands):
         im1_tmp = im1[:,i,:]
         im1_tmp[wmask_cropped == -1] = 0
+
+    # apply connected component mask
+    cc_vrt = os.path.join(prod_merged_dir, "filt_topophase.unw.conncomp.geo.vrt")
+    cc = gdal.Open(cc_vrt)
+    cc_data = cc.ReadAsArray()
+    cc = None
+    #logger.info("cc_data: {}".format(cc_data))
+    logger.info("cc_data shape: {}".format(cc_data.shape))
+    for i in range(vrt_prod.bands):
+        im1_tmp = im1[:,i,:]
+        im1_tmp[cc_data == 0] = 0
 
     # create masked product image
     masked_filt = "filt_topophase.masked.unw.geo"
@@ -1152,15 +1166,15 @@ def main():
     md['dem_type'] = dem_type
 
     # write met json
-    print("creating met file : %s" %met_file)
+    logger.info("creating met file : %s" %met_file)
     with open(met_file, 'w') as f: json.dump(md, f, indent=2)
     
     # generate dataset JSON
     ds_file = os.path.join(prod_dir, "{}.dataset.json".format(id))
-    print("creating dataset file : %s" %ds_file)
+    logger.info("creating dataset file : %s" %ds_file)
     create_dataset_json(id, version, met_file, ds_file)
     
-    #print( json.dump(md, f, indent=2))
+    #logger.info( json.dump(md, f, indent=2))
 
     # move merged products to root of product directory
     #call_noerr("mv -f {}/* {}".format(prod_merged_dir, prod_dir))
