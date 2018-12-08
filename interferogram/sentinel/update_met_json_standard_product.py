@@ -18,9 +18,9 @@ logging.basicConfig(format=log_format, level=logging.INFO)
 logger = logging.getLogger('update_met_json')
 
 
-SENSING_RE = re.compile(r'(S1-IFG_.*?_(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})-(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*?orb)')
+#SENSING_RE = re.compile(r'(S1-IFG_.*?_(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})-(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*?orb)')
 MISSION_RE = re.compile(r'^S1(\w)$')
-
+SENSING_RE = re.compile(r'(S1-(A|D)_R_(\d{3})-tops-(\d{4})(\d{2})(\d{2})_(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})_(.*)(N|S)_(.*)(N|S)_PP)')
 
 def get_raster_corner_coords(vrt_file):
     """Return raster corner coordinates."""
@@ -156,10 +156,13 @@ def get_union_geom(bbox_list):
 
 def update_met_json(orbit_type, scene_count, swath_num, master_mission,
                     slave_mission, pickle_dir, int_files, vrt_file, 
-                    xml_file, json_file):
+                    xml_file, json_file, sensing_start, sensing_stop):
     """Write product metadata json."""
     print("update_met_json : swath_num : %s type : %s" %(swath_num, type(swath_num)))
     print("update_met_json : int_files : %s : %s" %(int_files, type(int_files)))
+    print("update_met_json : xml file : %s" %(int_files))
+    print("update_met_json : sensing_start: %s  sensing_stop : %s" %(sensing_start, sensing_stop))
+
     bboxes = []
     xml_file = os.path.abspath(xml_file)
     with open(xml_file) as f:
@@ -182,9 +185,10 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
     if not match:
         raise RuntimeError("Failed to extract sensing times: %s" % xml_file)
     archive_filename = match.groups()[0]
+    '''
     sensing_start, sensing_stop = sorted(["%s-%s-%sT%s:%s:%s" % match.groups()[1:7],
                                           "%s-%s-%sT%s:%s:%s" % match.groups()[7:]])
-
+    '''
     # get temporal_span
     temporal_span = getTemporalSpanInDays(sensing_stop, sensing_start)
     
@@ -329,6 +333,11 @@ if __name__ == "__main__":
     print("xml_file : %s"%xml_file)
     json_file = sys.argv[10]
     print("json_file : %s"%json_file)
+    
+    sensing_start = sys.argv[11]
+    print("sensing_start : %s"%sensing_start)
+    sensing_stop = sys.argv[12]
+    print("sensing_stop : %s"%sensing_stop)
     update_met_json(orbit_type, scene_count, swath_num, master_mission,
                     slave_mission, pickle_dir, int_files, vrt_file,
-                    xml_file, json_file)
+                    xml_file, json_file, sensing_start, sensing_stop)

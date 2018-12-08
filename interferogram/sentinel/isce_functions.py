@@ -225,6 +225,13 @@ def get_topsApp_data(topsapp_xml='topsApp'):
     os.chdir(curdir)
     return insar
 
+def get_isce_version_info(args):
+    import isce
+    isce_version = isce.release_version
+    if isce.release_svn_revision:
+        isce_version = "ISCE version = " + isce_version + ", " + "SVN revision = " + isce.release_svn_revision
+    return isce_version
+
 def get_topsApp_variable(args):
     '''
         return the value of the requested variable

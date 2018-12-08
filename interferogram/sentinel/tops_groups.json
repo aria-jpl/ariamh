@@ -405,6 +405,19 @@
                       "type" : "str",
                       "description" : "UNW GEO IFG"
                     },{
+                      "name" : "ISCEversion",
+                      "python_action" : "isce_functions.get_isce_version_info",
+                      "python_action_args" : [],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "ISCE Version"
+                        },{
+                          "name" : "units",
+                          "value" : "unitless"
+                        }]
+
+                    },{
                       "name" : "DEM",
                       "python_action" : "isce_functions.get_topsApp_variable",
                       "python_action_args" : ["../topsApp.xml","DEM"],

@@ -208,24 +208,32 @@ def get_ifg_dates(master_ids, slave_ids):
     else: return master_all_dts[-1], slave_all_dts[0]
 
 def convert_number(x):
+
+    x = float(x)
     data = ''
     y = abs(x)
-    if y>0 and y<10:
-        data = str(int(y*100))
-    elif y>=10 and y<100:
-        data = str(int(y*10))
-    elif y>100 and y<1000:
-        data = str(y)
-       
-    elif y>1000:
-        data=str(y)[:3]
+    pre_y = str(y).split('.')[0]
+    if int(pre_y)>99:
+        pre_y = pre_y[:2]
+    else:
+        pre_y = pre_y.rjust(2, '0')
+
+    post_y = '000'
+    post_y = str(y).split('.')[1]
+        
+    if int(post_y)>999:
+        post_y = post_y[:3]
+    else:
+        post_y = post_y.ljust(3, '0')
+        
+    print("post_y : %s " %post_y)
 
     if x<0:
-        data = data+"S"
+        data = "{}{}S".format(pre_y, post_y)
     else:
-        data = data+"N"
+        data = "{}{}N".format(pre_y, post_y)
 
-    return data.rjust(5, '0')
+    return data
 
 
 def get_minmax(geojson):
@@ -434,7 +442,7 @@ def initiate_standard_product_job(context_file):
     west_lat2 = convert_number(x[3])
     '''
     minlat, maxlat = get_minmax(union_geojson)
-    west_lat= "{}_{}".format(lat_convert(minlat), lat_convert(maxlat))
+    west_lat= "{}_{}".format(convert_number(minlat), convert_number(maxlat))
     logger.info("west_latitude : {}".format(west_lat))
 
     # get ifg start and end dates
