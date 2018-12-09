@@ -1101,15 +1101,15 @@ def main():
     slave_mission = MISSION_RE.search(slave_safe_dirs[0]).group(1)
     unw_vrt = "filt_topophase.unw.geo.vrt"
     unw_xml = "filt_topophase.unw.geo.xml"
-    #fine_int_xml = "fine_interferogram.xml"
-    update_met_cmd = '{}/update_met_json_standard_product.py {} {} "{}" {} {} {} "{}" {}/{} {}/{} {} {} {}'
+    update_met_cmd = '{}/update_met_json_standard_product.py {} {} "{}" {} {} {} "{}" {}/{} {}/{} {} {} {} {}'
     check_call(update_met_cmd.format(BASE_PATH, orbit_type, scene_count,
                                      ctx['swathnum'], master_mission,
                                      slave_mission, 'PICKLE',
                                      fine_int_xmls,
                                      'merged', unw_vrt,
                                      'merged', unw_xml,
-                                     met_file, sensing_start, sensing_stop), shell=True)
+                                     met_file, sensing_start,
+                                     sensing_stop, std_prod_file), shell=True)
 
     # add master/slave ids and orbits to met JSON (per ASF request)
     master_ids = [i.replace(".zip", "") for i in ctx['master_zip_file']]

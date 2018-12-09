@@ -18,9 +18,8 @@ logging.basicConfig(format=log_format, level=logging.INFO)
 logger = logging.getLogger('update_met_json')
 
 
-#SENSING_RE = re.compile(r'(S1-IFG_.*?_(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})-(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*?orb)')
 MISSION_RE = re.compile(r'^S1(\w)$')
-SENSING_RE = re.compile(r'(S1-(A|D)_R_(\d{3})-tops-(\d{4})(\d{2})(\d{2})_(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})_(.*)(N|S)_(.*)(N|S)_PP)')
+
 
 def get_raster_corner_coords(vrt_file):
     """Return raster corner coordinates."""
@@ -156,7 +155,8 @@ def get_union_geom(bbox_list):
 
 def update_met_json(orbit_type, scene_count, swath_num, master_mission,
                     slave_mission, pickle_dir, int_files, vrt_file, 
-                    xml_file, json_file, sensing_start, sensing_stop):
+                    xml_file, json_file, sensing_start, sensing_stop,
+                    archive_filename):
     """Write product metadata json."""
     print("update_met_json : swath_num : %s type : %s" %(swath_num, type(swath_num)))
     print("update_met_json : int_files : %s : %s" %(int_files, type(int_files)))
@@ -181,14 +181,7 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
     maxLat = max(startLat,endLat)
     minLon = min(startLon,endLon)
     maxLon = max(startLon,endLon)
-    match = SENSING_RE.search(xml_file)
-    if not match:
-        raise RuntimeError("Failed to extract sensing times: %s" % xml_file)
-    archive_filename = match.groups()[0]
-    '''
-    sensing_start, sensing_stop = sorted(["%s-%s-%sT%s:%s:%s" % match.groups()[1:7],
-                                          "%s-%s-%sT%s:%s:%s" % match.groups()[7:]])
-    '''
+
     # get temporal_span
     temporal_span = getTemporalSpanInDays(sensing_stop, sensing_start)
     
@@ -255,6 +248,7 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
     # update metadata
     with open(json_file) as f:
         metadata = json.load(f)
+
     #update direction to ascending/descending
     if 'direction' in metadata.keys():
         direct = metadata['direction']
@@ -311,8 +305,8 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
 
 if __name__ == "__main__":
     print("update met arg count : %s" %len(sys.argv))
-    #if len(sys.argv) != 11:
-    #    raise SystemExit("usage: %s <orbit type used> <scene count> <swath num> <master_mission> <slave_mission> <pickle dir> <fine int file> <vrt file> <unw.geo.xml file> <output json file>" % sys.argv[0])
+    if len(sys.argv) != 14:
+        raise SystemExit("usage: %s <orbit type used> <scene count> <swath num> <master_mission> <slave_mission> <pickle dir> <fine int file> <vrt file> <unw.geo.xml file> <output json file> <sensing start> <sensing stop> <archive filename>" % sys.argv[0])
     orbit_type = sys.argv[1]
     print("orbit_type :%s"%orbit_type)
     scene_count = sys.argv[2]
@@ -333,11 +327,13 @@ if __name__ == "__main__":
     print("xml_file : %s"%xml_file)
     json_file = sys.argv[10]
     print("json_file : %s"%json_file)
-    
     sensing_start = sys.argv[11]
     print("sensing_start : %s"%sensing_start)
     sensing_stop = sys.argv[12]
     print("sensing_stop : %s"%sensing_stop)
+    archive_filename = sys.argv[13]
+    print("archive_filename : %s"%archive_filename)
     update_met_json(orbit_type, scene_count, swath_num, master_mission,
                     slave_mission, pickle_dir, int_files, vrt_file,
-                    xml_file, json_file, sensing_start, sensing_stop)
+                    xml_file, json_file, sensing_start, sensing_stop,
+                    archive_filename)
