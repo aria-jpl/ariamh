@@ -524,7 +524,7 @@ if __name__ == '__main__':
  
     # iterate over the different datasets
     try:
-        for dataset in structure["dataset"]:
+        for dataset in structure.get("dataset", []):
             create_dataset(fid, dataset, fid_parent=fid)
     except Exception as e:
         logger.error(e)
@@ -533,7 +533,7 @@ if __name__ == '__main__':
 
     # iterate over the different groups
     try:
-        for group in structure["group"]:
+        for group in structure.get("group", []):
             create_group(fid, group, fid_parent=fid)
     except Exception as e:
         logger.error(e)
