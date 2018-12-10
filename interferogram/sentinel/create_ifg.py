@@ -557,7 +557,7 @@ def main():
 
     # create amplitude tile layer
     amp_layer = "amplitude"
-    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 80 --nodata 0"
+    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 90 --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, amp_layer), shell=True)
 
     # create COG (cloud optimized geotiff) with no_data set
