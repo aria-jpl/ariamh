@@ -38,7 +38,7 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
-IFG_ID_SP_TMPL = "S1-{}_{}_{:03d}-tops-{}_{}-{}_{}_PP_{}-{}"
+IFG_ID_SP_TMPL = "S1-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
 
 def get_date(t):
     try:
