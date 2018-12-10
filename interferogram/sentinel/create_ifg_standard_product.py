@@ -55,6 +55,64 @@ def get_center_time(t1, t2):
     t = a + (b - a)/2
     return t.strftime("%H%M%S")
 
+def convert_number(x):
+
+    x = float(x)
+    data = ''
+    y = abs(x)
+    pre_y = str(y).split('.')[0]
+    if int(pre_y)>99:
+        pre_y = pre_y[:2]
+    else:
+        pre_y = pre_y.rjust(2, '0')
+
+    post_y = '000'
+    post_y = str(y).split('.')[1]
+        
+    if int(post_y)>999:
+        post_y = post_y[:3]
+    else:
+        post_y = post_y.ljust(3, '0')
+        
+    print("post_y : %s " %post_y)
+
+    if x<0:
+        data = "{}{}S".format(pre_y, post_y)
+    else:
+        data = "{}{}N".format(pre_y, post_y)
+
+    return data
+
+
+def get_minmax(geojson):
+    '''returns the minmax tuple of a geojson'''
+    lats = [x[1] for x in geojson['coordinates'][0]]
+    return min(lats), max(lats)
+
+def get_geocoded_lats(vrt_file):
+
+    ''' return latitudes'''
+    import gdal
+    import numpy as np
+
+    # extract geo-coded corner coordinates
+    ds = gdal.Open(vrt_file)
+    gt = ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    
+    # getting the gdal transform and projection
+    geoTrans = str(ds.GetGeoTransform())
+    projectionRef = str(ds.GetProjection())
+    
+    lat_arr = list(range(0, rows))
+    lats = np.empty((rows,),dtype='float64')
+    for py in lat_arr:
+        lats[py] = gt[3] + (py * gt[5])
+
+    return lats
+
+
 def get_tops_subswath_xml(masterdir):
     ''' 
         Find all available IW[1-3].xml files
@@ -822,7 +880,7 @@ def main():
 
     ifg_hash = ctx["ifg_hash"]
     direction = ctx["direction"]
-    west_lat = ctx["west_lat"]
+    #west_lat = ctx["west_lat"]
     platform = ctx["platform"]
     orbit_type = ctx["orbit_type"]
     track= ctx["track"]
@@ -833,7 +891,10 @@ def main():
     if direction.lower() == 'asc':
         sat_direction = "A"
 
-    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt, slave_ifg_dt, acq_center_time, west_lat, ifg_hash, version)
+    lats = get_geocoded_lats("merged/filt_topophase.unw.geo.vrt")
+    west_lat= "{}_{}".format(convert_number(min(lats)), convert_number(max(lats)))
+
+    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt, slave_ifg_dt, acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
 
     id = ifg_id
 
@@ -853,7 +914,9 @@ def main():
     check_call(mgc_cmd_line, shell=True)
 
     # create standard product packaging
-    std_prod_file = "{}.hdf5".format(id)
+    #std_prod_file = "{}.hdf5".format(id)
+    std_prod_file = "{}.nc".format(id)
+
     with open(os.path.join(BASE_PATH, "tops_groups.json")) as f:
         std_cfg = json.load(f)
     std_cfg['filename'] = std_prod_file
