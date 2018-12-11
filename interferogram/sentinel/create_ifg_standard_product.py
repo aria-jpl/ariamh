@@ -1124,23 +1124,37 @@ def main():
     im.filename = masked_filt
     im.renderHdr()
 
+    # mask out nodata values
+    vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
+    vrt_prod_file2 = "filt_topophase.masked_nodata.unw.geo.vrt"
+    check_call("gdal_translate -of VRT -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file2), shell=True)
+
+    # get band statistics
+    tmp_data = gdal.Open(vrt_prod_file2, gdal.GA_ReadOnly)
+    band_stats_amp = tmp_data.GetRasterBand(1).GetStatistics(0, 1)
+    band_stats_dis = tmp_data.GetRasterBand(2).GetStatistics(0, 1)
+    tmp_data = None
+    logger.info("amplitude band stats: {}".format(band_stats_amp))
+    logger.info("displacment band stats: {}".format(band_stats_dis))
+
     # create displacement tile layer
     tiles_dir = "{}/tiles".format(prod_dir)
     vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
     dis_layer = "displacement"
-    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 2 -m prism --nodata 0"
-    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, dis_layer), shell=True)
+    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 2 -m prism --clim_min {} --clim_max {} --nodata 0"
+    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file2, tiles_dir, dis_layer, 
+               band_stats_dis[0], band_stats_dis[1]), shell=True)
 
     # create amplitude tile layer
     amp_layer = "amplitude"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 90 --nodata 0"
-    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, amp_layer), shell=True)
+    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file2, tiles_dir, amp_layer), shell=True)
 
     # create COG (cloud optimized geotiff) with no_data set
     cog_prod_file = "merged/filt_topophase.unw.geo.tif"
     cog_cmd_tmpl = "gdal_translate {} tmp.tif -co TILED=YES -co COMPRESS=DEFLATE -a_nodata 0"
-    check_call(cog_cmd_tmpl.format(vrt_prod_file), shell=True)
+    check_call(cog_cmd_tmpl.format(vrt_prod_file2), shell=True)
     check_call("gdaladdo -r average tmp.tif 2 4 8 16 32", shell=True)
     cog_cmd_tmpl = "gdal_translate tmp.tif {} -co TILED=YES -co COPY_SRC_OVERVIEWS=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 --config GDAL_TIFF_OVR_BLOCKSIZE 512"
     check_call(cog_cmd_tmpl.format(cog_prod_file), shell=True)
