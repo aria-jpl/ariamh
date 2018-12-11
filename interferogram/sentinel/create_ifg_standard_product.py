@@ -1213,6 +1213,7 @@ def main():
     md['dem_type'] = dem_type
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
+    md['tags'] = ['standard_product']
 
     # write met json
     logger.info("creating met file : %s" %met_file)
