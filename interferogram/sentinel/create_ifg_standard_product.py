@@ -1139,7 +1139,6 @@ def main():
 
     # create displacement tile layer
     tiles_dir = "{}/tiles".format(prod_dir)
-    vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
     dis_layer = "displacement"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 2 -m prism --clim_min {} --clim_max {} --nodata 0"
