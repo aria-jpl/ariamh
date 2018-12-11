@@ -1,5 +1,4 @@
 {
-  "submission_type": "individual",
   "label" : "S1 - POEORB Standard Product Interferogram",
   "recommended-queues" : [ "grfn-job_worker-large" ],
   "allowed_accounts": [ "ops" ],
