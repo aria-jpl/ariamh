@@ -336,7 +336,7 @@ def create_stitched_met_json(id, version, env, starttime, endtime, met_files, me
         'esd_threshold': [],
         'frameID': [],
         'temporal_span': [],
-        'swath': [1, 2, 3],
+        #'swath': [1, 2, 3],
         'trackNumber': [],
         'archive_filename': id,
         'dataset_type': 'slc',
@@ -381,13 +381,13 @@ def create_stitched_met_json(id, version, env, starttime, endtime, met_files, me
     }
 
     # collect values
-    set_params = ('master_scenes', 'esd_threshold', 'frameID', 'swath', 'parallelBaseline',
+    set_params = ('master_scenes', 'esd_threshold', 'frameID', 'parallelBaseline',
                   'doppler', 'version', 'slave_scenes', 'orbit_type', 'spacecraftName',
                   'orbitNumber', 'perpendicularBaseline', 'orbitRepeat', 'polarization', 
                   'sensor', 'lookDirection', 'platform', 'startingRange',
                   'beamMode', 'direction', 'prf', 'azimuth_looks')
     single_params = ('temporal_span', 'trackNumber', 'dem_type')
-    list_params = ('platform', 'swath', 'perpendicularBaseline', 'parallelBaseline', 'range_looks','filter_strength')
+    list_params = ('platform', 'perpendicularBaseline', 'parallelBaseline', 'range_looks','filter_strength')
     mean_params = ('perpendicularBaseline', 'parallelBaseline')
     for i, met_file in enumerate(met_files):
         with open(met_file) as f:
@@ -1198,7 +1198,7 @@ def main():
     md['master_scenes'] = master_ids
     md['slave_scenes'] = slave_ids
     md['orbitNumber'] = [master_orbit_number, slave_orbit_number]
-    if ctx.get('stitch_subswaths_xt', False): md['swath'] = [1, 2, 3]
+    #if ctx.get('stitch_subswaths_xt', False): md['swath'] = [1, 2, 3]
     md['esd_threshold'] = esd_coh_th if do_esd else -1.  # add ESD coherence threshold
 
     # add range_looks and azimuth_looks to metadata for stitching purposes

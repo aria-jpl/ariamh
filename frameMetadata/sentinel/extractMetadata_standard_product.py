@@ -284,7 +284,7 @@ def create_stitched_met_json( frame_infoes, met_json_file):
         #'orbit_type': [],
         #'spacecraftName': [],
         'frameNumber': None,
-        'reference': None,
+        #'reference': None,
         'bbox': bbox,
         'ogr_bbox': [],
         'orbitNumber': [],
@@ -323,7 +323,7 @@ def create_stitched_met_json( frame_infoes, met_json_file):
                )
 
     single_params = ('frameID', 'sensor', 'beamID', 'frameNumber', 'trackNumber',
-                      'dataset_type', 'reference', 'archive_filename',
+                      'dataset_type',  'archive_filename',
                      'direction', 'orbitRepeat', 'lookDirection','frameName', 'product_type'
                     #,'esd_threshold'
                     )
