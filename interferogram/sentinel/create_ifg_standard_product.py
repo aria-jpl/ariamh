@@ -1078,6 +1078,8 @@ def main():
     # get product image and size info
     vrt_prod = get_image("merged/filt_topophase.unw.geo.xml")
     vrt_prod_size = get_size(vrt_prod)
+    flat_vrt_prod = get_image("merged/filt_topophase.flat.geo.xml")
+    flat_vrt_prod_size = get_size(flat_vrt_prod)
 
     # get water mask image and size info
     wbd_xml = "{}.xml".format(wbd_file)
@@ -1131,6 +1133,15 @@ def main():
     wmask_cropped = crop_mask(vrt_prod, wmask_ds, wbd_cropped_file)
     logger.info("wmask_cropped shape: {}".format(wmask_cropped.shape))
 
+    # read in wrapped interferogram
+    flat_vrt_prod_shape = (flat_vrt_prod_size['lat']['size'], flat_vrt_prod_size['lon']['size'])
+    flat_vrt_prod_im = np.memmap(flat_vrt_prod.filename,
+                            dtype=flat_vrt_prod.toNumpyDataType(),
+                            mode='c', shape=(flat_vrt_prod_size['lat']['size'], flat_vrt_prod_size['lon']['size']))
+    phase = np.angle(flat_vrt_prod_im)
+    phase[phase == 0] = -10
+    phase[wmask_cropped == -1] = -10
+
     # mask out water from the product data
     vrt_prod_shape = (vrt_prod_size['lat']['size'], vrt_prod.bands, vrt_prod_size['lon']['size'])
     vrt_prod_im = np.memmap(vrt_prod.filename,
@@ -1141,16 +1152,20 @@ def main():
         im1_tmp = im1[:,i,:]
         im1_tmp[wmask_cropped == -1] = 0
 
-    # apply connected component mask
+    # read in connected component mask
     cc_vrt = "merged/filt_topophase.unw.conncomp.geo.vrt"
     cc = gdal.Open(cc_vrt)
     cc_data = cc.ReadAsArray()
     cc = None
-    #logger.info("cc_data: {}".format(cc_data))
+    logger.info("cc_data: {}".format(cc_data))
     logger.info("cc_data shape: {}".format(cc_data.shape))
     for i in range(vrt_prod.bands):
         im1_tmp = im1[:,i,:]
         im1_tmp[cc_data == 0] = 0
+    phase[cc_data == 0] = -10
+
+    # overwrite displacement with phase
+    im1[:,1,:] = phase
 
     # create masked product image
     masked_filt = "filt_topophase.masked.unw.geo"
@@ -1183,14 +1198,16 @@ def main():
 
     # mask out nodata values
     vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
-    vrt_prod_file2 = "filt_topophase.masked_nodata.unw.geo.vrt"
-    check_call("gdal_translate -of VRT -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file2), shell=True)
+    vrt_prod_file_amp = "filt_topophase.masked_nodata.unw.amp.geo.vrt"
+    vrt_prod_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt"
+    check_call("gdal_translate -of VRT -b 1 -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file_amp), shell=True)
+    check_call("gdal_translate -of VRT -b 2 -a_nodata -10 {} {}".format(vrt_prod_file, vrt_prod_file_dis), shell=True)
 
     # get band statistics
-    tmp_data = gdal.Open(vrt_prod_file2, gdal.GA_ReadOnly)
-    band_stats_amp = tmp_data.GetRasterBand(1).GetStatistics(0, 1)
-    band_stats_dis = tmp_data.GetRasterBand(2).GetStatistics(0, 1)
-    tmp_data = None
+    amp_data = gdal.Open(vrt_prod_file_amp, gdal.GA_ReadOnly)
+    band_stats_amp = amp_data.GetRasterBand(1).GetStatistics(0, 1)
+    dis_data = gdal.Open(vrt_prod_file_dis, gdal.GA_ReadOnly)
+    band_stats_dis = dis_data.GetRasterBand(1).GetStatistics(0, 1)
     logger.info("amplitude band stats: {}".format(band_stats_amp))
     logger.info("displacment band stats: {}".format(band_stats_dis))
 
@@ -1198,14 +1215,13 @@ def main():
     tiles_dir = "{}/tiles".format(prod_dir)
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
     dis_layer = "displacement"
-    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 2 -m prism --clim_min {} --clim_max {} --nodata 0"
-    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file2, tiles_dir, dis_layer, 
-               band_stats_dis[0], band_stats_dis[1]), shell=True)
+    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m hsv --clim_min {} --clim_max {} --nodata 0"
+    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_dis, tiles_dir, dis_layer, band_stats_dis[0], band_stats_dis[1]), shell=True)
 
     # create amplitude tile layer
     amp_layer = "amplitude"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 90 --nodata 0"
-    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file2, tiles_dir, amp_layer), shell=True)
+    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_amp, tiles_dir, amp_layer), shell=True)
 
     # create COG (cloud optimized geotiff) with no_data set
     cog_prod_file = "merged/filt_topophase.unw.geo.tif"
