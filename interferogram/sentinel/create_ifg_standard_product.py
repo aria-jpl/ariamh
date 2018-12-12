@@ -40,6 +40,59 @@ MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
 IFG_ID_SP_TMPL = "S1-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
 
+
+def update_met_key(met_md, old_key, new_key):
+    try:
+        if old_key in met_md:
+            met_md[new_key] = met_md.pop(old_key)
+    except Exception as err:
+        print("Failed to replace %s from met file with %s. Error : %s" %(old_key, new_key, str(err)))
+
+    return met_md
+
+def delete_met_data(met_md, old_key):
+    try:
+        if old_key in met_md:
+            del met_md[old_key] 
+    except Exception as err:
+        print("Failed to delete %s from met file. Error : %s" %(old_key,  str(err)))
+
+    return met_md
+
+
+
+def update_met(md):
+
+
+    #Keys to update
+    md = update_met_key(md, "sensingStart", "sensing_start")
+    md = update_met_key(md, "trackNumber", "track_number")
+    md = update_met_key(md, "imageCorners", "image_corners")
+    md = update_met_key(md, "lookDirection", "look_direction")
+    md = update_met_key(md, "inputFile", "input_file")
+    md = update_met_key(md, "startingRange", "starting_range")
+    md = update_met_key(md, "latitudeIndexMax", "latitude_index_max")
+    md = update_met_key(md, "frameID", "frame_id")
+    md = update_met_key(md, "frameNumber", "frame_number")
+    md = update_met_key(md, "beamID", "beam_id")
+    md = update_met_key(md, "orbitNumber", "orbit_number")
+    md = update_met_key(md, "latitudeIndexMin", "latitude_index_min")
+    md = update_met_key(md, "beamMode", "beam_mode")
+    md = update_met_key(md, "orbitRepeat", "orbit_repeat")
+    md = update_met_key(md, "perpendicularBaseline", "perpendicular_baseline")
+    md = update_met_key(md, "frameName", "frame_name")
+    md = update_met_key(md, "sensingStop", "sensing_stop")
+    md = update_met_key(md, "parallelBaseline", "parallel_baseline")
+    md = update_met_key(md, "direction", "orbit_direction")
+
+
+    #keys to delete
+    md = delete_met_data(md, "swath")
+    md = delete_met_data(md, "spacecraftName")
+    md = delete_met_data(md, "reference")
+    
+    return md
+
 def get_date(t):
     try:
         return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -112,6 +165,10 @@ def get_geocoded_lats(vrt_file):
 
     return lats
 
+
+def get_updated_met(metjson):
+    new_met = {}
+    return new_met
 
 def get_tops_subswath_xml(masterdir):
     ''' 
@@ -245,17 +302,17 @@ def create_dataset_json(id, version, met_file, ds_file):
 
 
     # set earliest sensing start to starttime and latest sensing stop to endtime
-    if isinstance(md['sensingStart'], str):
-        ds['starttime'] = md['sensingStart']
+    if isinstance(md['sensing_start'], str):
+        ds['starttime'] = md['sensing_start']
     else:
-        md['sensingStart'].sort()
-        ds['starttime'] = md['sensingStart'][0]
+        md['sensing_start'].sort()
+        ds['starttime'] = md['sensing_start'][0]
 
-    if isinstance(md['sensingStop'], str):
-        ds['endtime'] = md['sensingStop']
+    if isinstance(md['sensing_stop'], str):
+        ds['endtime'] = md['sensing_stop']
     else:
-        md['sensingStop'].sort()
-        ds['endtime'] = md['sensingStop'][-1]
+        md['sensing_stop'].sort()
+        ds['endtime'] = md['sensing_stop'][-1]
 
     # write out dataset json
     with open(ds_file, 'w') as f:
@@ -1213,6 +1270,9 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
+
+    #update met files key to have python style naming
+    md = update_met(md)
 
     # write met json
     logger.info("creating met file : %s" %met_file)
