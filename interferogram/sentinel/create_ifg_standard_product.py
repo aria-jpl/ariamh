@@ -39,7 +39,7 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
 IFG_ID_SP_TMPL = "S1-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
-
+IFG_ID_SP_MERGED_TMPL = "S1-MERGED-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
 
 def update_met_key(met_md, old_key, new_key):
     try:
@@ -944,21 +944,30 @@ def main():
     slave_ifg_dt = ctx['slave_ifg_dt']
     master_ifg_dt = ctx['master_ifg_dt']
 
-    sat_direction = "D"
-    if direction.lower() == 'asc':
-        sat_direction = "A"
 
     lats = get_geocoded_lats("merged/filt_topophase.unw.geo.vrt")
-    west_lat= "{}_{}".format(convert_number(min(lats)), convert_number(max(lats)))
 
+
+    sat_direction = "D"
+    west_lat= "{}_{}".format(convert_number(sorted(lats)[-2]), convert_number(min(lats)))
+
+    if direction.lower() == 'asc':
+        sat_direction = "A"
+        west_lat= "{}_{}".format(convert_number(max(lats)), convert_number(sorted(lats)[1]))
+
+
+
+   
     ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt, slave_ifg_dt, acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
-
+    ifg_id_merged = id.replace('S1-IFG', 'S1-IFG-MERGED') 
     id = ifg_id
 
     logger.info("id : %s" %id)
 
     prod_dir = id
+    prod_dir_merged = ifg_id_merged
     os.makedirs(prod_dir, 0o755)
+    os.makedirs(prod_dir_merged, 0o755)
 
     # make metadata geocube
     os.chdir("merged")
@@ -1020,6 +1029,7 @@ def main():
 
     # save other files to product directory
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
+    shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
 
     fine_int_xmls = []
     for swathnum in swath_list:
@@ -1289,6 +1299,15 @@ def main():
     ds_file = os.path.join(prod_dir, "{}.dataset.json".format(id))
     logger.info("creating dataset file : %s" %ds_file)
     create_dataset_json(id, version, met_file, ds_file)
+
+
+    #copy files to merged directory
+    met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
+    ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
+    shutil.copy(ds_file, ds_file_merged)
+    shutil.copy(met_file, met_file_merged)
+    shutil.copytree("merged", os.path.join(prod_dir_merged, "merged"))
+    #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
     
     #logger.info( json.dump(md, f, indent=2))
 
