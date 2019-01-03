@@ -112,8 +112,8 @@ def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master
             "/home/ops/.aws": "/home/ops/.aws",
             "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
         },    
-        "soft_time_limit": 14400,
-        "time_limit": 15000,
+        "soft_time_limit": 7200,
+        "time_limit": 7800,
         "payload": {
             # sciflo tracking info
             "_sciflo_wuid": wuid,
