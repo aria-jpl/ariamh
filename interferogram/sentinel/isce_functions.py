@@ -423,6 +423,7 @@ def get_tops_metadata(masterdir):
         output['orbittype'] = "restituted"
     else:
         output['orbittype'] = ""
+    #output['bbox'] = get_bbox(masterdir)
     # geo transform grt for x y 
     # bandwith changes per swath - placeholder c*b/2 or delete
     # tops xml file
@@ -452,3 +453,180 @@ def read_isce_product(xmlfile):
     obj = pm.loadProduct(xmlfile)
 
     return obj
+
+def get_orbit():
+    from isceobj.Orbit.Orbit import Orbit
+
+    """Return orbit object."""
+
+    orb = Orbit()
+    orb.configure()
+    return orb
+
+def get_aligned_bbox(prod, orb):
+    """Return estimate of 4 corner coordinates of the
+       track-aligned bbox of the product."""
+    import gdal
+    import numpy as np
+    import os
+
+    # create merged orbit
+    burst = prod.bursts[0]
+
+    #Add first burst orbit to begin with
+    for sv in burst.orbit:
+         orb.addStateVector(sv)
+
+    ##Add all state vectors
+    for bb in prod.bursts:
+        for sv in bb.orbit:
+            if (sv.time< orb.minTime) or (sv.time > orb.maxTime):
+                orb.addStateVector(sv)
+        bb.orbit = orb
+
+    # extract bbox
+    ts = [prod.sensingStart, prod.sensingStop]
+    rngs = [prod.startingRange, prod.farRange]
+    pos = []
+    for tim in ts:
+        for rng in rngs:
+            llh = prod.orbit.rdr2geo(tim, rng, height=0.)
+            pos.append(llh)
+    pos = np.array(pos)
+    bbox = pos[[0, 1, 3, 2], 0:2]
+    return bbox.tolist()
+
+def get_loc(box):
+    """Return GeoJSON bbox."""
+    import numpy as np
+    import os
+
+    bbox = np.array(box).astype(np.float)
+    coords = [
+        [ bbox[0,1], bbox[0,0] ],
+        [ bbox[1,1], bbox[1,0] ],
+        [ bbox[2,1], bbox[2,0] ],
+        [ bbox[3,1], bbox[3,0] ],
+        [ bbox[0,1], bbox[0,0] ],
+    ]
+    return {
+        "type": "Polygon",
+        "coordinates":  [coords] 
+    }
+
+def get_env_box(env):
+
+    #print("get_env_box env " %env)
+    bbox = [
+        [ env[3], env[0] ],
+        [ env[3], env[1] ],
+        [ env[2], env[1] ],
+        [ env[2], env[0] ],
+    ]
+    print("get_env_box box : %s" %bbox)
+    return bbox
+
+
+def get_union_geom(bbox_list):
+    from osgeo import gdal, ogr, osr
+    import json
+
+    geom_union = None
+    for bbox in bbox_list:
+        loc = get_loc(bbox)
+        geom = ogr.CreateGeometryFromJson(json.dumps(loc))
+        print("get_union_geom : geom : %s" %get_union_geom)
+        if geom_union is None:
+            geom_union = geom
+        else:
+            geom_union = geom_union.Union(geom)
+    print("geom_union_type : %s" %type(geom_union)) 
+    return geom_union
+
+def get_area(coords):
+    '''get area of enclosed coordinates- determines clockwise or counterclockwise order'''
+    n = len(coords) # of corners
+    area = 0.0
+    for i in range(n):
+        j = (i + 1) % n
+        area += coords[i][1] * coords[j][0]
+        area -= coords[j][1] * coords[i][0]
+    #area = abs(area) / 2.0
+    return area / 2
+
+def change_direction(coords):
+    cord_area= get_area(coords)
+    if not get_area(coords) > 0: #reverse order if not clockwise
+        print("update_met_json, reversing the coords")
+        coords = coords[::-1]
+    return coords
+
+def get_raster_corner_coords(vrt_file):
+    """Return raster corner coordinates."""
+    import gdal
+    import os
+
+    # go to directory where vrt exists to extract from image
+    cwd =os.getcwd()
+    data_dir = os.path.dirname(os.path.abspath(vrt_file))
+    os.chdir(data_dir)
+
+    # extract geo-coded corner coordinates
+    ds = gdal.Open(os.path.basename(vrt_file))
+    gt = ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    ext = []
+    lon_arr = [0, cols]
+    lat_arr = [0, rows]
+    for px in lon_arr:
+        for py in lat_arr:
+            lon = gt[0] + (px * gt[1]) + (py * gt[2])
+            lat = gt[3] + (px * gt[4]) + (py * gt[5])
+            ext.append([lat, lon])
+        lat_arr.reverse()
+    os.chdir(cwd)
+    return ext
+
+def get_bbox(args):
+    import json
+    import os
+
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    cur_wd = os.getcwd()
+    master_dir= args[0]
+
+    print("isce_functions : get_bbox: %s : %s : %s" %(cur_dir, cur_wd, master_dir))
+    bboxes = []
+    master_dir = args[0]
+
+    IWs = get_tops_subswath_xml(master_dir)
+    print("isce_functions : get_bbox : after get_tops_subswath_xml : %s" %len(IWs))
+    for IW in IWs:
+        try:
+            prod = read_isce_product(IW)
+            print("isce_functions: after prod")
+            orb = get_orbit()
+            print("isce_functions : orb")
+            bbox_swath = get_aligned_bbox(prod, orb)
+            print("isce_functions : bbox_swath : %s" %bbox_swath)
+            bboxes.append(bbox_swath)
+        except Exception as e:
+            print("isce_functions : Failed to get aligned bbox: %s" %str(e))
+            #print("Getting raster corner coords instead.")
+            #bbox_swath = get_raster_corner_coords(vrt_file)
+
+    geom_union = get_union_geom(bboxes)
+    print("isce_functions : geom_union : %s" %geom_union)
+    bbox = json.loads(geom_union.ExportToJson())["coordinates"][0]
+    print("isce_function : First Union Bbox : %s " %bbox)
+    bbox = get_env_box(geom_union.GetEnvelope())
+    print("isce_function : Get Envelop :Final bbox : %s" %bbox)    
+    
+    bbox=change_direction(bbox)
+    bbox_flatten =  (y for x in bbox for y in x)
+    print("isce_functions : returning %s" %bbox_flatten)
+    return bbox_flatten
+
+
+

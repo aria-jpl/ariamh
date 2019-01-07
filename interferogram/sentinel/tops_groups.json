@@ -418,6 +418,19 @@
                         }]
 
                     },{
+                      "name" : "BBox",
+                      "python_action" : "isce_functions.get_bbox",
+                      "python_action_args" : ["../fine_interferogram"],
+                      "attribute" : [
+                        {
+                          "name" : "description",
+                          "value" : "Bounding Box"
+                        },{
+                          "name" : "units",
+                          "value" : "unitless"
+                        }]
+
+                    },{
                       "name" : "DEM",
                       "python_action" : "isce_functions.get_topsApp_variable",
                       "python_action_args" : ["../topsApp.xml","DEM"],
