@@ -519,6 +519,7 @@ def move_dem_separate_dir(dir_name):
     move_dem_separate_dir_NED(dir_name)
 
 def move_dem_separate_dir_SRTM(dir_name):
+    logger.info("move_dem_separate_dir_SRTM : %s" %dir_name)
     create_dir(dir_name)
 
     move_cmd=["mv", "demLat*", dir_name]
@@ -527,6 +528,8 @@ def move_dem_separate_dir_SRTM(dir_name):
     call_noerr(move_cmd_line)
 
 def move_dem_separate_dir_NED(dir_name):
+    logger.info("move_dem_separate_dir_NED : %s" %dir_name)
+    create_dir(dir_name)
     move_cmd=["mv", "stitched.*", dir_name]
     move_cmd_line=" ".join(move_cmd)
     logger.info("Calling {}".format(move_cmd_line))
@@ -538,16 +541,18 @@ def move_dem_separate_dir_NED(dir_name):
     call_noerr(move_cmd_line)
 
 def create_dir(dir_name):
+    '''
     if os.path.isdir(dir_name):
         rmdir_cmd=["rm", "-rf", dir_name]
         rmdir_cmd_line=" ".join(rmdir_cmd)
         logger.info("Calling {}".format(rmdir_cmd_line))
         call_noerr(rmdir_cmd_line)
-
-    mkdir_cmd=["mkdir", dir_name]
-    mkdir_cmd_line=" ".join(mkdir_cmd)
-    logger.info("Calling {}".format(mkdir_cmd_line))
-    call_noerr(mkdir_cmd_line)
+    '''
+    if not os.path.isdir(dir_name):
+        mkdir_cmd=["mkdir", dir_name]
+        mkdir_cmd_line=" ".join(mkdir_cmd)
+        logger.info("create_dir : Calling {}".format(mkdir_cmd_line))
+        call_noerr(mkdir_cmd_line)
 
 def call_noerr(cmd):
     """Run command and warn if exit status is not 0."""
@@ -747,6 +752,9 @@ def main():
     logger.info("Preprocess DEM file: {}".format(preprocess_dem_file))
 
     preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
+
+
+    logger.info("dem_type : %s preprocess_dem_dir : %s" %(dem_type, preprocess_dem_dir))
 
     if dem_type.startswith("NED"):
         move_dem_separate_dir_NED(preprocess_dem_dir)
