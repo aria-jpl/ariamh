@@ -289,8 +289,11 @@ def get_stitch_cfgs(context_file):
             swath_check = {}
             for swath in subswaths:
                 if swath not in grouped['grouped'][track][dt_pair]:
-                    raise RuntimeError("Did not find singlescene IFGs for subswath %s for track %s dates %s. Check your query results." %
-                                       (swath, track, dt_pair))
+                    logger.warning("Did not find singlescene IFGs for subswath %s for track %s dates %s. "
+                                   "Inteferogram job for subswath may have failed. "
+                                   "Putting dummy ids for missing subswath." % (swath, track, dt_pair))
+                    grouped['grouped'][track][dt_pair][swath] = []
+
                 for tr, id in grouped['grouped'][track][dt_pair][swath]:
                     swath_check.setdefault(tr, {})[swath] = id
             skip_tr = {}
