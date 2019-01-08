@@ -17,7 +17,7 @@ logging.basicConfig(format=log_format, level=logging.INFO)
 logger = logging.getLogger('get_clims')
 
 
-def get_clims(raster, band, clim_min_pct=None, clim_max_pct=None):
+def get_clims(raster, band, clim_min_pct=None, clim_max_pct=None, nodata=None):
     """Get data absolute min/max values as well as min/max percentile values
        for a given GDAL-recognized file format for a particular band."""
 
@@ -34,6 +34,8 @@ def get_clims(raster, band, clim_min_pct=None, clim_max_pct=None):
     # fetch max and min
     #min = band.GetMinimum()
     #max = band.GetMaximum()
+    if nodata is not None:
+        d = np.ma.masked_equal(d, nodata)
     min = np.amin(d)
     max = np.amax(d)
     min_pct = np.percentile(d, clim_min_pct) if clim_min_pct is not None else None
