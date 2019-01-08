@@ -588,9 +588,29 @@ def get_raster_corner_coords(vrt_file):
     os.chdir(cwd)
     return ext
 
+
+def my_envelope(geom):
+    from osgeo import ogr
+    (minX, maxX, minY, maxY) = geom.GetEnvelope()
+
+    # Create ring
+    ring = ogr.Geometry(ogr.wkbLinearRing)
+    ring.AddPoint(minX, minY)
+    ring.AddPoint(maxX, minY)
+    ring.AddPoint(maxX, maxY)
+    ring.AddPoint(minX, maxY)
+    ring.AddPoint(minX, minY)
+
+    # Create polygon
+    poly_envelope = ogr.Geometry(ogr.wkbPolygon)
+    poly_envelope.AddGeometry(ring)
+    return poly_envelope.ExportToWkt()
+
+
 def get_bbox(args):
     import json
     import os
+    import ogr
 
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     cur_wd = os.getcwd()
@@ -616,17 +636,15 @@ def get_bbox(args):
             #print("Getting raster corner coords instead.")
             #bbox_swath = get_raster_corner_coords(vrt_file)
 
-    geom_union = get_union_geom(bboxes)
+    geom_union =get_union_geom(bboxes)
     print("isce_functions : geom_union : %s" %geom_union)
-    bbox = json.loads(geom_union.ExportToJson())["coordinates"][0]
-    print("isce_function : First Union Bbox : %s " %bbox)
-    bbox = get_env_box(geom_union.GetEnvelope())
+    #bbox = json.loads(geom_union.ExportToJson())["coordinates"][0]
+    #print("isce_function : First Union Bbox : %s " %bbox)
+    #bbox = get_env_box(geom_union.GetEnvelope())
+    bbox = " %s" %my_envelope(geom_union)
     print("isce_function : Get Envelop :Final bbox : %s" %bbox)    
     
-    bbox=change_direction(bbox)
-    bbox_flatten =  (y for x in bbox for y in x)
-    print("isce_functions : returning %s" %bbox_flatten)
-    return bbox_flatten
+    return bbox
 
 
 
