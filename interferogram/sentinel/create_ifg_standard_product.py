@@ -1238,8 +1238,8 @@ def main():
 
     # create amplitude tile layer
     amp_layer = "amplitude"
-    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 90 --nodata 0"
-    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_amp, tiles_dir, amp_layer), shell=True)
+    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min {} --clim_max {} --nodata 0"
+    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_amp, tiles_dir, amp_layer, band_stats_amp[0], band_stats_amp[1]), shell=True)
 
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
