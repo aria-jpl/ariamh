@@ -41,7 +41,8 @@ def create_tiles(raster, output_dir, band=1, cmap='jet', clim_min=None,
     # get clim
     min, max, min_pct, max_pct = get_clims(raster, band,
                                            clim_min_pct if clim_min_pct is not None else 20,
-                                           clim_max_pct if clim_min_pct is not None else 80)
+                                           clim_max_pct if clim_max_pct is not None else 80,
+                                           nodata)
 
     # overwrite if options not specified
     if clim_min is not None: min = clim_min
