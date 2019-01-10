@@ -418,13 +418,13 @@
                         }]
 
                     },{
-                      "name" : "BBox",
+                      "name" : "productBoundingBox",
                       "python_action" : "isce_functions.get_bbox",
                       "python_action_args" : ["../fine_interferogram"],
                       "attribute" : [
                         {
                           "name" : "description",
-                          "value" : "Bounding Box"
+                          "value" : "Product bounding box defined as WKT POLYGON object"
                         },{
                           "name" : "units",
                           "value" : "unitless"
