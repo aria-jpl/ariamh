@@ -75,9 +75,6 @@ def create_tiles(raster, output_dir, band=1, cmap='jet', clim_min=None,
             logger.warn("Traceback: {}".format(traceback.format_exc()))
             zoom_f -= 1
 
-    # remove geotiff
-    os.unlink(tif_file)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)

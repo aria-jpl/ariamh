@@ -1241,6 +1241,11 @@ def main():
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min {} --clim_max {} --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_amp, tiles_dir, amp_layer, band_stats_amp[0], band_stats_amp[1]), shell=True)
 
+    # create browse images
+    tif_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt.tif"
+    check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/browse_small.png".format(tif_file_dis, prod_dir), shell=True)
+    check_call("gdal_translate -of png {} {}/browse.png".format(tif_file_dis, prod_dir), shell=True)
+
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
     extract_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', 
