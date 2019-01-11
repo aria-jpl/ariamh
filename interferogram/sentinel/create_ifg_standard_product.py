@@ -1245,6 +1245,7 @@ def main():
     tif_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt.tif"
     check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/browse_small.png".format(tif_file_dis, prod_dir), shell=True)
     check_call("gdal_translate -of png {} {}/browse.png".format(tif_file_dis, prod_dir), shell=True)
+    for i in glob("{}/browse*.aux.xml"): os.unlink(i)
 
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
