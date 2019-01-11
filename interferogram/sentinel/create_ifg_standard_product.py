@@ -1242,10 +1242,13 @@ def main():
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_amp, tiles_dir, amp_layer, band_stats_amp[0], band_stats_amp[1]), shell=True)
 
     # create browse images
-    tif_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt.tif"
-    check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/browse_coarse.png".format(tif_file_dis, prod_dir), shell=True)
-    check_call("gdal_translate -of png {} {}/browse_full.png".format(tif_file_dis, prod_dir), shell=True)
-    for i in glob("{}/browse*.aux.xml"): os.unlink(i)
+    tif_file_dis = "{}.tif".format(vrt_prod_file_dis)
+    check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/{}.interferogram.browse_coarse.png".format(tif_file_dis, prod_dir, id), shell=True)
+    check_call("gdal_translate -of png {} {}/{}.interferogram.browse_full.png".format(tif_file_dis, prod_dir, id), shell=True)
+    tif_file_amp = "{}.tif".format(vrt_prod_file_amp)
+    check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/{}.amplitude.browse_coarse.png".format(tif_file_amp, prod_dir, id), shell=True)
+    check_call("gdal_translate -of png {} {}/{}.amplitude.browse_full.png".format(tif_file_amp, prod_dir, id), shell=True)
+    for i in glob("{}/{}.*.browse*.aux.xml".format(prod_dir, id)): os.unlink(i)
 
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
