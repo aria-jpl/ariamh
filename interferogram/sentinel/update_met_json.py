@@ -185,7 +185,7 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
 
     metadata.update({
         "tiles": True,
-        "tile_layers": [ "amplitude", "displacement" ],
+        "tile_layers": [ "amplitude", "interferogram" ],
         "archive_filename": archive_filename,
         "spacecraftName": missions,
         "platform": missions,

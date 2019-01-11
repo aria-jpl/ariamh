@@ -397,7 +397,7 @@ def create_stitched_met_json(id, version, env, starttime, endtime, met_files, me
         'trackNumber': [],
         'archive_filename': id,
         'dataset_type': 'slc',
-        'tile_layers': [ 'amplitude', 'displacement' ],
+        'tile_layers': [ 'amplitude', 'interferogram' ],
         'latitudeIndexMin': int(math.floor(env[2] * 10)),
         'latitudeIndexMax': int(math.ceil(env[3] * 10)),
         'parallelBaseline': [],
@@ -1229,10 +1229,10 @@ def main():
     logger.info("amplitude band stats: {}".format(band_stats_amp))
     logger.info("displacment band stats: {}".format(band_stats_dis))
 
-    # create displacement tile layer
+    # create interferogram tile layer
     tiles_dir = "{}/tiles".format(prod_dir)
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
-    dis_layer = "displacement"
+    dis_layer = "interferogram"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m hsv --clim_min {} --clim_max {} --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_dis, tiles_dir, dis_layer, band_stats_dis[0], band_stats_dis[1]), shell=True)
 
@@ -1240,6 +1240,15 @@ def main():
     amp_layer = "amplitude"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min {} --clim_max {} --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_amp, tiles_dir, amp_layer, band_stats_amp[0], band_stats_amp[1]), shell=True)
+
+    # create browse images
+    tif_file_dis = "{}.tif".format(vrt_prod_file_dis)
+    check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/{}.interferogram.browse_coarse.png".format(tif_file_dis, prod_dir, id), shell=True)
+    check_call("gdal_translate -of png {} {}/{}.interferogram.browse_full.png".format(tif_file_dis, prod_dir, id), shell=True)
+    tif_file_amp = "{}.tif".format(vrt_prod_file_amp)
+    check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/{}.amplitude.browse_coarse.png".format(tif_file_amp, prod_dir, id), shell=True)
+    check_call("gdal_translate -of png {} {}/{}.amplitude.browse_full.png".format(tif_file_amp, prod_dir, id), shell=True)
+    for i in glob("{}/{}.*.browse*.aux.xml".format(prod_dir, id)): os.unlink(i)
 
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
