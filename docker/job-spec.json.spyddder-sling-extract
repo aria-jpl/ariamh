@@ -1,9 +1,9 @@
 {
-  "command": "/home/ops/verdi/ops/spyddder-man/sling_extract.py",
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract.py",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
-    "$HOME/verdi/etc/settings.json": "/home/ops/verdi/ops/spyddder-man/settings.json",
+    "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/settings.json",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
