@@ -3,7 +3,7 @@
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
-    "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/settings.json",
+    "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/frameMetadata/settings.json",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
