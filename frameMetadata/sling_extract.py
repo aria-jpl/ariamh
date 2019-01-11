@@ -26,9 +26,16 @@ def run_extractor(dsets_file, prod_path, ctx):
     logging.info("datasets: %s" % dsets_file)
     logging.info("prod_path: %s" % prod_path)
     # get settings
-    settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                 'settings.json')
-    settings = json.load(open(settings_file))
+    settings = {}
+    try:
+        settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json')
+        settings = json.load(open(settings_file))
+    except:
+
+        settings['DATASETS_CFG'] = "/home/ops/verdi/etc/datasets.json"
+        settings["INCOMING_VERSION"] = "v0.1"
+        settings["EXTRACT_VERSION"]= "v0.1"
+        settings["ACQ_TO_DSET_MAP"] = {"acquisition-S1-IW_SLC": "S1-IW_SLC"}
 
     # recognize
     r = Recognizer(dsets_file, prod_path,os.path.basename(prod_path),settings["EXTRACT_VERSION"])
@@ -94,9 +101,17 @@ def create_product(file, prod_name, prod_date):
        metadata extractor."""
 
     # get settings
-    settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                 'settings.json')
-    settings = json.load(open(settings_file))
+
+    settings = {}
+    try:
+        settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json')
+        settings = json.load(open(settings_file))
+    except:
+
+        settings['DATASETS_CFG'] = "/home/ops/verdi/etc/datasets.json"
+        settings["INCOMING_VERSION"] = "v0.1"
+        settings["EXTRACT_VERSION"]= "v0.1"
+        settings["ACQ_TO_DSET_MAP"] = {"acquisition-S1-IW_SLC": "S1-IW_SLC"}
 
     # create product directory and move product file in it
     prod_path = os.path.abspath(prod_name)
