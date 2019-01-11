@@ -56,7 +56,7 @@ for i in ('hdr', 'vrt', 'xml'):
 
 # create displacement tile layer
 vrt_prod_file = "{}.vrt".format(unw_prod_file)
-dis_layer = "displacement"
+dis_layer = "interferogram"
 cmd = "{}/create_tiles.py merged/{} {}/{} -b 2 -m prism --nodata 0"
 check_call(cmd.format(BASE_PATH, vrt_prod_file, 'tiles', dis_layer), shell=True)
 

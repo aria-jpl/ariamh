@@ -397,7 +397,7 @@ def create_stitched_met_json(id, version, env, starttime, endtime, met_files, me
         'trackNumber': [],
         'archive_filename': id,
         'dataset_type': 'slc',
-        'tile_layers': [ 'amplitude', 'displacement' ],
+        'tile_layers': [ 'amplitude', 'interferogram' ],
         'latitudeIndexMin': int(math.floor(env[2] * 10)),
         'latitudeIndexMax': int(math.ceil(env[3] * 10)),
         'parallelBaseline': [],
@@ -1229,10 +1229,10 @@ def main():
     logger.info("amplitude band stats: {}".format(band_stats_amp))
     logger.info("displacment band stats: {}".format(band_stats_dis))
 
-    # create displacement tile layer
+    # create interferogram tile layer
     tiles_dir = "{}/tiles".format(prod_dir)
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
-    dis_layer = "displacement"
+    dis_layer = "interferogram"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m hsv --clim_min {} --clim_max {} --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_dis, tiles_dir, dis_layer, band_stats_dis[0], band_stats_dis[1]), shell=True)
 
