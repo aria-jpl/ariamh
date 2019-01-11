@@ -1,0 +1,37 @@
+{
+  "command": "/home/ops/verdi/ops/spyddder-man/sling_extract.py",
+  "imported_worker_files": {
+    "$HOME/.netrc": "/home/ops/.netrc",
+    "$HOME/.aws": "/home/ops/.aws",
+    "$HOME/verdi/etc/settings.json": "/home/ops/verdi/ops/spyddder-man/settings.json",
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "recommended-queues" : [
+    "grfn-job_worker-small",
+    "aria-job_worker-small",
+    "mem-job_worker-small",
+    "dwr-job_worker-small",
+    "chevron-job_worker-small",
+    "floodmap-job_worker-small",
+    "urgent-response-job_worker-small"
+  ],
+  "disk_usage": "50GB",
+  "params" : [
+    { 
+      "name": "localize_url",
+      "destination": "positional"
+    },
+    { 
+      "name": "file",
+      "destination": "positional"
+    },
+    { 
+      "name": "prod_name",
+      "destination": "positional"
+    },
+    { 
+      "name": "prod_date",
+      "destination": "positional"
+    }
+  ]
+}
