@@ -133,6 +133,8 @@ def create_product(file, prod_name, prod_date):
         dsets_file = "./datasets.json"
     run_extractor(dsets_file, prod_path, ctx)
 
+def is_non_zero_file(fpath):  
+    return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -163,6 +165,11 @@ if __name__ == "__main__":
              shutil.move(os.path.join(args.file,args.file),"./tmp")
              shutil.rmtree(args.file)
              shutil.move("./tmp",args.file)
+
+        #Check for Zero Sized File
+        if not is_non_zero_file(args.file):
+            raise Exception("File Not Found or Empty File : %s" %args.file)
+
         create_product(args.file, args.prod_name, args.prod_date)
     except Exception as e:
         with open('_alt_error.txt', 'a') as f:
