@@ -16,6 +16,7 @@
     }
   ],
   "recommended-queues" : [
+    "standard_product_s1ifg-sciflo_s1ifg_single_scene",
     "grfn-job_worker-small",
     "aria-job_worker-small",
     "mem-job_worker-small",
