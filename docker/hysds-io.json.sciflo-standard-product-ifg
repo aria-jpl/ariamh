@@ -1,6 +1,6 @@
 {
   "submission_type": "iteration",
-  "label" : "S1 - POEORB Standard Product Interferogram",
+  "label" : "Standard Product S1-IFG - Sciflo S1-IFG single-scene",
   "recommended-queues" : [ "grfn-job_worker-large" ],
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,

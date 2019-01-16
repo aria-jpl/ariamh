@@ -16,11 +16,7 @@
     }
   ],
   "recommended-queues" : [
-    "grfn-job_worker-small",
-    "aria-job_worker-small",
-    "mem-job_worker-small",
-    "dwr-job_worker-small",
-    "urgent-response-job_worker-small"
+    "standard_product_s1ifg-sciflo_s1ifg_single_scene"
   ],
   "soft_time_limit": 1800,
   "time_limit": 2400,
