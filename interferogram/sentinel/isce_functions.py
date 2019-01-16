@@ -487,7 +487,7 @@ def get_aligned_bbox(prod, orb):
     # extract bbox
     ts = [prod.sensingStart, prod.sensingStop]
     rngs = [prod.startingRange, prod.farRange]
-    pos = []
+    pos = [1]
     for tim in ts:
         for rng in rngs:
             llh = prod.orbit.rdr2geo(tim, rng, height=0.)
@@ -591,19 +591,25 @@ def get_raster_corner_coords(vrt_file):
 
 def my_envelope(geom):
     from osgeo import ogr
-    (minX, maxX, minY, maxY) = geom.GetEnvelope()
+    #(minX, maxX, minY, maxY) = geom.GetEnvelope()
 
     # Create ring
     ring = ogr.Geometry(ogr.wkbLinearRing)
+    for i in range(0, geom.GetPointCount()):
+    # GetPoint returns a tuple not a 
+        pt = geom.GetPoint(i)
+        ring.AddPoint(pt)
+    '''
     ring.AddPoint(minX, minY)
     ring.AddPoint(maxX, minY)
     ring.AddPoint(maxX, maxY)
     ring.AddPoint(minX, maxY)
     ring.AddPoint(minX, minY)
-
+    '''
     # Create polygon
     poly_envelope = ogr.Geometry(ogr.wkbPolygon)
     poly_envelope.AddGeometry(ring)
+    #poly_envelope.AddGeometry(geom)
     return poly_envelope.ExportToWkt()
 
 
@@ -638,13 +644,20 @@ def get_bbox(args):
 
     geom_union =get_union_geom(bboxes)
     print("isce_functions : geom_union : %s" %geom_union)
+    '''
     #bbox = json.loads(geom_union.ExportToJson())["coordinates"][0]
     #print("isce_function : First Union Bbox : %s " %bbox)
     #bbox = get_env_box(geom_union.GetEnvelope())
+    #poly_envelope = ogr.Geometry(ogr.wkbPolygon)
+    #poly_envelope.AddGeometry(ring)
+    #poly_envelope.AddGeometry(geom_union)
+    #bbox= poly_envelope.ExportToWkt()
+
     bbox = " %s" %my_envelope(geom_union)
     print("isce_function : Get Envelop :Final bbox : %s" %bbox)    
-    
-    return bbox
+    '''
+
+    return "%s" %geom_union
 
 
 
