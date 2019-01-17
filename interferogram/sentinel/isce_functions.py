@@ -492,10 +492,7 @@ def get_aligned_bbox(prod, orb):
         for rng in rngs:
             llh = prod.orbit.rdr2geo(tim, rng, height=0.)
             pos.append(llh)
-    print("pos : %s" %pos)
-    print("list(pos) : %s" %list(pos))
-    pos = np.array(list(pos))
-    print("np array pos : %s" %pos)
+    pos = np.array(pos)
     bbox = pos[[0, 1, 3, 2], 0:2]
 
     return bbox.tolist()
@@ -625,7 +622,7 @@ def get_bbox(args):
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     cur_wd = os.getcwd()
     master_dir= args[0]
-    vrt_file = args[1]
+    #vrt_file = args[1]
 
     print("isce_functions : get_bbox: %s : %s : %s" %(cur_dir, cur_wd, master_dir))
     bboxes = []
@@ -645,8 +642,8 @@ def get_bbox(args):
         except Exception as e:
             print("isce_functions : Failed to get aligned bbox: %s" %str(e))
             traceback.print_exc()
-            print("Getting raster corner coords instead.")
-            bbox_swath = get_raster_corner_coords(vrt_file)
+            #print("Getting raster corner coords instead.")
+            #bbox_swath = get_raster_corner_coords(vrt_file)
         bboxes.append(bbox_swath)
 
     geom_union =get_union_geom(bboxes)
