@@ -487,13 +487,17 @@ def get_aligned_bbox(prod, orb):
     # extract bbox
     ts = [prod.sensingStart, prod.sensingStop]
     rngs = [prod.startingRange, prod.farRange]
-    pos = [1]
+    pos = []
     for tim in ts:
         for rng in rngs:
             llh = prod.orbit.rdr2geo(tim, rng, height=0.)
             pos.append(llh)
-    pos = np.array(pos)
+    print("pos : %s" %pos)
+    print("list(pos) : %s" %list(pos))
+    pos = np.array(list(pos))
+    print("np array pos : %s" %pos)
     bbox = pos[[0, 1, 3, 2], 0:2]
+
     return bbox.tolist()
 
 def get_loc(box):
@@ -615,12 +619,13 @@ def my_envelope(geom):
 
 def get_bbox(args):
     import json
-    import os
+    import os, traceback
     import ogr
 
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     cur_wd = os.getcwd()
     master_dir= args[0]
+    vrt_file = args[1]
 
     print("isce_functions : get_bbox: %s : %s : %s" %(cur_dir, cur_wd, master_dir))
     bboxes = []
@@ -636,11 +641,13 @@ def get_bbox(args):
             print("isce_functions : orb")
             bbox_swath = get_aligned_bbox(prod, orb)
             print("isce_functions : bbox_swath : %s" %bbox_swath)
-            bboxes.append(bbox_swath)
+            #bboxes.append(bbox_swath)
         except Exception as e:
             print("isce_functions : Failed to get aligned bbox: %s" %str(e))
-            #print("Getting raster corner coords instead.")
-            #bbox_swath = get_raster_corner_coords(vrt_file)
+            traceback.print_exc()
+            print("Getting raster corner coords instead.")
+            bbox_swath = get_raster_corner_coords(vrt_file)
+        bboxes.append(bbox_swath)
 
     geom_union =get_union_geom(bboxes)
     print("isce_functions : geom_union : %s" %geom_union)
