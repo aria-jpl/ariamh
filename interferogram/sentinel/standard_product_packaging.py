@@ -12,6 +12,7 @@ import numpy as np
 import isce
 import osgeo
 from osgeo import gdal
+from osgeo import osr
 import collections
 import pdb
 
@@ -25,7 +26,7 @@ BASE_PATH = os.path.dirname(__file__)
 class content_properties:
     names = ('type','src_file','nodata','chunks','band','description',
              'dims','python_action','python_action_args','attribute',
-             'description','name','crs_name','crs_attribute')
+             'description','name','crs_name','crs_attribute','data_type','global_attribute')
 
     def __init__(self,dataset):
         for property_name in self.names:
@@ -117,64 +118,66 @@ def python_execution(python_string,python_args=None):
 
 def write_dataset(fid,data,properties_data):
     '''
-        Writing out the data in netcdf arrays or strings depending on the type of data.
+        Writing out the data in netcdf arrays or strings depending on the type of data or polygons depending on the data_type.
     '''
-    
-    import numpy as np
-   
-    if isinstance(data,(str,)):
-        dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
-        dset[0]=data
-    elif isinstance(data,(np.ndarray,)):
-        
-        #pdb.set_trace()
-        # make sure the _fillvalue is formatted the same as the data_type
-        if properties_data.type is None:
-            properties_data.type = data.dtype.name
-        if properties_data.nodata is not None:
-            nodata = np.array(properties_data.nodata,dtype=properties_data.type)
-        else:
-            nodata = None
-
-         
-        if len(properties_data.dims)==1:
-            dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0]), fill_value=nodata, zlib=True)
-        elif len(properties_data.dims)==2:
-            dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0], properties_data.dims[1]), fill_value=nodata, zlib=True)
-        elif len(properties_data.dims)==3:
-            dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
-        elif properties_data.dims is None:
-            dset = fid.createVariable(properties_data.name, properties_data.type)
-        dset[:] = data
-    elif isinstance(data, collections.Iterable):
-        if isinstance(data[0],(str,)):
-            dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
-            count = 0
-            for data_line in data:
-                dset[count]=data_line
-                logger.info(properties_data.name + " count = " + str(count) + '  ' + data_line)
-               
-                count =+1
-        else:
-            logger.info('i am a collection, not yet programmed')
-    elif data is None:
-        logger.info("Action failed...")
-        dset = None
+    # for now only support polygon for vector
+    if False:
+        print("nothing")
+    # this is either string or dataset option
     else:
-        data = np.array([data])
-        if properties_data.type is None:
-            properties_data.type='float32'
-        #dset = fid.createVariable(properties_data.name,properties_data.type,('matchup',),fill_value=-9999., zlib=True)
-        dset = fid.createVariable(properties_data.name,properties_data.type)
-        dset[:] = data
-    # adding attributes if inputted
-    if properties_data.attribute is not None and dset is not None:
-        add_attributes(dset,properties_data.attribute)
+       
+        if isinstance(data,(str,)):
+            dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
+            dset[0]=data
+        elif isinstance(data,(np.ndarray,)):
+            # make sure the _fillvalue is formatted the same as the data_type
+            if properties_data.type is None:
+                properties_data.type = data.dtype.name
+            if properties_data.nodata is not None:
+                nodata = np.array(properties_data.nodata,dtype=properties_data.type)
+            else:
+                nodata = None
+    
+             
+            if len(properties_data.dims)==1:
+                dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0]), fill_value=nodata, zlib=True)
+            elif len(properties_data.dims)==2:
+                dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0], properties_data.dims[1]), fill_value=nodata, zlib=True)
+            elif len(properties_data.dims)==3:
+                dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
+            elif properties_data.dims is None:
+                dset = fid.createVariable(properties_data.name, properties_data.type)
+            dset[:] = data
+        elif isinstance(data, collections.Iterable):
+            if isinstance(data[0],(str,)):
+                dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
+                count = 0
+                for data_line in data:
+                    dset[count]=data_line
+                    logger.info(properties_data.name + " count = " + str(count) + '  ' + data_line)
+                   
+                    count =+1
+            else:
+                logger.info('i am a collection, not yet programmed')
+        elif data is None:
+            logger.info("Action failed...")
+            dset = None
+        else:
+            data = np.array([data])
+            if properties_data.type is None:
+                properties_data.type='float32'
+            #dset = fid.createVariable(properties_data.name,properties_data.type,('matchup',),fill_value=-9999., zlib=True)
+            dset = fid.createVariable(properties_data.name,properties_data.type)
+            dset[:] = data
+        # adding attributes if inputted
+        if properties_data.attribute is not None and dset is not None:
+            add_attributes(dset,properties_data.attribute)
 
 
 def expand_attrdict(attr_dict, attr_name, attr_value):
     '''
          expand an attribute dict with more keys and values
+         Update the attribute dictionary if original key is used again with a new value
     '''
 
     #pdb.set_trace()
@@ -190,7 +193,18 @@ def expand_attrdict(attr_dict, attr_name, attr_value):
         if len(attr_dict)==0:
             attr_dict = [attr_temp]
         else:
-            attr_dict.append(attr_temp)
+            # looping over all the attributes to see if the name already is in use
+            count_dict = 0
+            name_match = None
+            for attr_dict_item in attr_dict:
+                if attr_dict_item["name"] == attr_temp["name"]:
+                    name_match = count_dict
+                count_dict = count_dict +1
+            # if a match was found needs to update the attribute information
+            if name_match is not None:
+                attr_dict[name_match]=attr_temp
+            else:
+                attr_dict.append(attr_temp)
 
     return attr_dict
 
@@ -204,7 +218,6 @@ def create_dataset(fid,dataset,fid_parent=None):
     name = dataset["name"]
     logger.info("dataset name = " + name)
 
-
     # extracting the data properties
     properties_data = content_properties(dataset)
  
@@ -212,21 +225,12 @@ def create_dataset(fid,dataset,fid_parent=None):
     # running a python function
     if properties_data.python_action is not None:
        data = python_execution(properties_data.python_action,properties_data.python_action_args)
-       #pdb.set_trace()
 
     # loading data from a src file
     elif properties_data.src_file is not None:
         
        # loading the data
        data, data_transf, data_proj, data_nodata = data_loading(properties_data.src_file,properties_data.type,properties_data.band)
-
-       """
-       # tracking the projection information
-       if data_transf is not None and data_proj is not None:
-           attr_name = ['GDAL_projection','GDAL_transformation']
-           attr_value = [data_proj,data_transf]
-           properties_data.attribute = expand_attrdict(properties_data.attribute, attr_name, attr_value)
-       """
 
        # setting the no-data value in case the user is not overwriting it
        if data_nodata is not None and properties_data.nodata is None:
@@ -240,17 +244,9 @@ def create_dataset(fid,dataset,fid_parent=None):
        if properties_data.description is not None:
            data = properties_data.description
 
+    
     # special case to parse the connected component data
     if properties_data.name.lower()=="connected_components" or properties_data.name.lower() =="connectedcomponents" :
-        '''
-        # tracking the projection information
-        if data["data_proj"] is not None and data["data_transf"] is not None:
-            attr_name = ['GDAL_projection','GDAL_transformation']
-            attr_value = [data["data_proj"],data["data_transf"]]
-            properties_data.attribute = expand_attrdict(properties_data.attribute, attr_name, attr_value)
-        '''
-        
-        #pdb.set_trace()
         # setting the no-data value in case the user is not overwriting it
         if data["data_nodata"] is not None and properties_data.nodata is None:
             properties_data.nodata = data["data_nodata"]
@@ -274,16 +270,11 @@ def create_dataset(fid,dataset,fid_parent=None):
         # setting the coordinate system
         crs_name = properties_data.crs_name
         crs_attribute = properties_data.crs_attribute
+        
+        # ensuring the crs is CF compliant
+        crs_attribute = CF_attribute_compliance(crs_attribute,crs_name) 
+
         # try to see if the geo transformation and projection is passed as well
-        '''
-        try:
-            if data["data_proj"] is not None and data["data_transf"] is not None:
-                attr_name = ['crs_wkt','crs_transformation']
-                attr_value = [data["data_proj"],data["data_transf"]]
-                crs_attribute = expand_attrdict(crs_attribute, attr_name, attr_value)
-        except:
-            pass
-        '''
         try:
             if data["data_proj"] is not None:
                 attr_name = ['crs_wkt']
@@ -292,8 +283,8 @@ def create_dataset(fid,dataset,fid_parent=None):
         except:
             pass
 
-
-        dset = fid_parent.createVariable(crs_name, 'i4')
+        # modify to make the CRS information locally at the group level of the datasets
+        dset = fid.createVariable(crs_name, 'i4')
         add_attributes(dset,crs_attribute)
 
         ## START with 2D: LON LAT
@@ -304,8 +295,8 @@ def create_dataset(fid,dataset,fid_parent=None):
         lats_dim = data['lats_map']
         rows_ds = len(lats)
         cols_ds = len(lons)
-        fid_parent.createDimension(lats_dim, rows_ds)
-        fid_parent.createDimension(lons_dim, cols_ds)
+        fid.createDimension(lats_dim, rows_ds)
+        fid.createDimension(lons_dim, cols_ds)
 
      
         # defining the lon lat datasets
@@ -339,7 +330,7 @@ def create_dataset(fid,dataset,fid_parent=None):
             hgts = data['hgts']
             hgts_dim = data['hgts_map']
             vert_ds = len(hgts)
-            fid_parent.createDimension(hgts_dim, vert_ds)
+            fid.createDimension(hgts_dim, vert_ds)
 
             # heights
             properties_hgtdata = copy.deepcopy(properties_data)
@@ -352,6 +343,66 @@ def create_dataset(fid,dataset,fid_parent=None):
             properties_hgtdata.dims = [hgts_dim]
             write_dataset(fid,data_hgt,properties_hgtdata)
 
+    ## POLYGON NEEDS special manipulation compared to raster datasets
+    elif properties_data.data_type is not None and properties_data.data_type.lower()=="polygon":
+    
+        # number of polygons corresponds to the length of the list
+        n_poly = len(data)
+        # for now lets code the char to be lenth of the first poly
+        n_char = len(list(data[0]))
+
+        # creating the dimensions for the netcdf
+        fid_parent.createDimension('wkt_length',n_char)
+        fid_parent.createDimension('wkt_count',n_poly)
+        dset = fid_parent.createVariable(name,'S1',('wkt_count','wkt_length'))
+        
+        # formatting the string as an array of single char
+        # fill data with a charakter at each postion of the polyfgon string
+        for poly_i in range(n_poly):
+            polygon_i = list(data[poly_i])
+            data_temp = []
+            data_temp = np.empty((len(polygon_i),),'S1')
+            for n in range(len(polygon_i)):
+                data_temp[n] = polygon_i[n]
+            dset[poly_i] = data_temp
+        
+        # setting the attribute
+        if properties_data.attribute is not None and dset is not None:
+            # for CF compliance make sure few attributes are provided
+            properties_data = CF_attribute_compliance(properties_data,name)
+            add_attributes(dset,properties_data.attribute)
+    
+        # adding the crs information for the polygon
+        crs_name = properties_data.crs_name
+        dset2 = fid_parent.createVariable(crs_name, 'i4')
+        crs_attributes = properties_data.crs_attribute
+        if crs_attributes is not None:
+            # getting the EPSG code and update corresponding field if needed
+            projectionRef = None
+            for crs_attribute in crs_attributes:
+                crs_attribute_name = extract_key(crs_attribute,"name")
+                crs_attribute_value = extract_key(crs_attribute,"value")
+                if crs_attribute_name.lower() == "spatial_ref":
+                    if isinstance(crs_attribute_value,(int,)):
+                        ref = osr.SpatialReference()
+                        ref.ImportFromEPSG(crs_attribute_value)
+                        projectionRef = ref.ExportToWkt()
+            if projectionRef is not None:
+                # update the the attribute information
+                attr_name = ['spatial_ref']
+                attr_value = [projectionRef]
+                crs_attributes = expand_attrdict(crs_attributes, attr_name, attr_value)
+            
+            # ensuring the crs is CF compliant
+            crs_attributes = CF_attribute_compliance(crs_attributes,crs_name)
+            
+            # setting the variable
+            add_attributes(dset2,crs_attributes)
+                            
+        # setting the global attributes
+        global_attribute = properties_data.global_attribute
+        add_attributes(fid_parent,global_attribute)
+
     else:
         # for CF compliance make sure few attributes are provided
         properties_data = CF_attribute_compliance(properties_data,name)
@@ -363,11 +414,20 @@ def CF_attribute_compliance(properties_data,name):
     """ 
         Ensuring that few CF attributes are added
     """
+   
+    # try to see if the attribute list is given directly or if it is part of a class
+    class_flag = False
+    try:
+        data_attribute = properties_data.attribute
+        class_flag = True
+    except:
+        data_attribute = properties_data 
+
 
     # load all current attributes
     CF_current_dict = {}
-    if properties_data.attribute is not None:
-        for attribute in properties_data.attribute:
+    if data_attribute is not None:
+        for attribute in data_attribute:
             CF_current_dict[extract_key(attribute,"name")] = extract_key(attribute,"value")
 
 
@@ -385,7 +445,10 @@ def CF_attribute_compliance(properties_data,name):
                 pass
     
     if len(CF_missing_attr_name)>0:
-        properties_data.attribute = expand_attrdict(properties_data.attribute, CF_missing_attr_name, CF_missing_attr_value)
+        if class_flag:
+            properties_data.attribute = expand_attrdict(properties_data.attribute, CF_missing_attr_name, CF_missing_attr_value)
+        else:
+            properties_data =  expand_attrdict(properties_data,CF_missing_attr_name, CF_missing_attr_value)
 
     return properties_data
 
@@ -399,6 +462,9 @@ def add_attributes(fid,attributes):
         for attribute in attributes:
             attribute_name = extract_key(attribute,"name")
             attribute_value = extract_key(attribute,"value")
+            # make sure the strings are correctly encoded
+            if isinstance(attribute_value, str):
+                attribute_value = attribute_value.encode('ascii')   
             setattr(fid, attribute_name, attribute_value)
 
 
@@ -490,7 +556,7 @@ if __name__ == '__main__':
     
     # get config json file
     cwd = os.getcwd()
-    filename = os.path.join(cwd, 'tops_groups.json')
+    filename = os.path.join(cwd, 'tops.json')
     
     # open the file
     f = open(filename)
@@ -542,3 +608,5 @@ if __name__ == '__main__':
 
     # close the file
     fid.close()
+
+    logger.info('Done with packaging')

@@ -494,7 +494,6 @@ def get_aligned_bbox(prod, orb):
             pos.append(llh)
     pos = np.array(pos)
     bbox = pos[[0, 1, 3, 2], 0:2]
-
     return bbox.tolist()
 
 def get_loc(box):
@@ -590,39 +589,15 @@ def get_raster_corner_coords(vrt_file):
     return ext
 
 
-def my_envelope(geom):
-    from osgeo import ogr
-    #(minX, maxX, minY, maxY) = geom.GetEnvelope()
-
-    # Create ring
-    ring = ogr.Geometry(ogr.wkbLinearRing)
-    for i in range(0, geom.GetPointCount()):
-    # GetPoint returns a tuple not a 
-        pt = geom.GetPoint(i)
-        ring.AddPoint(pt)
-    '''
-    ring.AddPoint(minX, minY)
-    ring.AddPoint(maxX, minY)
-    ring.AddPoint(maxX, maxY)
-    ring.AddPoint(minX, maxY)
-    ring.AddPoint(minX, minY)
-    '''
-    # Create polygon
-    poly_envelope = ogr.Geometry(ogr.wkbPolygon)
-    poly_envelope.AddGeometry(ring)
-    #poly_envelope.AddGeometry(geom)
-    return poly_envelope.ExportToWkt()
-
-
 def get_bbox(args):
     import json
-    import os, traceback
+    import os
     import ogr
+    import pdb
 
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     cur_wd = os.getcwd()
     master_dir= args[0]
-    #vrt_file = args[1]
 
     print("isce_functions : get_bbox: %s : %s : %s" %(cur_dir, cur_wd, master_dir))
     bboxes = []
@@ -638,30 +613,17 @@ def get_bbox(args):
             print("isce_functions : orb")
             bbox_swath = get_aligned_bbox(prod, orb)
             print("isce_functions : bbox_swath : %s" %bbox_swath)
-            #bboxes.append(bbox_swath)
+            bboxes.append(bbox_swath)
         except Exception as e:
             print("isce_functions : Failed to get aligned bbox: %s" %str(e))
-            traceback.print_exc()
             #print("Getting raster corner coords instead.")
             #bbox_swath = get_raster_corner_coords(vrt_file)
-        bboxes.append(bbox_swath)
 
-    geom_union =get_union_geom(bboxes)
+    geom_union = get_union_geom(bboxes)
     print("isce_functions : geom_union : %s" %geom_union)
-    '''
-    #bbox = json.loads(geom_union.ExportToJson())["coordinates"][0]
-    #print("isce_function : First Union Bbox : %s " %bbox)
-    #bbox = get_env_box(geom_union.GetEnvelope())
-    #poly_envelope = ogr.Geometry(ogr.wkbPolygon)
-    #poly_envelope.AddGeometry(ring)
-    #poly_envelope.AddGeometry(geom_union)
-    #bbox= poly_envelope.ExportToWkt()
-
-    bbox = " %s" %my_envelope(geom_union)
-    print("isce_function : Get Envelop :Final bbox : %s" %bbox)    
-    '''
-
-    return "%s" %geom_union
+    # return the polygon as a list of strings, which each poly a list argument
+    geom_union_str = ["%s"%geom_union]
+    return geom_union_str
 
 
 
