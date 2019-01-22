@@ -556,7 +556,7 @@ if __name__ == '__main__':
     
     # get config json file
     cwd = os.getcwd()
-    filename = os.path.join(cwd, 'tops.json')
+    filename = os.path.join(cwd, 'tops_groups.json')
     
     # open the file
     f = open(filename)
