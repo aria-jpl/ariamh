@@ -261,14 +261,14 @@
                                     {
                                       "name" : "ionosphere",
                                       "content" : [
-                                        {
+                                      {
                                           "dataset" : [
-                                            {
-                                              "name" : "ionosphere",
-                                              "type" : "str",
-                                              "description" : "placeholder dummy: [2D]"
-                                            }]
-                                        }]
+                                          {                                                                                                                                                                              
+                                            "name" : "ionosphere",
+                                            "type" : "str",
+                                            "description" : "placeholder dummy: [2D]"
+                                          }]
+                                      }]
                                     }]
                                 }]
                             },{
@@ -416,20 +416,6 @@
                           "name" : "units",
                           "value" : "unitless"
                         }]
-
-                    },{
-                      "name" : "productBoundingBox",
-                      "python_action" : "isce_functions.get_bbox",
-                      "python_action_args" : ["../fine_interferogram"],
-                      "attribute" : [
-                        {
-                          "name" : "description",
-                          "value" : "Product bounding box defined as WKT POLYGON object"
-                        },{
-                          "name" : "units",
-                          "value" : "unitless"
-                        }]
-
                     },{
                       "name" : "DEM",
                       "python_action" : "isce_functions.get_topsApp_variable",
@@ -442,7 +428,6 @@
                           "name" : "units",
                           "value" : "unitless"
                         }]
-
                     },{
                       "name" : "ESDthreshold",
                       "python_action" : "isce_functions.get_topsApp_variable",
@@ -528,6 +513,39 @@
                           "name" : "units",
                           "value" : "meter"
                         }]
+                    },{
+                      "name" : "productBoundingBox",
+                      "python_action" : "isce_functions.get_bbox",
+                      "python_action_args" : ["../fine_interferogram"],
+                      "data_type" : "polygon",
+                      "attribute" : [
+                      {
+                          "name" : "description",
+                          "value" : "Product bounding box defined as ISO WKT polygon"
+                      },{
+                          "name" : "units",
+                          "value" : "unitless"
+                      },{
+                          "name" : "grid_mapping",
+                          "value" : "crs_polygon"
+                      }],
+                      "crs_name" : "crs_polygon",
+                      "crs_attribute" : [
+                      {
+                          "name" : "spatial_ref",
+                          "value" : 4326
+                      }],
+                      "global_attribute" : [
+                      {
+                          "name" : "ogr_geometry_field",
+                          "value" : "productBoundingBox"
+                      },{
+                          "name" : "ogr_layer_name",
+                          "value" : "productBoundingBox"
+                      },{
+                          "name": "ogr_layer_type",
+                          "value": "POLYGON"
+                      }]
                     }]
                 }]
             }]
