@@ -695,5 +695,15 @@ def get_orbit_url (slc_id, track):
     return orbit_url
 '''
 
-if __name__ == "__main__":
-    initiate_standard_product_job("_context.json")
+
+if __name__ == '__main__':
+    try: status = initiate_standard_product_job("_context.json")
+    except Exception as e:
+        with open('_alt_error.txt', 'w') as f:
+            f.write("%s\n" % str(e))
+        with open('_alt_traceback.txt', 'w') as f:
+            f.write("%s\n" % traceback.format_exc())
+        raise
+    sys.exit(status)
+
+
