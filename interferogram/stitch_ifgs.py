@@ -156,7 +156,7 @@ def create_met_json(id, version, env, starttime, endtime, met_files, met_json_fi
                   'sensor', 'lookDirection', 'platform', 'startingRange',
                   'beamMode', 'direction', 'prf' )
     single_params = ('temporal_span', 'trackNumber')
-    list_params = ('platform', 'swath', 'perpendicularBaseline', 'parallelBaseline')
+    list_params = ('master_scenes', 'slave_scenes', 'platform', 'swath', 'perpendicularBaseline', 'parallelBaseline')
     mean_params = ('perpendicularBaseline', 'parallelBaseline')
     for i, met_file in enumerate(met_files):
         with open(met_file) as f:

@@ -545,7 +545,8 @@ class IfgStitcher:
        
         over,overlap_mask = self.get_ovelap([im,im1],[wmsk1,wmsk2],length,width,[i1,i2],[j1,j2],False)
         if len(over[0]) == 0:
-            return None,None,None
+            return None,None,None,None
+
         #don't touch the zeros so use this mask
         nmask1 = np.nonzero(np.abs(im) < self._small)
         nmask2 = np.abs(im1) < self._small
