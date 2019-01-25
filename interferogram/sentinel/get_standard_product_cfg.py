@@ -295,7 +295,7 @@ def get_track(info):
     for id in info:
         h = info[id]
         fields = h["_source"]
-        track = fields['metadata']['trackNumber']
+        track = fields['metadata']['track_number']
         tracks.setdefault(track, []).append(id)
     if len(tracks) != 1:
         raise RuntimeError("Failed to find SLCs for only 1 track.")
@@ -570,7 +570,7 @@ def initiate_sp2(context_file):
     print("Processing Master")
     for slc_id in master_slcs:
   	result = query_grq(slc_id)[0]['_source']
-	track = result['metadata']['trackNumber']
+	track = result['metadata']['track_number']
 	master_orbit_number = result['metadata']['orbitNumber']
         zip_url = get_prod_url(result['urls'], result['metadata']['archive_filename'])
 	orbit_url = get_orbit_url (slc_id, track)
@@ -583,7 +583,7 @@ def initiate_sp2(context_file):
     print("Processing Slaves")
     for slc_id in slave_slcs:
 	result = query_grq(slc_id)[0]['_source']
-        track = result['metadata']['trackNumber']
+        track = result['metadata']['track_number']
 	slave_orbit_number = result['metadata']['orbitNumber']
         zip_url = get_prod_url(result['urls'], result['metadata']['archive_filename'])
         orbit_url = get_orbit_url (slc_id, track)
