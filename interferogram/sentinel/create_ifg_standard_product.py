@@ -948,7 +948,7 @@ def main():
     #west_lat = ctx["west_lat"]
     platform = ctx["platform"]
     orbit_type = ctx["orbit_type"]
-    track= ctx["track"]
+    track= ctx["track_number"]
     slave_ifg_dt = ctx['slave_ifg_dt']
     master_ifg_dt = ctx['master_ifg_dt']
 
