@@ -1079,7 +1079,7 @@ def main():
     fp.write('                <value>False</value>\n')
     fp.write('            </property>\n')
     fp.write('            <property name="nodata">\n')
-    fp.write('                <value>1</value>\n')
+    fp.write('                <value>-1</value>\n')
     fp.write('            </property>\n')
     fp.write('        </component>\n')
     fp.write('    </component>\n')
