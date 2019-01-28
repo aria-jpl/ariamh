@@ -417,6 +417,15 @@
                           "value" : "unitless"
                         }]
                     },{
+                       "name" : "unwrapMethod",
+                       "type" : "str",
+                       "description" : "snaphu",
+                       "attribute" : [
+                      { 
+                       "name" : "description",
+                       "value" : "Method used to unwrap IFG product"
+                      }]
+                     },{
                       "name" : "DEM",
                       "python_action" : "isce_functions.get_topsApp_variable",
                       "python_action_args" : ["../topsApp.xml","DEM"],
