@@ -1,17 +1,17 @@
 {
   "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_create_ifg.sh",
   "imported_worker_files": {
-    "/home/ops/.netrc": ["/home/ops/.netrc"],
-    "/home/ops/.aws": ["/home/ops/.aws", "ro"],
-    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "$HOME/.netrc": ["/home/ops/.netrc"],
+    "$HOME/.aws": ["/home/ops/.aws", "ro"],
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "dependency_images": [
     {
       "container_image_name": "aria/isce_giant:latest",
       "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-latest.tar.gz",
       "container_mappings": {
-        "/home/ops/.netrc": ["/root/.netrc"],
-        "/home/ops/.aws": ["/root/.aws", "ro"]
+        "$HOME/.netrc": ["/root/.netrc"],
+        "$HOME/.aws": ["/root/.aws", "ro"]
       }
     }
   ],

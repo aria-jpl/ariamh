@@ -1,7 +1,7 @@
 {
   "command": "/home/ops/ariamh/time_series/create_ts_roi.sh",
   "imported_worker_files": {
-    "/home/ops/ariamh/conf/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "params" : [
     { 
