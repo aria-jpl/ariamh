@@ -32,7 +32,7 @@
     {
       "name":"localize_products",
       "destination":"localize"
-    }
+    },
     {
       "name": "query",
       "destination": "context"
