@@ -729,6 +729,9 @@ def main():
     ctx['filter_strength'] = ctx.get("context", {}).get("filter_strength", 0.5)
     logger.info("Using filter_strength of %f" % ctx['filter_strength'])
 
+    logger.info("\n\nContext : %s\n\n" %ctx)
+
+
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
