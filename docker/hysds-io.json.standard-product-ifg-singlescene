@@ -19,7 +19,7 @@
     },
     {
      "name":"localize_products",
-     "from": "dataset_jpath:_source.metadata.localize_urls",
+     "from": "dataset_jpath:_source.metadata.localize_urls"
     },
     { 
       "name": "query",
