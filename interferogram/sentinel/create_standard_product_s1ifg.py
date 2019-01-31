@@ -975,10 +975,10 @@ def main():
     ifg_hash = ifg_hash[0:4]
     logger.info("slc_master_dt : %s,slc_slave_dt : %s" %(slc_master_dt,slc_slave_dt))
     id_tmpl_old = "S1-IFG_R{}_M{:d}S{:d}_TN{:03d}_{}-{}_s123-{}-{}-standard_product"
-    ifg_id_old = id_tmpl_old.format('M', len(master_ids), len(slave_ids), track, slc_master_dt,slc_slave_dt, orbit_type, ifg_hash)
+    ifg_id_old = id_tmpl_old.format('M', len(master_ids), len(slave_ids), track,  master_ifg_dt, slave_ifg_dt, orbit_type, ifg_hash)
     logger.info("ifg_id_old : %s" %ifg_id_old)
 
-    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt, slave_ifg_dt, acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
+    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
     ifg_id_merged = ifg_id_old.replace('S1-IFG', 'S1-IFG-MERGED')
     id = ifg_id
 
