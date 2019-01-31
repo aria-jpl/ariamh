@@ -975,7 +975,7 @@ def main():
 
    
     ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt, slave_ifg_dt, acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
-    ifg_id_merged = id.replace('S1-IFG', 'S1-IFG-MERGED') 
+    ifg_id_merged = ifg_id.replace('S1-IFG', 'S1-IFG-MERGED') 
     id = ifg_id
 
     logger.info("id : %s" %id)
