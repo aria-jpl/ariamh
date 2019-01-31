@@ -16,7 +16,7 @@
     }
   ],
   "recommended-queues" : [
-    "standard_product-s1ifg-topsapp"
+    "job-spec.json.standard_product-s1gunw-topsapp"
   ],
   "soft_time_limit": 7200,
   "time_limit": 7800,
