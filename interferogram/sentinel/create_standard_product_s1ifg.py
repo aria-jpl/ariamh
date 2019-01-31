@@ -12,6 +12,7 @@ from osgeo import ogr, gdal
 from isceobj.Image.Image import Image
 from utils.UrlUtils_standard_product import UrlUtils
 from utils.imutils import get_image, get_size, crop_mask
+from utils.time_utils import getTemporalSpanInDays
 from check_interferogram import check_int
 from create_input_xml_standard_product import create_input_xml
 
@@ -107,6 +108,15 @@ def get_center_time(t1, t2):
     b = get_date(t2)
     t = a + (b - a)/2
     return t.strftime("%H%M%S")
+
+def get_time(t):
+
+    if '.' in t:
+        t = t.split('.')[0].strip()
+    t1 = datetime.strptime(t, '%Y%m%dT%H%M%S')
+    t1 = t1.strftime("%Y-%m-%dT%H:%M:%S")
+    logger.info(t1)
+    return t1
 
 def convert_number(x):
 
@@ -1305,7 +1315,14 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
-
+    try:
+        if 'temporal_span' in md:
+            logger.info("temporal_span based on sensing data : %s" %md['temporal_span']
+        md['temporal_span']= getTemporalSpanInDays(get_time(slc_master_dt), get_time(slc_slave_dt))
+        logger.info("temporal_span based on slc data : %s" %md['temporal_span']
+    except Exception as err:
+        logger.info("Error in calculating getTemporalSpanInDays : %s" %str(err))
+    
     #update met files key to have python style naming
     md = update_met(md)
 
