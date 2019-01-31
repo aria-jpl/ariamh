@@ -471,7 +471,10 @@ def main():
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
     dem_type = input_metadata['dem_type']
-
+    slc_slave_dt = input_metadata['slc_slave_dt']
+    ctx['slc_slave_dt'] = slc_slave_dt
+    slc_master_dt = input_metadata['slc_master_dt']
+    ctx['slc_master_dt'] = slc_master_dt
 
     orbit_type = 'poeorb'
     for o in (master_orbit_url, slave_orbit_url):
@@ -944,8 +947,8 @@ def main():
     platform = ctx["platform"]
     orbit_type = ctx["orbit_type"]
     track= ctx["track_number"]
-    slave_ifg_dt = ctx['slave_ifg_dt']
-    master_ifg_dt = ctx['master_ifg_dt']
+    slave_ifg_dt = ctx['slc_slave_dt']
+    master_ifg_dt = ctx['slc_master_dt']
 
 
     lats = get_geocoded_lats("merged/filt_topophase.unw.geo.vrt")
