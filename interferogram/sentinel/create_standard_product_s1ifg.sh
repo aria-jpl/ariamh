@@ -17,15 +17,15 @@ export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 source $HOME/verdi/bin/activate
 
 echo "##########################################" 1>&2
-echo -n "Running S1 Standard Product interferogram generation: " 1>&2
+echo -n "Running S1 Standard Product interferogram generation : " 1>&2
 date 1>&2
-python3 $BASE_PATH/create_standard_product_ifg.py > create_standard_product_ifg.log 2>&1
+python3 $BASE_PATH/create_standard_product_s1ifg.py > create_standard_product_s1ifg.log 2>&1
 STATUS=$?
 echo -n "Finished running S1 Standard Propduct interferogram generation: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
   echo "Failed to run S1 Standard Product interferogram generation." 1>&2
-  cat create_standard_product_ifg.log 1>&2
+  cat create_standard_product_s1ifg.log 1>&2
   echo "{}"
   exit $STATUS
 fi
