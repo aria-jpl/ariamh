@@ -1,5 +1,5 @@
 {
-  "command": "/home/ops/ariamh/interferogram/sentinel/create_standard_product_ifg.sh",
+  "command": "/home/ops/ariamh/interferogram/sentinel/create_standard_product_s1ifg.sh",
   "imported_worker_files": {
     "/home/ops/.netrc": ["/home/ops/.netrc"],
     "/home/ops/.aws": ["/home/ops/.aws", "ro"],
@@ -16,7 +16,7 @@
     }
   ],
   "recommended-queues" : [
-    "standard-product_s1-ifg"
+    "standard_product-s1ifg"
   ],
   "soft_time_limit": 1800,
   "time_limit": 2400,
