@@ -630,7 +630,7 @@ def main():
 
     azimuth_looks = 19
     if 'azimuth_looks' in input_metadata:
-	azimuth_looks = int(input_metadata['azimuth_looks'])
+        azimuth_looks = int(input_metadata['azimuth_looks'])
     ctx['azimuth_looks'] = azimuth_looks
 
     range_looks = 7
@@ -646,7 +646,7 @@ def main():
 
     precise_orbit_only = True
     if 'precise_orbit_only' in input_metadata:
-	precise_orbit_only = get_bool_param(input_metadata, 'precise_orbit_only')
+        precise_orbit_only = get_bool_param(input_metadata, 'precise_orbit_only')
     ctx['precise_orbit_only'] = precise_orbit_only
 
     job_priority = int(input_metadata['priority'])
@@ -729,7 +729,8 @@ def main():
     ctx['filter_strength'] = ctx.get("context", {}).get("filter_strength", 0.5)
     logger.info("Using filter_strength of %f" % ctx['filter_strength'])
 
-    logger.info("\n\nContext : %s\n\n" %ctx)
+    logger.info("\nContext \n")
+    logger.info(json.dumps(parsed, indent=4, sort_keys=True))
 
 
     # unzip SAFE dirs
