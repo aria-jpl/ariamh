@@ -330,11 +330,6 @@ def get_union_polygon(ds_files):
          else: geom_union = geom_union.Union(geom)
     return json.loads(geom_union.ExportToJson()), geom_union.GetEnvelope()
 
-def get_bool_param(ctx, param):
-    """Return bool param from context."""
-
-    if param in ctx and isinstance(ctx[param], bool): return ctx[param]
-    return True if ctx.get(param, 'true').strip().lower() == 'true' else False
 
 def get_times(ds_files):
     """Get starttimes and endtimes."""
@@ -610,7 +605,7 @@ def main():
     master_orbit_url = input_metadata["master_orbit_url"]
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
-    dem_type = input_metadata['dem_type']
+    dem_type - input_metadata['dem_type']
 
 
     orbit_type = 'poeorb'
@@ -630,7 +625,7 @@ def main():
             ctx[k] = input_metadata[k]
             logger.info("Added %s key to ctx" %k)
         else:
-            logger.info("key %s already in ctx with value %s and input_metadata value is %s" %(k, ctx[k], input_metadata[k]))
+            logger.info("key %s already in %s with value %s and input_metadata value is %s" %(k, ctx[k], input_metadata[k]))
     logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
     azimuth_looks = 19
@@ -657,17 +652,18 @@ def main():
     job_priority = int(input_metadata['priority'])
 
     subswaths = [1, 2, 3]
-   
+    
     ifg_hash = hashlib.md5(json.dumps([
-        master_zip_url[-1],
-        master_orbit_url[-1],
-        slave_zip_url[-1],
-        slave_orbit_url[-1],
-        project,
+        id_tmpl,
+        master_zip_urls[-1],
+        master_orbit_urls[-1],
+        slave_zip_urls[-1],
+        slave_orbit_urls[-1],
+        projects[-1],
         track,
         filter_strength,
         dem_type
-    ]).encode("utf8")).hexdigest()
+    ])).hexdigest()
 
     ctx['ifg_hash'] = ifg_hash
 
@@ -694,7 +690,7 @@ def main():
     logger.info("slave_orbit_file : {}".format(slave_orbit_file))
 
     # query docs
-    uu = UrlUtils()
+    uu = UU()
     logger.info("rest_url: {}".format(uu.rest_url))
     logger.info("dav_url: {}".format(uu.dav_url))
     logger.info("version: {}".format(uu.version))
@@ -734,7 +730,8 @@ def main():
     logger.info("Using filter_strength of %f" % ctx['filter_strength'])
 
     logger.info("\nContext \n")
-    logger.info(json.dumps(ctx, indent=4, sort_keys=True))
+    logger.info(json.dumps(parsed, indent=4, sort_keys=True))
+
 
     # unzip SAFE dirs
     master_safe_dirs = []
@@ -1488,3 +1485,4 @@ if __name__ == '__main__':
             f.write("%s\n" % traceback.format_exc())
         raise
     sys.exit(status)
+
