@@ -1317,9 +1317,9 @@ def main():
     md['tags'] = ['standard_product']
     try:
         if 'temporal_span' in md:
-            logger.info("temporal_span based on sensing data : %s" %md['temporal_span']
+            logger.info("temporal_span based on sensing data : %s" %md['temporal_span'])
         md['temporal_span']= getTemporalSpanInDays(get_time(slc_master_dt), get_time(slc_slave_dt))
-        logger.info("temporal_span based on slc data : %s" %md['temporal_span']
+        logger.info("temporal_span based on slc data : %s" %md['temporal_span'])
     except Exception as err:
         logger.info("Error in calculating getTemporalSpanInDays : %s" %str(err))
     
