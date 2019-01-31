@@ -538,14 +538,15 @@ class IfgStitcher:
             length = int(((lat2 - lat1) + nlat1*delta)/delta)
             i1 = int((lat2 - lat1)/delta)
             i2 = 0
-        
+
         wmsk1 = self.crop_mask(size1,self._wmask,'dummy.out') 
         wmsk2 = self.crop_mask(size2,self._wmask,'dummy.out')
         #compute the overlap
        
         over,overlap_mask = self.get_ovelap([im,im1],[wmsk1,wmsk2],length,width,[i1,i2],[j1,j2],False)
         if len(over[0]) == 0:
-            return None,None,None
+            return None,None,None,None
+
         #don't touch the zeros so use this mask
         nmask1 = np.nonzero(np.abs(im) < self._small)
         nmask2 = np.abs(im1) < self._small
@@ -577,10 +578,10 @@ class IfgStitcher:
         else:
             tcim = self.get_memmap(np.uint8,'w+',(length,width),outname)
             tpim = self.get_memmap(pim.dtype,'w+',(length,width),outname)
-        
+
         self.generate_extra_memmaps(width, length,outname)
         tcim[:,:] = WATER_VALUE
-   
+
         #get phase offset between the two images
         imo = im[over[0] - i1,over[1] - j1]
         cimo = cim[over[0] - i1,over[1] - j1]
@@ -761,7 +762,7 @@ class IfgStitcher:
             if outname and i == len(names) - 1:
                 fname = outname
             else:
-                fname= ''     
+                fname= ''
             #get the new image and the new lat lon
             mm1,cmm1,pmm1,size1 = self.stitch_pair([mm1,cmm1,pmm1], [mm2,cmm2,pmm2], size1, sizes[i],fname)
             self._extra_prds_in1 = []
@@ -769,7 +770,7 @@ class IfgStitcher:
                 self._extra_prds_in1.append(p.copy())
             if mm1 is None:
                 return None,None,None,None
-            
+
         return mm1,cmm1,pmm1,size1
     
     def zero_products(self,cc,cor):
@@ -831,7 +832,7 @@ class IfgStitcher:
             if im1 is None:
                 print('Stitching failed')
                 break
-            
+
             i = 1
             for name,size in zip(names[1:],sizes[1:]):
                 im2,cm2,pm2,size2 = self.stitch_sequence(name, size)
