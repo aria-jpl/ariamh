@@ -16,7 +16,7 @@
     }
   ],
   "recommended-queues" : [
-    "standard_product_s1ifg-sciflo_s1ifg_single_scene"
+    "standard-product_s1-ifg"
   ],
   "soft_time_limit": 1800,
   "time_limit": 2400,

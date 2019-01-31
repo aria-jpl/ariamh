@@ -801,7 +801,7 @@ def main():
     # check if interferogram already exists
     logger.info("GRQ url: {}".format(es_url))
     logger.info("GRQ index: {}".format(es_index))
-    logger.info("Product ID for version {}: {}".format(version, id))
+    #logger.info("Product ID for version {}: {}".format(version, id))
     '''
     if ifg_exists(es_url, es_index, id):
         logger.info("{} interferogram for {}".format(version, id_base) +
