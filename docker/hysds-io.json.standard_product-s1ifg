@@ -1,7 +1,6 @@
 {
   "submission_type": "iteration",
-  "label" : "Standard Product S1-IFG",
-  "recommended-queues" : [ "grfn-job_worker-large" ],
+  "label" : "Standard Product S1-IFG - topsApp",
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,
   "params" : [
