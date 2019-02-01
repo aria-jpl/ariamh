@@ -82,8 +82,9 @@
                             },{
                               "name" : "coherence",
                               "src_file" : "phsig.cor.geo.vrt",
+                              "python_action" : "isce_functions.get_conncomp",
+                              "python_action_args" : ["phsig.cor.geo.vrt",-1,"filt_topophase.unw.geo.vrt",0],
                               "nodata" : 0,
-                              "band" : 1,
                               "type" : "float32",
                               "dims" : ["latitude","longitude"],
                               "attribute" : [
@@ -101,7 +102,7 @@
                               "name" : "connectedComponents",
                               "src_file" : "filt_topophase.unw.conncomp.geo.vrt",
                               "python_action" : "isce_functions.get_conncomp",
-                              "python_action_args" : ["filt_topophase.unw.conncomp.geo.vrt",-1,"phsig.cor.geo.vrt",0],
+                              "python_action_args" : ["filt_topophase.unw.conncomp.geo.vrt",-1,"filt_topophase.unw.geo.vrt",0],
                               "nodata" : -1,
                               "type" : "float32",
                               "dims" : ["latitude","longitude"],

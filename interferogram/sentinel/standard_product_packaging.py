@@ -246,7 +246,7 @@ def create_dataset(fid,dataset,fid_parent=None):
 
     
     # special case to parse the connected component data
-    if properties_data.name.lower()=="connected_components" or properties_data.name.lower() =="connectedcomponents" :
+    if properties_data.name.lower()=="connected_components" or properties_data.name.lower() =="connectedcomponents" or properties_data.name.lower() =="coherence":
         # setting the no-data value in case the user is not overwriting it
         if data["data_nodata"] is not None and properties_data.nodata is None:
             properties_data.nodata = data["data_nodata"]
