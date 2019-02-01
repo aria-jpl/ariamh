@@ -18,8 +18,8 @@
   "recommended-queues" : [
     "standard_product-s1gunw-topsapp"
   ],
-  "soft_time_limit": 7200,
-  "time_limit": 7800,
+  "soft_time_limit": 6000,
+  "time_limit": 6300,
   "params" : [
     {
       "name": "dataset_tag",
