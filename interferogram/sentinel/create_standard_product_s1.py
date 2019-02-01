@@ -535,7 +535,6 @@ def main():
 
     id_tmpl = IFG_ID_SP_TMPL 
     ifg_hash = hashlib.md5(json.dumps([
-        id_tmpl,
         master_zip_url[-1],
         master_orbit_url[-1],
         slave_zip_url[-1],
