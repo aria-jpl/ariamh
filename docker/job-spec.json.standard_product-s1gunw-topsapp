@@ -5,6 +5,7 @@
     "/home/ops/.aws": ["/home/ops/.aws", "ro"],
     "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
+  "disk_usage":"200GB",
    "dependency_images": [
     {
       "container_image_name": "aria/isce_giant:latest",
