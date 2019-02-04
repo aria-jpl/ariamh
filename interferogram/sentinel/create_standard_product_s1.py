@@ -1072,12 +1072,16 @@ def main():
     wbd_user = uu.wbd_u
     wbd_pass = uu.wbd_p
 
-    # get DEM bbox
+    # get DEM bbox and add slop
     dem_S, dem_N, dem_W, dem_E = bbox
     dem_S = int(math.floor(dem_S))
     dem_N = int(math.ceil(dem_N))
     dem_W = int(math.floor(dem_W))
     dem_E = int(math.ceil(dem_E))
+    dem_S = dem_S - 1 if dem_S > -89 else dem_S
+    dem_N = dem_N + 1 if dem_N < 89 else dem_N
+    dem_W = dem_W - 1 if dem_W > -179 else dem_W
+    dem_E = dem_E + 1 if dem_E < 179 else dem_E
 
     # get water mask
     fp = open('wbdStitcher.xml','w')
