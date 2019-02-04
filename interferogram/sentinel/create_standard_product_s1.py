@@ -484,6 +484,8 @@ def main():
     ctx['slc_slave_dt'] = slc_slave_dt
     slc_master_dt = input_metadata['slc_master_dt']
     ctx['slc_master_dt'] = slc_master_dt
+    if dem_type=='Ned1':
+        dem_type = 'NED1'
 
     ctx['dem_type'] = dem_type
 
