@@ -485,6 +485,8 @@ def main():
     slc_master_dt = input_metadata['slc_master_dt']
     ctx['slc_master_dt'] = slc_master_dt
 
+    ctx['dem_type'] = dem_type
+
     orbit_type = 'poeorb'
     for o in (master_orbit_url, slave_orbit_url):
         if RESORB_RE.search(o):
@@ -691,8 +693,8 @@ def main():
         return 0
     '''
     # get DEM configuration
-    dem_type = ctx.get("context", {}).get("dem_type", "SRTM+v3")
-    dem_type_simple = "SRTM"
+    #dem_type = ctx.get("context", {}).get("dem_type", "SRTM+v3")
+    dem_type_simple = None
     dem_url = uu.dem_url
     srtm3_dem_url = uu.srtm3_dem_url
     ned1_dem_url = uu.ned1_dem_url
@@ -718,7 +720,8 @@ def main():
         dem_N = int(math.ceil(dem_N))
         dem_W = int(math.floor(dem_W))
         dem_E = int(math.ceil(dem_E))
-        
+       
+        logger.info("DEM TYPE : %s" %dem_type) 
 
         if dem_type.startswith("SRTM"):
             dem_type_simple = "SRTM"
