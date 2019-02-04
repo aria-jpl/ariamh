@@ -480,6 +480,10 @@ def main():
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
     dem_type = input_metadata['dem_type']
+
+    #Hardcoding for now
+    dem_type = "SRTM+v3"
+
     slc_slave_dt = input_metadata['slc_slave_dt']
     ctx['slc_slave_dt'] = slc_slave_dt
     slc_master_dt = input_metadata['slc_master_dt']
