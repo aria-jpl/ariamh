@@ -538,7 +538,8 @@ def main():
 
     subswaths = [1, 2, 3]
   
-
+    ctx['dem_type'] = "SRTM+v3"
+    dem_type = "SRTM+v3"
 
     id_tmpl = IFG_ID_SP_TMPL 
     ifg_hash = hashlib.md5(json.dumps([
