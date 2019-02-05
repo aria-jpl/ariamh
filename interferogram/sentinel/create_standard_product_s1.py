@@ -388,6 +388,47 @@ def get_polarization(id):
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
 
+def file_transform(infile,maskfile,maskfile_out):
+    '''
+        convert file into the same geo frame as the input file
+        both files to be gdal compatible and with geo-coordinates
+    '''
+    
+    from osgeo import gdal, gdalconst
+    
+    # convert all to absolute paths
+    maskfile = os.path.abspath(maskfile)
+    maskfile_out = os.path.abspath(maskfile_out)
+    
+    # Source
+    src = gdal.Open(maskfile, gdalconst.GA_ReadOnly)
+    src_proj = src.GetProjection()
+    src_geotrans = src.GetGeoTransform()
+    print("Working on " + maskfile )
+    
+    # We want a section of source that matches this:
+    match_ds = gdal.Open(infile, gdalconst.GA_ReadOnly)
+    match_proj = match_ds.GetProjection()
+    match_geotrans = match_ds.GetGeoTransform()
+    print("Getting target reference information")
+    wide = match_ds.RasterXSize
+    high = match_ds.RasterYSize
+    
+    # Output / destination
+    dst = gdal.GetDriverByName('envi').Create(maskfile_out, wide, high, 1, gdalconst.GDT_Float32)
+    dst.SetGeoTransform( match_geotrans )
+    dst.SetProjection( match_proj)
+
+    # Do the work
+    gdal.ReprojectImage(src, dst, src_proj, match_proj, gdalconst.GRA_NearestNeighbour)
+    print("Done")
+    print("")
+
+    # closing the images
+    dst = None
+    src = None
+
+
 def move_dem_separate_dir(dir_name):
     move_dem_separate_dir_SRTM(dir_name)
     move_dem_separate_dir_NED(dir_name)
