@@ -523,7 +523,7 @@ def main():
     dem_type = input_metadata['dem_type']
 
     #Hardcoding for now
-    dem_type = "SRTM+v3"
+    #dem_type = "SRTM+v3"
 
     slc_slave_dt = input_metadata['slc_slave_dt']
     ctx['slc_slave_dt'] = slc_slave_dt
@@ -578,9 +578,12 @@ def main():
     job_priority = int(input_metadata['priority'])
 
     subswaths = [1, 2, 3]
-  
+ 
+    ''' 
     ctx['dem_type'] = "SRTM+v3"
     dem_type = "SRTM+v3"
+    '''
+
 
     id_tmpl = IFG_ID_SP_TMPL 
     ifg_hash = hashlib.md5(json.dumps([
@@ -975,6 +978,8 @@ def main():
     ]
     topsapp_cmd_line = " ".join(topsapp_cmd)
     logger.info("Calling topsApp.py to geocode step: {}".format(topsapp_cmd_line))
+
+
     check_call(topsapp_cmd_line, shell=True)
 
     #topsApp End Time
