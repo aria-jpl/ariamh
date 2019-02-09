@@ -217,7 +217,20 @@ def stitch(dem_files, downsample=None):
     check_call("gdalbuildvrt combinedDEM.vrt *.hgt", shell=True)
     if downsample is None: outsize_opt = ""
     else: outsize_opt = "-outsize {} {}".format(downsample, downsample)
-    check_call("gdal_translate -of ENVI {} combinedDEM.vrt stitched.dem".format(outsize_opt), shell=True)
+    check_call("gdal_translate -of ENVI {} -a_nodata -32768 combinedDEM.vrt stitched.dem".format(outsize_opt), shell=True)
+
+    #updte data to fill extream values with default value(-32768). First create a new dem file with the update
+    check_call('gdal_calc.py -A stitched.dem --outfile=stitched_new.dem --calc="-32768*(A<-32768)+A*(A>=-32768)"', shell=True) 
+    logger.info("Created stitched_new.dem with updated value")  
+    #switch the new with the origional
+    orig_file = os.path.join(os.getcwd(),'stitched.dem')
+    new_file = os.path.join(os.getcwd(), 'stitched_new.dem')
+    bak_file = os.path.join(os.getcwd(), 'stitched.dem.bak')
+    os.rename(orig_file, bak_file)
+    os.rename(new_file, orig_file)
+    logger.info("New Dem file is renamed as original stitched.dem file")
+
+
     check_call("gdalinfo -json stitched.dem > stitched.dem.json", shell=True)
     with open('stitched.dem.json') as f:
         info = json.load(f)
