@@ -9,6 +9,8 @@ import os, sys, math, json, logging, argparse, zipfile
 from subprocess import check_call, CalledProcessError
 from itertools import chain
 from string import Template
+import isce
+import isceobj
 
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -217,17 +219,23 @@ def stitch(dem_files, downsample=None):
     check_call("gdalbuildvrt combinedDEM.vrt *.hgt", shell=True)
     if downsample is None: outsize_opt = ""
     else: outsize_opt = "-outsize {} {}".format(downsample, downsample)
-    check_call("gdal_translate -of ENVI {} -a_nodata -32768 combinedDEM.vrt stitched.dem".format(outsize_opt), shell=True)
+    check_call("gdal_translate -of ENVI {} combinedDEM.vrt stitched.dem".format(outsize_opt), shell=True)
 
     #updte data to fill extream values with default value(-32768). First create a new dem file with the update
-    check_call('gdal_calc.py -A stitched.dem --outfile=stitched_new.dem --calc="-32768*(A<-32768)+A*(A>=-32768)"', shell=True) 
-    logger.info("Created stitched_new.dem with updated value")  
+    #check_call('gdal_calc.py -A stitched.dem --outfile=stitched_new.dem --calc="-32768*(A<-32768)+A*(A>=-32768)"', shell=True) 
+    check_call('gdal_calc.py --format=ENVI -A stitched.dem --outfile=stitchedFix.dem --calc="A*(A>-1000)" --NoDataValue=0', shell=True)
+    logger.info("Created stitchedFix.dem with updated value")  
+    check_call('gdal_translate -of vrt stitchedFix.dem stitchedFix.dem.vrt', shell=True)
+    logger.info("Created stitchedFix.dem.vrt with updated value")
+
+    check_call("gdal2isce_xml.py -i stitchedFix.dem", shell=True) 
+
     #switch the new with the origional
-    orig_file = os.path.join(os.getcwd(),'stitched.dem')
-    new_file = os.path.join(os.getcwd(), 'stitched_new.dem')
-    bak_file = os.path.join(os.getcwd(), 'stitched.dem.bak')
-    os.rename(orig_file, bak_file)
-    os.rename(new_file, orig_file)
+    rename_file('stitched.dem', 'stitchedFix.dem')
+    rename_file('stitched.dem.vrt', 'stitchedFix.dem.vrt')
+    rename_file('stitched.dem.xml', 'stitchedFix.dem.xml')
+    rename_file('stitched.dem.aux.xml', 'stitchedFix.dem.aux.xml')
+    rename_file('stitched.hdr', 'stitchedFix.hdr')
     logger.info("New Dem file is renamed as original stitched.dem file")
 
 
@@ -244,6 +252,18 @@ def stitch(dem_files, downsample=None):
     # clean out extracted dems
     for i in chain(dem_files, extracted_files): os.unlink(i)
 
+def rename_file(orig_file, new_file):
+    bak_dir = os.path.join(os.getcwd(),'bak')
+    if not os.path.exists(bak_dir):
+        os.makedirs(bak_dir)
+    orig_file_path = os.path.join(os.getcwd(), orig_file)
+    new_file_path = os.path.join(os.getcwd(), new_file)
+    bak_file_path = os.path.join(bak_dir, orig_file+".bak")
+    if os.path.isfile(new_file_path):
+        if os.path.isfile(orig_file_path):
+            os.rename(orig_file_path, bak_file_path)
+        os.rename(new_file_path, orig_file_path)
+        logger.info("NED-DEM: Renamed %s to %s" %(new_file, orig_file))
 
 def main(url_base, username, password, action, bbox, downsample):
     """Main."""
