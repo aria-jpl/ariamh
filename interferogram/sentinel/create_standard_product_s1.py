@@ -108,6 +108,7 @@ def get_center_time(t1, t2):
     t = a + (b - a)/2
     return t.strftime("%H%M%S")
 
+'''
 def get_time(t):
 
     if '.' in t:
@@ -116,6 +117,21 @@ def get_time(t):
     t1 = t1.strftime("%Y-%m-%dT%H:%M:%S")
     logger.info(t1)
     return t1
+'''
+
+def get_time(t):
+
+    logger.info("get_time(t) : %s" %t)
+    t = parser.parse(t).strftime('%Y-%m-%dT%H:%M:%S')
+    t1 = datetime.strptime(t, '%Y-%m-%dT%H:%M:%S')
+    logger.info("returning : %s" %t1)
+    return t1
+
+def get_time_str(t):
+
+    logger.info("get_time(t) : %s" %t)
+    t = parser.parse(t).strftime('%Y-%m-%dT%H:%M:%S')
+    return t
 
 def convert_number(x):
 
@@ -1389,7 +1405,7 @@ def main():
     try:
         if 'temporal_span' in md:
             logger.info("temporal_span based on sensing data : %s" %md['temporal_span'])
-        md['temporal_span']= getTemporalSpanInDays(get_time(slc_master_dt), get_time(slc_slave_dt))
+        md['temporal_span']= getTemporalSpanInDays(get_time_str(slc_master_dt), get_time_str(slc_slave_dt))
         logger.info("temporal_span based on slc data : %s" %md['temporal_span'])
     except Exception as err:
         logger.info("Error in calculating getTemporalSpanInDays : %s" %str(err))
