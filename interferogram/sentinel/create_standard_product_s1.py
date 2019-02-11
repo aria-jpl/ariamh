@@ -15,6 +15,7 @@ from utils.imutils import get_image, get_size, crop_mask
 from utils.time_utils import getTemporalSpanInDays
 from check_interferogram import check_int
 from create_input_xml_standard_product import create_input_xml
+from dateutil import parser
 
 import os
 from scipy.constants import c
