@@ -836,7 +836,6 @@ def main():
 
 
     logger.info("dem_type : %s preprocess_dem_dir : %s" %(dem_type, preprocess_dem_dir))
-
     if dem_type.startswith("NED"):
         move_dem_separate_dir_NED(preprocess_dem_dir)
     elif dem_type.startswith("SRTM"):
@@ -855,7 +854,6 @@ def main():
     fix_cmd_line = " ".join(fix_cmd)
     logger.info("Calling fixImageXml.py: {}".format(fix_cmd_line))
     check_call(fix_cmd_line, shell=True)
-    
     '''
     geocode_dem_url = srtm3_dem_url
     dem_cmd = [
@@ -878,7 +876,7 @@ def main():
     if dem_type.startswith("SRTM"):
         preprocess_vrt_file = glob(os.path.join(preprocess_dem_dir, "*.dem.wgs84.vrt"))[0]
     elif dem_type.startswith("NED1"):
-        preprocess_vrt_file = os.path.join(preprocess_dem_dir, "combinedDEM.vrt")
+        preprocess_vrt_file = os.path.join(preprocess_dem_dir, "stitched.dem.vrt")
         logger.info("preprocess_vrt_file : %s"%preprocess_vrt_file)
     else: raise RuntimeError("Unknown dem type %s." % dem_type)
 
@@ -887,7 +885,6 @@ def main():
     
     geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
-
     dem_cmd = [
         "{}/applications/downsampleDEM.py".format(os.environ['ISCE_HOME']), "-i",
         "{}".format(preprocess_vrt_file), "-rsec", "3"
@@ -898,11 +895,10 @@ def main():
     geocode_dem_file = ""
 
     logger.info("geocode_dem_dir : {}".format(geocode_dem_dir))
-
     if dem_type.startswith("SRTM"):
         geocode_dem_file = glob(os.path.join(geocode_dem_dir, "*.dem.wgs84"))[0]
     elif dem_type.startswith("NED1"):
-        geocode_dem_file = os.path.join(geocode_dem_dir, "combinedDEM")
+        geocode_dem_file = os.path.join(geocode_dem_dir, "stitched.dem")
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
 
 

@@ -225,18 +225,19 @@ def stitch(dem_files, downsample=None):
     #check_call('gdal_calc.py -A stitched.dem --outfile=stitched_new.dem --calc="-32768*(A<-32768)+A*(A>=-32768)"', shell=True) 
     check_call('gdal_calc.py --format=ENVI -A stitched.dem --outfile=stitchedFix.dem --calc="A*(A>-1000)" --NoDataValue=0', shell=True)
     logger.info("Created stitchedFix.dem with updated value")  
-    check_call('gdal_translate -of vrt stitchedFix.dem stitchedFix.dem.vrt', shell=True)
-    logger.info("Created stitchedFix.dem.vrt with updated value")
+    #check_call('gdal_translate -of vrt stitchedFix.dem stitchedFix.dem.vrt', shell=True)
+    #logger.info("Created stitchedFix.dem.vrt with updated value")
 
-    check_call("gdal2isce_xml.py -i stitchedFix.dem", shell=True) 
+    #check_call("gdal2isce_xml.py -i stitchedFix.dem", shell=True) 
 
     #switch the new with the origional
     rename_file('stitched.dem', 'stitchedFix.dem')
-    rename_file('stitched.dem.vrt', 'stitchedFix.dem.vrt')
-    rename_file('stitched.dem.xml', 'stitchedFix.dem.xml')
-    rename_file('stitched.dem.aux.xml', 'stitchedFix.dem.aux.xml')
-    rename_file('stitched.hdr', 'stitchedFix.hdr')
+    #rename_file('stitched.dem.vrt', 'stitchedFix.dem.vrt')
+    #rename_file('stitched.dem.xml', 'stitchedFix.dem.xml')
+    #rename_file('stitched.dem.aux.xml', 'stitchedFix.dem.aux.xml')
+    #rename_file('stitched.hdr', 'stitchedFix.hdr')
     logger.info("New Dem file is renamed as original stitched.dem file")
+    check_call('gdal_translate -of vrt stitched.dem stitched.dem.vrt', shell=True)
 
 
     check_call("gdalinfo -json stitched.dem > stitched.dem.json", shell=True)
