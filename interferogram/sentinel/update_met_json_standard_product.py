@@ -112,6 +112,7 @@ def change_direction(coords):
         coords = coords[::-1]
     return coords
 
+
 def get_loc(box):
     """Return GeoJSON bbox."""
     bbox = np.array(box).astype(np.float)
@@ -286,7 +287,7 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
 	#"swath": swath_num,
         "perpendicularBaseline": bperp,
         "parallelBaseline": bpar,
-        "version": [ipf_version_master, ipf_version_slave],
+        "ipf_version": [ipf_version_master, ipf_version_slave],
         "beamMode": "IW",
         "sha224sum": hashlib.sha224(str.encode(os.path.basename(json_file))).hexdigest(),
     })

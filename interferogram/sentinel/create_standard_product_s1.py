@@ -261,7 +261,7 @@ def get_version():
                           '..', '..', 'conf', 'dataset_versions.json'))
     with open(DS_VERS_CFG) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-IFG']
+    return ds_vers['S1-GUNW']
 
 
 def get_area(coords):
@@ -1399,6 +1399,7 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
+    md['system_version']=datetime.today().strftime('%Y%m%d')
     try:
         if 'temporal_span' in md:
             logger.info("temporal_span based on sensing data : %s" %md['temporal_span'])
