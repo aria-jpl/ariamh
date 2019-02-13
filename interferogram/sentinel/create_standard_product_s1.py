@@ -538,6 +538,8 @@ def main():
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
     dem_type = input_metadata['dem_type']
+    system_version = ctx["container_image_name"].strip().split(':')[-1].strip() 
+    ctx['system_version'] = system_version
 
     #Hardcoding for now
     #dem_type = "SRTM+v3"
@@ -1399,7 +1401,12 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
-    md['system_version']=datetime.today().strftime('%Y%m%d')
+    md['reference_date'] = ctx['slc_master_dt']
+    md['secondary_date'] = ctx['slc_slave_dt']
+    
+    
+    md['system_version']=ctx['system_version']
+
     try:
         if 'temporal_span' in md:
             logger.info("temporal_span based on sensing data : %s" %md['temporal_span'])
