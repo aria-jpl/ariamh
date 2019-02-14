@@ -1401,8 +1401,8 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
-    md['reference_date'] = ctx['slc_master_dt']
-    md['secondary_date'] = ctx['slc_slave_dt']
+    md['reference_date'] = ctx['slc_master_dt'].strip().upper().split('T')[0]
+    md['secondary_date'] = ctx['slc_slave_dt'].strip().upper().split('T')[0]
     
     
     md['system_version']=ctx['system_version']
