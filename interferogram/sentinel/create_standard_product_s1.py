@@ -134,6 +134,11 @@ def get_time_str(t):
     t = parser.parse(t).strftime('%Y-%m-%dT%H:%M:%S')
     return t
 
+def get_date_str(t):
+
+    logger.info("get_time(t) : %s" %t)
+    t = parser.parse(t).strftime('%Y-%m-%d')
+    return t
 def convert_number(x):
 
     x = float(x)
@@ -1401,8 +1406,8 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
-    md['reference_date'] = ctx['slc_master_dt'].strip().upper().split('T')[0]
-    md['secondary_date'] = ctx['slc_slave_dt'].strip().upper().split('T')[0]
+    md['reference_date'] = get_date_str(ctx['slc_master_dt'])
+    md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
     
     md['system_version']=ctx['system_version']
