@@ -41,7 +41,7 @@ IFG_RE = re.compile(r'_(?P<start_year>\d{4})(?P<start_month>\d{2})(?P<start_day>
                     r'-(?P<end_year>\d{4})(?P<end_month>\d{2})(?P<end_day>\d{2})' +
                     r'T(?P<end_hour>\d{2})(?P<end_min>\d{2})(?P<end_sec>\d{2})_')
 
-ID_TMPL = "S1-GUNW-MERGED-STITCHED_TN{:03d}_{}-{}_{}-{}"
+ID_TMPL = "S1-GUNW-MERGED-STITCHED_TN{:03d}_{}-{}_{}"
 
 
 def call_noerr(cmd):
@@ -146,7 +146,7 @@ def group_frames_by_track_date(frames):
             continue
         else: dedup_ifgs[dedup_key] = []
         bisect.insort(grouped.setdefault(track_number, {}) \
-                             .setdefault(dt_pair_key, {}) \
+                             .setdefault(dt_pair_key, []),
                       (ifg_pair_key, h['_id']))
         dates[h['_id']] = dt_pair_key
         footprints[h['_id']] = fields['location']

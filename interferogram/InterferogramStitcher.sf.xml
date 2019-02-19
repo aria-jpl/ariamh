@@ -21,7 +21,6 @@
         </sf:inputs>
         <sf:outputs>
           <projects/>
-          <directions/>
           <extra_products/>
           <filenames/>
           <filename_urls/>
@@ -38,7 +37,6 @@
       <sf:process id="stitch_ifg">
         <sf:inputs>
           <projects from="@#previous"/>
-          <directions from="@#previous"/>
           <extra_products from="@#previous"/>
           <filenames from="@#previous"/>
           <filename_urls from="@#previous"/>
