@@ -56,7 +56,7 @@ def create_job_with_cfgs(netsel_url, jobdesc_url, project, coherence_url, peg_ur
     }
 
 
-def stitch_ifg_job(project, direction, extra_products, filenames, filename_urls,
+def stitch_ifg_job(project, extra_products, filenames, filename_urls,
                    ifg_id, wuid=None, job_num=None):
     """Map function for interferogram stitcher job json creation."""
 
@@ -90,7 +90,6 @@ def stitch_ifg_job(project, direction, extra_products, filenames, filename_urls,
 
             # job params
             "project": project,
-            "direction": direction,
             "extra_products": extra_products,
             "filenames": filenames,
             "id": ifg_id,

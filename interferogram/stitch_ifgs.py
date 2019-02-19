@@ -30,7 +30,7 @@ def get_version():
                           '..', 'conf', 'dataset_versions.json'))
     with open(DS_VERS_CFG) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-IFG-STITCHED']
+    return ds_vers['S1-GUNW-MERGED-STITCHED']
 
 
 def get_union_polygon(ds_files):
@@ -235,7 +235,7 @@ def main():
     # get endpoint configurations
     uu = UrlUtils()
     es_url = uu.rest_url
-    es_index = "{}_{}_s1-ifg-stitched".format(uu.grq_index_prefix, version)
+    es_index = "{}_{}_s1-gunw-merged-stitched".format(uu.grq_index_prefix, version)
 
     # check if interferogram already exists
     logger.info("GRQ url: {}".format(es_url))

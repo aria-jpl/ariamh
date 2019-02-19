@@ -18,27 +18,6 @@
       "default": "grfn",
       "enumerables": ["aria", "grfn", "mem", "urgent-response", "dwr", "chevron", "floodmap"]
     },
-    {
-      "name": "direction",
-      "from": "submitter",
-      "type": "enum",
-      "default": "along",
-      "enumerables": ["across", "along"]
-    },
-    {
-      "name": "subswaths",
-      "from": "submitter",
-      "type": "enum",
-      "default": "1 2 3",
-      "enumerables": ["1 2 3", "1 2", "2 3", "1", "2", "3"]
-    },
-    { 
-      "name": "min_stitch_count",
-      "from": "submitter",
-      "type": "number",
-      "lambda": "lambda x: int(x)",
-      "placeholder": "min # IFGs to stitch e.g. 3 swaths x 2 scenes = 6"
-    },
     { 
       "name": "extra_products",
       "from": "submitter",

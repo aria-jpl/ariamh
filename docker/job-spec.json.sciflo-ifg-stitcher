@@ -24,18 +24,6 @@
       "destination": "context"
     },
     {
-      "name": "direction",
-      "destination": "context"
-    },
-    {
-      "name": "subswaths",
-      "destination": "context"
-    },
-    {
-      "name": "min_stitch_count",
-      "destination": "context"
-    },
-    {
       "name": "extra_products",
       "destination": "context"
     },
