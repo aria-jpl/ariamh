@@ -285,10 +285,10 @@ def get_stitch_cfgs(context_file):
                         'url': "%s/merged/%s.xml" % (grouped['hits'][id], prod_file),
                         'local_path': "%s/merged/" % id,
                     })
-                furls.append({
-                    'url': "%s/fine_interferogram.xml" % grouped['hits'][id],
-                    'local_path': "%s/" % id,
-                })
+                #furls.append({
+                #    'url': "%s/fine_interferogram.xml" % grouped['hits'][id],
+                #    'local_path': "%s/" % id,
+                #})
                 furls.append({
                     'url': "%s/%s.dataset.json" % (grouped['hits'][id], id),
                     'local_path': "%s/_%s.dataset.json" % (id, id),
