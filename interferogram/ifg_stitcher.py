@@ -892,7 +892,7 @@ class IfgStitcher:
             sel = np.nonzero(cm1 == 0)
             #zero the amp
             im1[sel[0],0,sel[1]] = 0
-            if len(names) == 1:
+            if len(names[0]) == 1:
                 #the mmap has not been generated for te final product su just dump im1
                 im1.tofile(outname)
             self.zero_products(cm1,pm1)
