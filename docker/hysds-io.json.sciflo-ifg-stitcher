@@ -1,7 +1,7 @@
 {
   "label" : "Standard Product S1-GUNW-MERGED-STITCHED - S1-GUNW-MERGED Stitcher",
   "submission_type": "individual",
-  "recommended-queues" : [ "grfn-job_worker-small" ],
+  "recommended-queues" : [ "standard_product-s1gunwmerged-stitcher" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     { 

@@ -67,7 +67,7 @@ def stitch_ifg_job(project, extra_products, filenames, filename_urls,
     job_type = "stitch_ifgs"
 
     # set job queue based on project
-    job_queue = "%s-job_worker-large" % project
+    job_queue = "standard_product-s1gunwmerged-stitcher"
 
     # set localize urls
     localize_urls = filename_urls
