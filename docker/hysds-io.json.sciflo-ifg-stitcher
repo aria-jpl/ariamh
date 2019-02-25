@@ -1,5 +1,5 @@
 {
-  "label" : "Interferogram Stitcher",
+  "label" : "Standard Product S1-GUNW-MERGED-STITCHED - S1-GUNW-MERGED Stitcher",
   "submission_type": "individual",
   "recommended-queues" : [ "grfn-job_worker-small" ],
   "allowed_accounts": [ "ops" ],
