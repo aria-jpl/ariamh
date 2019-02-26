@@ -112,7 +112,7 @@ def create_met_json(id, version, env, starttime, endtime, met_files, met_json_fi
         'track_number': None,
         'archive_filename': id,
         'dataset_type': 'slc',
-        'tile_layers': [ 'amplitude', 'interferogram' ],
+        'tile_layers': [ 'interferogram' ],
         'latitude_index_min': int(math.floor(env[2] * 10)),
         'latitude_index_max': int(math.ceil(env[3] * 10)),
         'parallel_baseline': [],
