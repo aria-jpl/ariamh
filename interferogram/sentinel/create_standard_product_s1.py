@@ -1388,8 +1388,8 @@ def main():
     slave_rt = parse("slave/IW1.xml")
     slave_orbit_number = eval(slave_rt.xpath('.//property[@name="orbitnumber"]/value/text()')[0])
     with open(met_file) as f: md = json.load(f)
-    md['master_scenes'] = master_ids
-    md['slave_scenes'] = slave_ids
+    md['reference_scenes'] = master_ids
+    md['secondary_scenes'] = slave_ids
     md['orbitNumber'] = [master_orbit_number, slave_orbit_number]
     #if ctx.get('stitch_subswaths_xt', False): md['swath'] = [1, 2, 3]
     md['esd_threshold'] = esd_coh_th if do_esd else -1.  # add ESD coherence threshold
