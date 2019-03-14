@@ -20,7 +20,7 @@ log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
 
-def run_extractor(dsets_file, prod_path, ctx):
+def run_extractor(dsets_file, prod_path, url, ctx):
     """Run extractor configured in datasets JSON config."""
 
     logging.info("datasets: %s" % dsets_file)
@@ -76,9 +76,7 @@ def run_extractor(dsets_file, prod_path, ctx):
     metadata['data_product_name'] = objectid 
 
     # set download url from context
-    localize_urls = ctx.get('localize_urls', [])
-    if len(localize_urls) > 0:
-        metadata['download_url'] = localize_urls[0]['url']
+    metadata['download_url'] = url
 
     # write it out to file
     with open(metadata_file, 'w') as f:
@@ -96,7 +94,7 @@ def run_extractor(dsets_file, prod_path, ctx):
             json.dump(datasets, f, indent=2)
         logging.info("Wrote dataset to %s" % dataset_file)
 
-def create_product(file, prod_name, prod_date):
+def create_product(file, url, prod_name, prod_date):
     """Create skeleton directory structure for product and run configured
        metadata extractor."""
 
@@ -131,21 +129,36 @@ def create_product(file, prod_name, prod_date):
     dsets_file = settings['DATASETS_CFG']
     if os.path.exists("./datasets.json"):
         dsets_file = "./datasets.json"
-    run_extractor(dsets_file, prod_path, ctx)
+    run_extractor(dsets_file, prod_path, url, ctx)
 
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("localize_url", help="url of the localized file") 
+    parser.add_argument("slc_id", help="id of the localized file") 
+    parser.add_argument("source", help="url source of the localized file")
+    parser.add_argument("download_url", help="download_url of the localized file")
     parser.add_argument("file", help="localized product file")
     parser.add_argument("prod_name", help="product name to use for " +
                                           " canonical product directory")
     parser.add_argument("prod_date", help="product date to use for " +
-                                          " canonical product directory")
+                                      " canonical product directory")
     args = parser.parse_args()
-    localize_url = args.localize_url
+    
+
+    localize_url = None
+    if source.lower()=="asf":
+        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(identifier)
+        r = requests.head(vertex_url, allow_redirects=True)
+        logger.info("Status Code from ASF : %s" %r.status_code)
+        if r.status_code in (200, 403):
+            localize_url = r.url
+        else:
+            raise RuntimeError(("Status Code from ASF for SLC %s : %s" %(args.scl_id, r.status_code))
+    else:
+        localize_url = args.download_url
+        
     try:
         filename, file_extension = os.path.splitext(args.file)
         logging.info("localize_url : %s \nfile : %s" %(localize_url, args.file))
@@ -170,7 +183,7 @@ if __name__ == "__main__":
         if not is_non_zero_file(args.file):
             raise Exception("File Not Found or Empty File : %s" %args.file)
 
-        create_product(args.file, args.prod_name, args.prod_date)
+        create_product(args.file, localize_url, args.prod_name, args.prod_date)
     except Exception as e:
         with open('_alt_error.txt', 'a') as f:
             f.write("%s\n" % str(e))

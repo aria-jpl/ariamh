@@ -18,7 +18,15 @@
   "disk_usage": "50GB",
   "params" : [
     { 
-      "name": "localize_url",
+      "name": "slc_id",
+      "destination": "positional"
+    },
+    {
+      "name": "source",
+      "destination": "positional"
+    },
+    {
+      "name": "download_url",
       "destination": "positional"
     },
     { 
