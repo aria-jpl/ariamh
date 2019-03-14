@@ -6,7 +6,7 @@ the product and leveraging the configured metadata extractor defined
 for the product in datasets JSON config.
 """
 
-import os, sys, re, json, shutil, logging, traceback, argparse
+import os, sys, re, json, shutil, requests, logging, traceback, argparse
 from subprocess import check_output
 import time
 
@@ -148,14 +148,14 @@ if __name__ == "__main__":
     
 
     localize_url = None
-    if source.lower()=="asf":
-        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(identifier)
+    if args.source.lower()=="asf":
+        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
         r = requests.head(vertex_url, allow_redirects=True)
-        logger.info("Status Code from ASF : %s" %r.status_code)
+        logging.info("Status Code from ASF : %s" %r.status_code)
         if r.status_code in (200, 403):
             localize_url = r.url
         else:
-            raise RuntimeError(("Status Code from ASF for SLC %s : %s" %(args.scl_id, r.status_code))
+            raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
     else:
         localize_url = args.download_url
         
