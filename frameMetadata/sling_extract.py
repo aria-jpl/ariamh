@@ -16,6 +16,7 @@ from atomicwrites import atomic_write
 import hysds
 from hysds.log_utils import logger, log_prov_es
 from hysds.celery import app
+from datetime import datetime
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
 
@@ -68,7 +69,8 @@ def download_file(url, path, cache=False):
         url_hash = hashlib.md5(url).hexdigest()
         hash_dir = os.path.join(app.conf.ROOT_WORK_DIR, 'cache', *url_hash[0:4])
         cache_dir = os.path.join(hash_dir, url_hash)
-        makedirs(cache_dir)
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
         signal_file = os.path.join(cache_dir, '.localized')
         if os.path.exists(signal_file):
             logger.info("cache hit for {} at {}".format(url, cache_dir))
@@ -103,7 +105,7 @@ def localize_file(url, path, cache):
     """Localize urls for job inputs. Track metrics."""
 
     # get job info
-    job_dir = job['job_info']['job_dir']
+    job_dir = os.getcwd() #job['job_info']['job_dir']
 
     # localize urls
     if path is None: path = '%s/' % job_dir
@@ -113,7 +115,9 @@ def localize_file(url, path, cache):
     if os.path.isdir(path) or path.endswith('/'):
         path = os.path.join(path, os.path.basename(url))
     dir_path = os.path.dirname(path)
-    makedirs(dir_path)
+    print(dir_path)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
     loc_t1 = datetime.utcnow()
     try: download_file(url, path, cache=cache)
     except Exception, e:
@@ -198,7 +202,8 @@ def sling(download_url, repo_url, prod_name, file_type, prod_date, prod_met=None
         # Make a product here
         dataset_name = "incoming-" + prod_date + "-" + os.path.basename(path)
         proddir = os.path.join(".", dataset_name)
-        os.makedirs(proddir)
+        if not os.path.exists(proddir):
+            os.makedirs(proddir)
         shutil.move(path, proddir)
         metadata = {
                        "download_url" : download_url,
@@ -329,7 +334,8 @@ def create_product(file, url, prod_name, prod_date):
 
     # create product directory and move product file in it
     prod_path = os.path.abspath(prod_name)
-    os.makedirs(prod_path, 0775)
+    if not os.path.exists(prod_path):
+        os.makedirs(prod_path, 0775)
     shutil.move(file, os.path.join(prod_path, file))
 
     # copy _context.json if it exists
