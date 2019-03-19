@@ -7,7 +7,7 @@ for the product in datasets JSON config.
 """
 
 import os, sys, re, hashlib, json, shutil, requests, logging, traceback, argparse
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 import time
 import tarfile, zipfile
 from hysds.recognize import Recognizer
@@ -289,7 +289,11 @@ def run_extractor(dsets_file, prod_path, url, ctx):
     else:
         logging.info("Running metadata extractor %s on %s" % \
                     (extractor, prod_path))
-        m = check_output([extractor, prod_path])
+        try:
+            m = check_output([extractor, prod_path])
+        except CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
         if os.path.exists(metadata_file):
             with open(metadata_file) as f:
                 metadata.update(json.load(f))
