@@ -15,10 +15,120 @@ import osaka.main
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
 
+# all file types
+ALL_TYPES = []
+
+# zip types
+ZIP_TYPE = [ "zip" ]
+ALL_TYPES.extend(ZIP_TYPE)
+
+# tar types
+TAR_TYPE = [ "tbz2", "tgz", "bz2", "gz" ]
+ALL_TYPES.extend(TAR_TYPE)
+
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
+def verify(path, file_type):
+    """Verify downloaded file is okay by checking that it can
+       be unzipped/untarred."""
+
+    test_dir = "./extract_test"
+    if file_type in ZIP_TYPE:
+        if not zipfile.is_zipfile(path):
+            raise RuntimeError("%s is not a zipfile." % path)
+        with zipfile.ZipFile(path, 'r') as f:
+            f.extractall(test_dir)
+        shutil.rmtree(test_dir, ignore_errors=True) 
+    elif file_type in TAR_TYPE:
+        if not tarfile.is_tarfile(path):
+            raise RuntimeError("%s is not a tarfile." % path)
+        with tarfile.open(path) as f:
+            f.extractall(test_dir)
+        shutil.rmtree(test_dir, ignore_errors=True) 
+    else:
+        raise NotImplementedError("Failed to verify %s is file type %s." % \
+                                  (path, file_type))
+
+def sling(download_url, repo_url, prod_name, file_type, prod_date, prod_met=None,
+          oauth_url=None, force=False, force_extract=False):
+    """Download file, push to repo and submit job for extraction."""
+
+    # log force flags
+    logging.info("force: %s; force_extract: %s" % (force, force_extract))
+
+    # get localize_url
+    if repo_url.startswith('dav'):
+        localize_url = "http%s" % repo_url[3:]
+    else: localize_url = repo_url
+
+    # get filename
+    path = os.path.basename(repo_url)
+
+    is_here = False
+
+
+    # download from source if not here or forced
+    if not is_here or force:
+
+        # download
+        logging.info("Downloading %s to %s." % (download_url, path))
+        try: osaka.main.get(download_url, path, params={ "oauth": oauth_url },measure=True,output="./pge_metrics.json")
+        except Exception, e:
+            tb = traceback.format_exc()
+            logging.error("Failed to download %s to %s: %s" % (download_url,
+                                                               path, tb))
+            raise
+
+        # verify downloaded file was not corrupted
+        logging.info("Verifying %s is file type %s." % (path, file_type))
+        try: verify(path, file_type)
+        except Exception, e:
+            tb = traceback.format_exc()
+            logging.error("Failed to verify %s is file type %s: %s" % \
+                          (path, file_type, tb))
+            raise
+        # Make a product here
+        dataset_name = "incoming-" + prod_date + "-" + os.path.basename(path)
+        proddir = os.path.join(".", dataset_name)
+        os.makedirs(proddir)
+        shutil.move(path, proddir)
+        metadata = {
+                       "download_url" : download_url,
+                       "prod_name" : prod_name,
+                       "prod_date" : prod_date,
+                       "file": os.path.basename(localize_url),
+                       "data_product_name" : os.path.basename(path),
+                       "dataset" : "incoming",
+                   }
+            
+        # Add metadata from context.json
+        if prod_met is not None:
+           prod_met = json.loads(prod_met)
+           if prod_met:
+             metadata.update(prod_met)
+        
+        # dump metadata
+        with open(os.path.join(proddir, dataset_name + ".met.json"),"w") as f:
+           json.dump(metadata,f)
+           f.close()
+
+        # get settings
+        settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                 'settings.json')
+        if not os.path.exists(settings_file):
+            settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                 'settings.json.tmpl')
+        settings = json.load(open(settings_file))
+
+        # dump dataset
+        with open(os.path.join(proddir, dataset_name + ".dataset.json"),"w") as f:
+           dataset_json = { "version":settings["INCOMING_VERSION"] }
+           if 'spatial_extent' in prod_met:
+               dataset_json['location'] = prod_met['spatial_extent']
+           json.dump(dataset_json, f)
+           f.close()
 
 def run_extractor(dsets_file, prod_path, url, ctx):
     """Run extractor configured in datasets JSON config."""
@@ -162,6 +272,11 @@ if __name__ == "__main__":
     try:
         filename, file_extension = os.path.splitext(args.file)
         logging.info("localize_url : %s \nfile : %s" %(localize_url, args.file))
+       
+        sling(localize_url, filename, args.prod_name, "zip", args.prod_date)
+        #, prod_met=None, oauth_url=None, force=False, force_extract=False)
+
+        '''
         try:
             logging.info("calling osaka")
             osaka.main.get(localize_url, args.file)
@@ -172,7 +287,7 @@ if __name__ == "__main__":
             logging.info("calling osaka again")
             osaka.main.get(localize_url, args.file)
             logging.info("calling osaka successful")
-         
+         '''
         #Corrects input dataset to input file, if supplied input dataset 
         if os.path.isdir(args.file):
              shutil.move(os.path.join(args.file,args.file),"./tmp")
