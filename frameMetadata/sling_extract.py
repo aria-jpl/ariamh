@@ -126,6 +126,7 @@ def localize_file(url, path, cache):
     loc_t2 = datetime.utcnow()
     loc_dur = (loc_t2 - loc_t1).total_seconds()
     path_disk_usage = get_disk_usage(path)
+    '''
     job['job_info']['metrics']['inputs_localized'].append({
         'url': url,
         'path': path,
@@ -135,7 +136,7 @@ def localize_file(url, path, cache):
         'duration': loc_dur,
         'transfer_rate': path_disk_usage/loc_dur
         })
-
+    '''
     # signal run_job() to continue
     return True
 
