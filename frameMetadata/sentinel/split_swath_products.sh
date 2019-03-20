@@ -20,7 +20,7 @@ ZIP_FILE=`ls *.zip`
 echo "ZIP_FILE : " ${ZIP_FILE} 1>&2
 
 STATUS=$?
-echo "STATUS BEFORE SPLITTING SWATH : " $STATUS1>&2
+echo "STATUS BEFORE SPLITTING SWATH : " $STATUS 1>&2
 if [ $STATUS -ne 0 ]; then
   STATUS = 0
 fi
