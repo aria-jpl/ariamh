@@ -19,6 +19,12 @@ echo "WORKING DIR : " $PWD 1>&2
 ZIP_FILE=`ls *.zip`
 echo "ZIP_FILE : " ${ZIP_FILE} 1>&2
 
+STATUS=$?
+echo "STATUS BEFORE SPLITTING SWATH : " $STATUS1>&2
+if [ $STATUS -ne 0 ]; then
+  STATUS = 0
+fi
+
 # split swath products
 echo "##########################################" 1>&2
 echo -n "Started splitting swath products from SLC: " 1>&2
@@ -30,7 +36,7 @@ echo -n "Finished splitting swath products from SLC: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
   echo "Failed to split swath products from SLC." 1>&2
-  exit 1
+  #exit 1
 fi
 
 # extract metadata for each swath
