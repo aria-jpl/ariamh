@@ -125,7 +125,7 @@ def localize_file(url, path, cache):
         raise(RuntimeError("Failed to download %s: %s\n%s" % (url, str(e), tb)))
     loc_t2 = datetime.utcnow()
     loc_dur = (loc_t2 - loc_t1).total_seconds()
-    path_disk_usage = get_disk_usage(path)
+    #path_disk_usage = get_disk_usage(path)
     '''
     job['job_info']['metrics']['inputs_localized'].append({
         'url': url,
