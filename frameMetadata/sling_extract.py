@@ -6,21 +6,157 @@ the product and leveraging the configured metadata extractor defined
 for the product in datasets JSON config.
 """
 
-import os, sys, re, json, shutil, logging, traceback, argparse
-from subprocess import check_output
+import os, sys, re, hashlib, json, shutil, requests, logging, traceback, argparse
+from subprocess import check_output, CalledProcessError
 import time
-
+import tarfile, zipfile
 from hysds.recognize import Recognizer
 import osaka.main
+from atomicwrites import atomic_write
+import hysds
+from hysds.log_utils import logger, log_prov_es
+from hysds.celery import app
+from datetime import datetime
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
+
+# all file types
+ALL_TYPES = []
+
+# zip types
+ZIP_TYPE = [ "zip" ]
+ALL_TYPES.extend(ZIP_TYPE)
+
+# tar types
+TAR_TYPE = [ "tbz2", "tgz", "bz2", "gz" ]
+ALL_TYPES.extend(TAR_TYPE)
 
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
+def get_download_params(url):
+    """Set osaka download params."""
 
-def run_extractor(dsets_file, prod_path, ctx):
+    params = {}
+
+    # set profile
+    for prof in app.conf.get('BUCKET_PROFILES', []):
+        if 'profile_name' in params: break
+        if prof.get('bucket_patterns', None) is None:
+            params['profile_name'] = prof['profile']
+            break
+        else:
+            if isinstance(prof['bucket_patterns'], list):
+                bucket_patterns = prof['bucket_patterns']
+            else: bucket_patterns = [ prof['bucket_patterns'] ]
+            for bucket_pattern in prof['bucket_patterns']:
+                regex = re.compile(bucket_pattern)
+                match = regex.search(url)
+                if match:
+                    logger.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
+                    params['profile_name'] = prof['profile']
+                    break
+                
+    return params
+
+def update_context_file(localize_url, file_name):
+    print("update_context_file :%s,  %s" %(localize_url, file_name))
+    ctx_file = "_context.json"
+    localized_url_array = []
+    url_dict = {}
+    url_dict["local_path"] = file_name
+    url_dict["url"]=localize_url
+
+    localized_url_array.append(url_dict)
+    with open(ctx_file) as f:
+        ctx = json.load(f)
+    ctx["localize_urls"] = localized_url_array
+
+    with open(ctx_file, 'w') as f:
+        json.dump(ctx, f, indent=2, sort_keys=True)
+ 
+def download_file(url, path, cache=False):
+    """Download file/dir for input."""
+
+    params = get_download_params(url)
+    if cache:
+        url_hash = hashlib.md5(url).hexdigest()
+        hash_dir = os.path.join(app.conf.ROOT_WORK_DIR, 'cache', *url_hash[0:4])
+        cache_dir = os.path.join(hash_dir, url_hash)
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        signal_file = os.path.join(cache_dir, '.localized')
+        if os.path.exists(signal_file):
+            logger.info("cache hit for {} at {}".format(url, cache_dir))
+        else:
+            logger.info("cache miss for {}".format(url))
+            try: osaka.main.get(url, cache_dir, params=params)
+            except Exception, e:
+                shutil.rmtree(cache_dir)
+                tb = traceback.format_exc()
+                raise(RuntimeError("Failed to download %s to cache %s: %s\n%s" % \
+                    (url, cache_dir, str(e), tb)))
+            with atomic_write(signal_file, overwrite=True) as f:
+                f.write("%sZ\n" % datetime.utcnow().isoformat())
+        for i in os.listdir(cache_dir):
+            if i == '.localized': continue
+            cached_obj = os.path.join(cache_dir, i)
+            if os.path.isdir(cached_obj):
+                dst = os.path.join(path, i) if os.path.isdir(path) else path
+                try: os.symlink(cached_obj, dst)
+                except:
+                    logger.error("Failed to soft link {} to {}".format(cached_obj, dst))
+                    raise
+            else:
+                try: os.symlink(cached_obj, path)
+                except:
+                    logger.error("Failed to soft link {} to {}".format(cached_obj, path))
+                    raise
+    else: return osaka.main.get(url, path, params=params)
+
+
+def localize_file(url, path, cache):
+    """Localize urls for job inputs. Track metrics."""
+
+    # get job info
+    job_dir = os.getcwd() #job['job_info']['job_dir']
+
+    # localize urls
+    if path is None: path = '%s/' % job_dir
+    else:
+        if path.startswith('/'): pass
+        else: path = os.path.join(job_dir, path)
+    if os.path.isdir(path) or path.endswith('/'):
+        path = os.path.join(path, os.path.basename(url))
+    dir_path = os.path.dirname(path)
+    print(dir_path)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    loc_t1 = datetime.utcnow()
+    try: download_file(url, path, cache=cache)
+    except Exception, e:
+        tb = traceback.format_exc()
+        raise(RuntimeError("Failed to download %s: %s\n%s" % (url, str(e), tb)))
+    loc_t2 = datetime.utcnow()
+    loc_dur = (loc_t2 - loc_t1).total_seconds()
+    #path_disk_usage = get_disk_usage(path)
+    '''
+    job['job_info']['metrics']['inputs_localized'].append({
+        'url': url,
+        'path': path,
+        'disk_usage': path_disk_usage,
+        'time_start': loc_t1.isoformat() + 'Z',
+        'time_end': loc_t2.isoformat() + 'Z',
+        'duration': loc_dur,
+        'transfer_rate': path_disk_usage/loc_dur
+        })
+    '''
+    # signal run_job() to continue
+    return True
+
+
+def run_extractor(dsets_file, prod_path, url, ctx):
     """Run extractor configured in datasets JSON config."""
 
     logging.info("datasets: %s" % dsets_file)
@@ -67,7 +203,11 @@ def run_extractor(dsets_file, prod_path, ctx):
     else:
         logging.info("Running metadata extractor %s on %s" % \
                     (extractor, prod_path))
-        m = check_output([extractor, prod_path])
+        try:
+            m = check_output([extractor, prod_path])
+        except CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
         if os.path.exists(metadata_file):
             with open(metadata_file) as f:
                 metadata.update(json.load(f))
@@ -76,9 +216,7 @@ def run_extractor(dsets_file, prod_path, ctx):
     metadata['data_product_name'] = objectid 
 
     # set download url from context
-    localize_urls = ctx.get('localize_urls', [])
-    if len(localize_urls) > 0:
-        metadata['download_url'] = localize_urls[0]['url']
+    metadata['download_url'] = url
 
     # write it out to file
     with open(metadata_file, 'w') as f:
@@ -96,7 +234,7 @@ def run_extractor(dsets_file, prod_path, ctx):
             json.dump(datasets, f, indent=2)
         logging.info("Wrote dataset to %s" % dataset_file)
 
-def create_product(file, prod_name, prod_date):
+def create_product(file, url, prod_name, prod_date):
     """Create skeleton directory structure for product and run configured
        metadata extractor."""
 
@@ -115,7 +253,8 @@ def create_product(file, prod_name, prod_date):
 
     # create product directory and move product file in it
     prod_path = os.path.abspath(prod_name)
-    os.makedirs(prod_path, 0775)
+    if not os.path.exists(prod_path):
+        os.makedirs(prod_path, 0775)
     shutil.move(file, os.path.join(prod_path, file))
 
     # copy _context.json if it exists
@@ -131,24 +270,47 @@ def create_product(file, prod_name, prod_date):
     dsets_file = settings['DATASETS_CFG']
     if os.path.exists("./datasets.json"):
         dsets_file = "./datasets.json"
-    run_extractor(dsets_file, prod_path, ctx)
+    run_extractor(dsets_file, prod_path, url, ctx)
 
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("localize_url", help="url of the localized file") 
+    parser.add_argument("slc_id", help="id of the localized file") 
+    parser.add_argument("source", help="url source of the localized file")
+    parser.add_argument("download_url", help="download_url of the localized file")
     parser.add_argument("file", help="localized product file")
     parser.add_argument("prod_name", help="product name to use for " +
                                           " canonical product directory")
     parser.add_argument("prod_date", help="product date to use for " +
-                                          " canonical product directory")
+                                      " canonical product directory")
     args = parser.parse_args()
-    localize_url = args.localize_url
+    
+
+    localize_url = None
+    if args.source.lower()=="asf":
+        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
+        r = requests.head(vertex_url, allow_redirects=True)
+        logging.info("Status Code from ASF : %s" %r.status_code)
+        if r.status_code in (200, 403):
+            localize_url = r.url
+        else:
+            raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
+    else:
+        localize_url = args.download_url
+        
     try:
         filename, file_extension = os.path.splitext(args.file)
         logging.info("localize_url : %s \nfile : %s" %(localize_url, args.file))
+       
+        localize_file(localize_url, args.file, False)
+
+        #update _context.json with localize file info as it is used later
+        update_context_file(localize_url, args.file)
+
+
+        '''
         try:
             logging.info("calling osaka")
             osaka.main.get(localize_url, args.file)
@@ -159,7 +321,7 @@ if __name__ == "__main__":
             logging.info("calling osaka again")
             osaka.main.get(localize_url, args.file)
             logging.info("calling osaka successful")
-         
+         '''
         #Corrects input dataset to input file, if supplied input dataset 
         if os.path.isdir(args.file):
              shutil.move(os.path.join(args.file,args.file),"./tmp")
@@ -170,10 +332,10 @@ if __name__ == "__main__":
         if not is_non_zero_file(args.file):
             raise Exception("File Not Found or Empty File : %s" %args.file)
 
-        create_product(args.file, args.prod_name, args.prod_date)
+        create_product(args.file, localize_url, args.prod_name, args.prod_date)
     except Exception as e:
-        with open('_alt_error.txt', 'a') as f:
+        with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
-        with open('_alt_traceback.txt', 'a') as f:
+        with open('_alt_traceback.txt', 'w') as f:
             f.write("%s\n" % traceback.format_exc())
         raise

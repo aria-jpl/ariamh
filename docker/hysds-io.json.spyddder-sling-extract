@@ -3,8 +3,20 @@
   "recommended-queues" : [ "grfn-job_worker-small" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
+    {
+      "name": "slc_id",
+      "from": "dataset_jpath:_source.metadata.identifier",
+      "type": "text"
+    },
+    {
+      "name": "source",
+      "from": "submitter",
+      "type": "enum",
+      "default": "asf",
+      "enumerables": ["asf", "esa"]
+    },
     { 
-      "name": "localize_url",
+      "name": "download_url",
       "from": "dataset_jpath:_source",
       "lambda": "lambda ds: \"%s/%s\" % ((filter(lambda x: x.startswith('s3://'), ds['urls']) or ds['urls'])[0], ds['metadata']['data_product_name'])"
     },
