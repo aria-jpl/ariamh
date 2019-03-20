@@ -390,7 +390,7 @@ if __name__ == "__main__":
         filename, file_extension = os.path.splitext(args.file)
         logging.info("localize_url : %s \nfile : %s" %(localize_url, args.file))
        
-        localize_file(localize_url, args.file, True)
+        localize_file(localize_url, args.file, False)
 
         #sling(localize_url, filename, args.prod_name, "zip", args.prod_date)
         #, prod_met=None, oauth_url=None, force=False, force_extract=False)
