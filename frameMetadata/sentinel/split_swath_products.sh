@@ -6,18 +6,18 @@ PROD_DIR=$1
 JOB_DIR=$PWD
 BASE_PATH=$(dirname "${BASH_SOURCE}")
 BASE_PATH=$(cd "${BASE_PATH}"; pwd)
-echo -n "PROD_DIR : " $PROD_DIR 1>&2
+echo "PROD_DIR : " $PROD_DIR 1>&2
 # product ID
 PROD_ID=`basename ${PROD_DIR}`
-echo -n "PROD_ID : " $PROD_ID 1>&2
+echo "PROD_ID : " $PROD_ID 1>&2
 
 # cd to product dir
 cd ${PROD_DIR}
-echo "WORKING DIR : " $PWD
+echo "WORKING DIR : " $PWD 1>&2
 
 # zip file
 ZIP_FILE=`ls *.zip`
-echo ${ZIP_FILE}
+echo "ZIP_FILE : " ${ZIP_FILE} 1>&2
 
 # split swath products
 echo "##########################################" 1>&2
