@@ -17,7 +17,7 @@ import hysds
 from hysds.log_utils import logger, log_prov_es
 from hysds.celery import app
 from datetime import datetime
-from utils.UrlUtils import UrlUtils
+#from utils.UrlUtils import UrlUtils
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
 
@@ -32,16 +32,92 @@ ALL_TYPES.extend(ZIP_TYPE)
 TAR_TYPE = [ "tbz2", "tgz", "bz2", "gz" ]
 ALL_TYPES.extend(TAR_TYPE)
 
+CONF_FILE="/home/ops/ariamh/conf/settings.conf"
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
+
+
+
+def getConf():
+    uu ={}
+    with open(CONF_FILE, 'r') as fp:
+        allL = fp.readlines()
+        dc = {}
+        for line in allL:
+            ls = line.split('=')
+            if(len(ls) == 2):                
+                dc[ls[0]] = ls[1]
+        fp.close()
+        try:
+            uu['rest_url'] = dc['GRQ_URL'].strip()
+        except:
+            uu['rest_url'] = None
+            pass
+        try:
+            uu['dav_url'] = dc['ARIA_DAV_URL'].strip()
+        except:
+            uu['dav_url']=None
+            pass
+        try:
+            uu['grq_index_prefix'] = dc['GRQ_INDEX_PREFIX'].strip()
+        except:
+            pass
+        try:
+            uu['datasets_cfg'] = dc['DATASETS_CONFIG'].strip()
+        except:
+            pass
+    return uu
+
+
+def get_acquisition_data_from_slc(slc_id):
+    uu = getConf()
+    es_url = uu['rest_url']
+    es_index = "grq_*_*acquisition*"
+    query = {
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "metadata.identifier.raw": slc_id 
+              }
+            }
+          ]
+        }
+      },
+      "partial_fields" : {
+            "partial" : {
+                "exclude" : "city",
+            }
+        }
+    }
+
+    print(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    r = requests.post(search_url, data=json.dumps(query))
+
+    if r.status_code != 200:
+        print("Failed to query %s:\n%s" % (es_url, r.text))
+        print("query: %s" % json.dumps(query, indent=2))
+        print("returned: %s" % r.text)
+        r.raise_for_status()
+
+    result = r.json()
+    print(result['hits']['total'])
+    return result['hits']['hits'][0]
+
 
 def get_dataset(id, es_index_data=None):
     """Query for existence of dataset by ID."""
 
     # es_url and es_index
-    uu = UrlUtils()
-    es_url = uu.rest_url
+    uu = getConf()
+    es_url = uu['rest_url']
 
     #es_index = "grq_*_{}".format(index_suffix.lower())
     es_index = "grq"
@@ -345,6 +421,12 @@ if __name__ == "__main__":
         logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
         exit(0)
 
+    acq_data = get_acquisition_data_from_slc(args.slc_id)['fields']['partial'][0]
+    download_url = acq_data['metadata']['download_url']
+    archive_filename = acq_data['metadata']['archive_filename']
+    logging.info("download_url : %s" %download_url)
+    logging.info("archive_filename : %s" %archive_filename)
+
     localize_url = None
     if args.source.lower()=="asf":
         vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
@@ -355,41 +437,41 @@ if __name__ == "__main__":
         else:
             raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
     else:
-        localize_url = args.download_url
+        localize_url = download_url
         
     try:
-        filename, file_extension = os.path.splitext(args.file)
-        logging.info("localize_url : %s \nfile : %s" %(localize_url, args.file))
+        filename, file_extension = os.path.splitext(archive_filename)
+        logging.info("localize_url : %s \nfile : %s" %(localize_url, archive_filename))
        
-        localize_file(localize_url, args.file, False)
+        localize_file(localize_url, archive_filename, False)
 
         #update _context.json with localize file info as it is used later
-        update_context_file(localize_url, args.file)
+        update_context_file(localize_url, archive_filename)
 
 
         '''
         try:
             logging.info("calling osaka")
-            osaka.main.get(localize_url, args.file)
+            osaka.main.get(localize_url, archive_filename)
             logging.info("calling osaka successful")
         except:
             logging.info("calling osaka failed. sleeping ..")
             time.sleep(100)
             logging.info("calling osaka again")
-            osaka.main.get(localize_url, args.file)
+            osaka.main.get(localize_url, archive_filename)
             logging.info("calling osaka successful")
          '''
         #Corrects input dataset to input file, if supplied input dataset 
-        if os.path.isdir(args.file):
-             shutil.move(os.path.join(args.file,args.file),"./tmp")
-             shutil.rmtree(args.file)
-             shutil.move("./tmp",args.file)
+        if os.path.isdir(archive_filename):
+             shutil.move(os.path.join(archive_filename,archive_filename),"./tmp")
+             shutil.rmtree(archive_filename)
+             shutil.move("./tmp",archive_filename)
 
         #Check for Zero Sized File
-        if not is_non_zero_file(args.file):
-            raise Exception("File Not Found or Empty File : %s" %args.file)
+        if not is_non_zero_file(archive_filename):
+            raise Exception("File Not Found or Empty File : %s" %archive_filename)
 
-        create_product(args.file, localize_url, args.prod_name, args.prod_date)
+        create_product(archive_filename, localize_url, args.prod_name, args.prod_date)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
