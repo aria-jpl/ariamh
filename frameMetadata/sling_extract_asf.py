@@ -194,7 +194,7 @@ def get_download_params(url):
                 
     return params
 
-def update_context_file(localize_url, file_name):
+def update_context_file(localize_url, file_name, prod_name, prod_date, download_url):
     logger.info("update_context_file :%s,  %s" %(localize_url, file_name))
     ctx_file = "_context.json"
     localized_url_array = []
@@ -206,6 +206,10 @@ def update_context_file(localize_url, file_name):
     with open(ctx_file) as f:
         ctx = json.load(f)
     ctx["localize_urls"] = localized_url_array
+    ctx["prod_name"] = prod_name
+    ctx["file"] = file_name
+    ctx["download_url"] = download_url
+    ctx["prod_date"] = prod_date
 
     with open(ctx_file, 'w') as f:
         json.dump(ctx, f, indent=2, sort_keys=True)
@@ -451,7 +455,7 @@ if __name__ == "__main__":
         localize_file(localize_url, archive_filename, False)
 
         #update _context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename)
+        update_context_file(localize_url, archive_filename, prod_name, prod_date, download_url)
 
 
         '''
