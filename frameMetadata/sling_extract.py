@@ -425,6 +425,12 @@ if __name__ == "__main__":
         logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
         exit(0)
 
+    time.sleep( 5 )
+    #Recheck as this method sometime does not work    
+    if check_slc_status(args.slc_id.strip()):
+        logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
+        exit(0)
+
     acq_data = get_acquisition_data_from_slc(args.slc_id)['fields']['partial'][0]
     download_url = acq_data['metadata']['download_url']
     archive_filename = acq_data['metadata']['archive_filename']
