@@ -455,7 +455,7 @@ if __name__ == "__main__":
         localize_file(localize_url, archive_filename, False)
 
         #update _context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename, prod_name, prod_date, download_url)
+        update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
 
 
         '''
