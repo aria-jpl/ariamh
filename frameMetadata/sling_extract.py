@@ -93,7 +93,7 @@ def get_acquisition_data_from_slc(slc_id):
         }
     }
 
-    print(query)
+    logger.info(query)
 
     if es_url.endswith('/'):
         search_url = '%s%s/_search' % (es_url, es_index)
@@ -102,13 +102,13 @@ def get_acquisition_data_from_slc(slc_id):
     r = requests.post(search_url, data=json.dumps(query))
 
     if r.status_code != 200:
-        print("Failed to query %s:\n%s" % (es_url, r.text))
-        print("query: %s" % json.dumps(query, indent=2))
-        print("returned: %s" % r.text)
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
         r.raise_for_status()
 
     result = r.json()
-    print(result['hits']['total'])
+    logger.info(result['hits']['total'])
     return result['hits']['hits'][0]
 
 
@@ -136,32 +136,36 @@ def get_dataset(id, es_index_data=None):
         "fields": []
     }
 
-    print(query)
+    logger.info(query)
 
     if es_url.endswith('/'):
         search_url = '%s%s/_search' % (es_url, es_index)
     else:
         search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
     r = requests.post(search_url, data=json.dumps(query))
 
     if r.status_code != 200:
-        print("Failed to query %s:\n%s" % (es_url, r.text))
-        print("query: %s" % json.dumps(query, indent=2))
-        print("returned: %s" % r.text)
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
         r.raise_for_status()
 
     result = r.json()
-    print(result['hits']['total'])
+    logger.info(result['hits']['total'])
     return result
 
 def check_slc_status(slc_id, index_suffix=None):
 
     result = get_dataset(slc_id, index_suffix)
     total = result['hits']['total']
-
+    logger.info("check_slc_status : total : %s" %total)
     if total > 0:
+        logger.info("check_slc_status : returning True")
         return True
 
+    logger.info("check_slc_status : returning False")
     return False
 
 
@@ -191,7 +195,7 @@ def get_download_params(url):
     return params
 
 def update_context_file(localize_url, file_name):
-    print("update_context_file :%s,  %s" %(localize_url, file_name))
+    logger.info("update_context_file :%s,  %s" %(localize_url, file_name))
     ctx_file = "_context.json"
     localized_url_array = []
     url_dict = {}
@@ -260,7 +264,7 @@ def localize_file(url, path, cache):
     if os.path.isdir(path) or path.endswith('/'):
         path = os.path.join(path, os.path.basename(url))
     dir_path = os.path.dirname(path)
-    print(dir_path)
+    logger.info(dir_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
     loc_t1 = datetime.utcnow()
@@ -417,7 +421,7 @@ if __name__ == "__main__":
                                       " canonical product directory")
     args = parser.parse_args()
     
-    if check_slc_status(args.slc_id):
+    if check_slc_status(args.slc_id.strip()):
         logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
         exit(0)
 
