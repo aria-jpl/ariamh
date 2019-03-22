@@ -431,7 +431,7 @@ if __name__ == "__main__":
     logging.info("download_url : %s" %download_url)
     logging.info("archive_filename : %s" %archive_filename)
 
-    source = "asf"
+    source = "scihub"
     localize_url = None
     if source.lower()=="asf":
         vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)

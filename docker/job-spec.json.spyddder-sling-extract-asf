@@ -1,5 +1,5 @@
 {
-  "command": "/home/ops/ariamh/frameMetadata/sling_extract.py",
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract_asf.py",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
@@ -8,9 +8,7 @@
   },
   "recommended-queues" : [
     "spyddder-sling-extract-asf",
-    "spyddder-sling-extract-scihub"
     "factotum-job_worker-asf_throttled",
-    "factotum-job_worker-scihub_throttled",
     "aria-job_worker-small",
     "mem-job_worker-small",
     "dwr-job_worker-small",
