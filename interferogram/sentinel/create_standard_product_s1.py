@@ -60,6 +60,54 @@ def delete_met_data(met_md, old_key):
 
     return met_md
 
+def get_dataset(id):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+    es_index = "grq"
+
+    # query
+    query = {
+      "query": {
+        "wildcard": {
+          "_id": id
+        }
+      }
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        r.raise_for_status()
+
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+def check_ifg_status(ifg_id):
+
+    result = get_dataset(ifg_id)
+    total = result['hits']['total']
+    logger.info("check_slc_status : total : %s" %total)
+    if total == 1:
+        found_id = result['hits']['hits'][0]["_id"]
+        raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
+
+    logger.info("check_slc_status : returning False")
+    return False
 
 
 def update_met(md):
@@ -368,14 +416,6 @@ def get_bool_param(ctx, param):
     return True if ctx.get(param, 'true').strip().lower() == 'true' else False
 
 
-def ifg_exists(es_url, es_index, id):
-    """Check interferogram exists in GRQ."""
-
-    total, id = check_int(es_url, es_index, id)
-    if total > 0: return True
-    return False
-
-
 def download_file(url, outdir='.', session=None):
     """Download file to specified directory."""
 
@@ -396,6 +436,31 @@ def download_file(url, outdir='.', session=None):
                     f.flush()
     return success
 
+def get_temp_id(ctx, version):
+    ifg_hash = ctx["ifg_hash"]
+    direction = ctx["direction"]
+    #west_lat = ctx["west_lat"]
+    platform = ctx["platform"]
+    orbit_type = ctx["orbit_type"]
+    track= ctx["track_number"]
+    slave_ifg_dt = ctx['slc_slave_dt']
+    master_ifg_dt = ctx['slc_master_dt']
+
+
+
+
+    sat_direction = "D"
+
+    if direction.lower() == 'asc':
+        sat_direction = "A"
+
+
+    ifg_hash = ifg_hash[0:4]
+    #logger.info("slc_master_dt : %s,slc_slave_dt : %s" %(slc_master_dt,slc_slave_dt))
+
+    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], "*", "*", ifg_hash, version.replace('.', '_'))
+
+    return ifg_id
 
 def get_polarization(id):
     """Return polarization."""
@@ -688,6 +753,16 @@ def main():
 
     logger.info("\nContext \n")
     logger.info(json.dumps(ctx, indent=4, sort_keys=True))
+
+
+    #Check if ifg_name exists
+    version = get_version()
+    temp_ifg_id = get_temp_id(ctx, version)
+    if check_ifg_status(temp_ifg_id):
+        err = "S1-GUNW IFG Found : %s" %temp_ifg_id
+        logger.info(err)
+        raise RuntimeError(err)
+    
 
     # unzip SAFE dirs
     master_safe_dirs = []
@@ -1193,7 +1268,11 @@ def main():
     ]
     wbd_cmd_line = " ".join(wbd_cmd)
     logger.info("Calling wbdStitcher.py: {}".format(wbd_cmd_line))
-    check_call(wbd_cmd_line, shell=True)
+    try:
+        check_call(wbd_cmd_line, shell=True)
+    except Exception as e:
+        logger.info(str(e))
+
 
     # get product image and size info
     vrt_prod = get_image("merged/filt_topophase.unw.geo.xml")
