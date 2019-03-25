@@ -763,7 +763,8 @@ def main():
         logger.info(err)
         raise RuntimeError(err)
     
-
+    logger.info("\nS1-GUNW IFG NOT Found : %s.\nSo Proceeding ....\n" %temp_ifg_id)
+  
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
