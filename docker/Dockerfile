@@ -3,6 +3,9 @@ FROM hysds/pge-isce_giant
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
 
+RUN pip3 install 'pyproj==1.9.6'
+RUN pip install 'pyproj==1.9.6'
+
 USER ops
 
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
