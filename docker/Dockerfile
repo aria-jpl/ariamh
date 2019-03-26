@@ -5,6 +5,9 @@ LABEL description="GRFN PGE container"
 
 USER ops
 
+RUN pip3 install 'pyproj==1.9.6'
+RUN pip install 'pyproj==1.9.6'
+
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 RUN set -ex \
