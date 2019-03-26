@@ -5,8 +5,8 @@ LABEL description="GRFN PGE container"
 
 USER ops
 
-RUN sudo /usr/bin/pip3 install 'pyproj==2.1.2'
-RUN sudo pip install 'pyproj==2.1.2'
+RUN sudo /usr/bin/pip3 install 'pyproj==4.8.0'
+RUN sudo pip install 'pyproj==4.8.0'
 
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
