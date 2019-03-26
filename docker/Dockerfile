@@ -8,6 +8,7 @@ USER ops
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 RUN set -ex \
+ && sudo /usr/bin/pip3 install pyproj \
  && sudo /usr/bin/pip3 install joblib netcdf4 \
  && sudo rm -rf /root/.cache \
  && sudo chown -R ops:ops /home/ops/ariamh \
