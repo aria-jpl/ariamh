@@ -303,7 +303,7 @@ def get_log_err(log_file):
             if last:
                 err_msg = last
     except Exception as err:
-        logging.info("Error reading %s : %s" %(log_file, str(err))
+        logging.info("Error reading %s : %s" %(log_file, str(err)))
 
     return err_msg      
 
@@ -363,13 +363,13 @@ def run_extractor(dsets_file, prod_path, url, ctx):
             split_log  = os.path.join(root_dir, 'split_swath_products.log')
             loggere.info("%s\n%s" %(prov_log, split_log))
             if prov_log.is_file():
-                prov_err = get_log_err(prov_log):
+                prov_err = get_log_err(prov_log)
                 if prov_err:
                     err_msg = prov_err
             elif split_log.is_file():
                 split_err = get_log_err(split_log)
-                    if split_err:
-                        err_msg=split_err
+                if split_err:
+                    err_msg=split_err
              
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, err_msg))
 
