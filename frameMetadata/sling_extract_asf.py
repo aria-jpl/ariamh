@@ -344,7 +344,7 @@ def run_extractor(dsets_file, prod_path, url, ctx):
         try:
             m = check_output([extractor, prod_path])
         except CalledProcessError as e:
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e))
 
         if os.path.exists(metadata_file):
             with open(metadata_file) as f:
