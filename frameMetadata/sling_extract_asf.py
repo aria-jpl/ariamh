@@ -93,7 +93,7 @@ def get_acquisition_data_from_slc(slc_id):
         }
     }
 
-    logger.info(query)
+    logging.info(query)
 
     if es_url.endswith('/'):
         search_url = '%s%s/_search' % (es_url, es_index)
@@ -102,13 +102,13 @@ def get_acquisition_data_from_slc(slc_id):
     r = requests.post(search_url, data=json.dumps(query))
 
     if r.status_code != 200:
-        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
-        logger.info("query: %s" % json.dumps(query, indent=2))
-        logger.info("returned: %s" % r.text)
+        logging.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logging.info("query: %s" % json.dumps(query, indent=2))
+        logging.info("returned: %s" % r.text)
         r.raise_for_status()
 
     result = r.json()
-    logger.info(result['hits']['total'])
+    logging.info(result['hits']['total'])
     return result['hits']['hits'][0]
 
 
@@ -136,36 +136,36 @@ def get_dataset(id, es_index_data=None):
         "fields": []
     }
 
-    logger.info(query)
+    logging.info(query)
 
     if es_url.endswith('/'):
         search_url = '%s%s/_search' % (es_url, es_index)
     else:
         search_url = '%s/%s/_search' % (es_url, es_index)
-    logger.info("search_url : %s" %search_url)
+    logging.info("search_url : %s" %search_url)
 
     r = requests.post(search_url, data=json.dumps(query))
 
     if r.status_code != 200:
-        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
-        logger.info("query: %s" % json.dumps(query, indent=2))
-        logger.info("returned: %s" % r.text)
+        logging.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logging.info("query: %s" % json.dumps(query, indent=2))
+        logging.info("returned: %s" % r.text)
         r.raise_for_status()
 
     result = r.json()
-    logger.info(result['hits']['total'])
+    logging.info(result['hits']['total'])
     return result
 
 def check_slc_status(slc_id, index_suffix=None):
 
     result = get_dataset(slc_id, index_suffix)
     total = result['hits']['total']
-    logger.info("check_slc_status : total : %s" %total)
+    logging.info("check_slc_status : total : %s" %total)
     if total > 0:
-        logger.info("check_slc_status : returning True")
+        logging.info("check_slc_status : returning True")
         return True
 
-    logger.info("check_slc_status : returning False")
+    logging.info("check_slc_status : returning False")
     return False
 
 
@@ -188,14 +188,14 @@ def get_download_params(url):
                 regex = re.compile(bucket_pattern)
                 match = regex.search(url)
                 if match:
-                    logger.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
+                    logging.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
                     params['profile_name'] = prof['profile']
                     break
                 
     return params
 
 def update_context_file(localize_url, file_name, prod_name, prod_date, download_url):
-    logger.info("update_context_file :%s,  %s" %(localize_url, file_name))
+    logging.info("update_context_file :%s,  %s" %(localize_url, file_name))
     ctx_file = "_context.json"
     localized_url_array = []
     url_dict = {}
@@ -226,9 +226,9 @@ def download_file(url, path, cache=False):
             os.makedirs(cache_dir)
         signal_file = os.path.join(cache_dir, '.localized')
         if os.path.exists(signal_file):
-            logger.info("cache hit for {} at {}".format(url, cache_dir))
+            logging.info("cache hit for {} at {}".format(url, cache_dir))
         else:
-            logger.info("cache miss for {}".format(url))
+            logging.info("cache miss for {}".format(url))
             try: osaka.main.get(url, cache_dir, params=params)
             except Exception, e:
                 shutil.rmtree(cache_dir)
@@ -268,7 +268,7 @@ def localize_file(url, path, cache):
     if os.path.isdir(path) or path.endswith('/'):
         path = os.path.join(path, os.path.basename(url))
     dir_path = os.path.dirname(path)
-    logger.info(dir_path)
+    logging.info(dir_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
     loc_t1 = datetime.utcnow()
@@ -361,7 +361,7 @@ def run_extractor(dsets_file, prod_path, url, ctx):
             root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
             prov_log = os.path.join(root_dir, 'create_prov_es.log')
             split_log  = os.path.join(root_dir, 'split_swath_products.log')
-            loggere.info("%s\n%s" %(prov_log, split_log))
+            logging.info("%s\n%s" %(prov_log, split_log))
             if prov_log.is_file():
                 prov_err = get_log_err(prov_log)
                 if prov_err:
