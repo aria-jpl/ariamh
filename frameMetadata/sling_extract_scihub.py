@@ -359,7 +359,10 @@ def run_extractor(dsets_file, prod_path, url, ctx):
             m = check_output([extractor, prod_path])
         except CalledProcessError as e:
             err_msg = e.message
-            root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
+            root_dir = os.getcwd()
+            if not root_dir.endswith("Z"):
+                root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
+            #root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
             prov_log = os.path.join(root_dir, 'create_prov_es.log')
             split_log  = os.path.join(root_dir, 'split_swath_products.log')
             logging.info("%s\n%s" %(prov_log, split_log))
