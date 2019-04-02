@@ -363,11 +363,11 @@ def run_extractor(dsets_file, prod_path, url, ctx):
             prov_log = os.path.join(root_dir, 'create_prov_es.log')
             split_log  = os.path.join(root_dir, 'split_swath_products.log')
             logging.info("%s\n%s" %(prov_log, split_log))
-            if prov_log.is_file():
+            if os.path.isfile(prov_log):
                 prov_err = get_log_err(prov_log)
                 if prov_err:
                     err_msg = prov_err
-            elif split_log.is_file():
+            elif os.path.isfile(split_log):
                 split_err = get_log_err(split_log)
                 if split_err:
                     err_msg=split_err
