@@ -360,9 +360,11 @@ def run_extractor(dsets_file, prod_path, url, ctx):
         except CalledProcessError as e:
             err_msg = e.message
             root_dir = os.getcwd()
+            logging.info("root_dir with getcwd() : %s" %root_dir)
             if not root_dir.endswith("Z"):
                 root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
-            #root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+            logging.info("root_dir final : %s" %root_dir)
             prov_log = os.path.join(root_dir, 'create_prov_es.log')
             split_log  = os.path.join(root_dir, 'split_swath_products.log')
             logging.info("%s\n%s" %(prov_log, split_log))
@@ -374,6 +376,8 @@ def run_extractor(dsets_file, prod_path, url, ctx):
                 split_err = get_log_err(split_log)
                 if split_err:
                     err_msg=split_err
+            else:
+                logging.info("%s file NOT Found" %split_log)
 
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, err_msg))
 
