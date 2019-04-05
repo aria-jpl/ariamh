@@ -172,31 +172,32 @@ def check_slc_status(slc_id, index_suffix=None):
     return False
 
 
-def get_esa_scihub_md5_hash(esa_uuid):
+def get_asf_scihub_md5_hash(slc_id):
     '''
-    :param esa_uuid: ESA's uuid (provded in acquisition metadata.id)
-    :return: string (md5 hash from ESA sci-hub)
-             ex. 8E15BEEBBBB3DE0A7DBED50A39B6E41B -> 8e15beebbbb3de0a7dbed50a39b6e41b
+    :param slc_id: slc_id taken from the metadata of the acquisition
+    :return: string (md5 hash from ESA sci-hub) all lower case (ex. 8e15beebbbb3de0a7dbed50a39b6e41b)
     '''
 
     # sleeps random time between 15 and 60 seconds so we can further avoid too many requests to sci-hub
     sleep_time = random.randrange(15, 60)
     time.sleep(sleep_time)
 
-    md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
-    md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
-    req = requests(md5_checksum_url)
+    slc_id = "S1B_IW_SLC__1SDV_20190404T010750_20190404T010817_015650_01D594_76A"
+    asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&processingLevel=SLC&output=geojson"
+    asf_geo_json_endpoint = asf_geo_json_endpoint_template.format(slc_id=slc_id)
 
-    if req.status_code == 404:
-        logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
-        raise("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
-    elif req.status_code == 408 or req.status_code == 504:
-        logging.error("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
-        raise ("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+    req = requests.get(asf_geo_json_endpoint, timeout=30)
 
-    scihub_md5_hash = req.text
-    # forcing to lower case because get_md5_from_localized_file() returns lower string
-    return scihub_md5_hash.lower()
+    if req.status_code != 200:
+        raise BaseException("API Request failed for md5 retrieval from ASF: ERROR CODE: {}".format(req.status_code))
+
+    geojson = json.loads(req.text)
+    if len(geojson["features"]) < 1:
+        # {u'type': u'FeatureCollection', u'features': []} if SLC not found in ASF
+        raise BaseException("SLC_ID {} not found in ASF: no available md5 checksum for SLC".format(slc_id))
+
+    md5_hash = geojson["features"][0]["properties"]["md5sum"]  # md5 checksum is lower case
+    return md5_hash
 
 
 def get_download_params(url):
@@ -533,7 +534,7 @@ if __name__ == "__main__":
     logging.info("archive_filename : %s" %archive_filename)
 
     # get md5 checksum from ESA sci-hub
-    esa_sci_hub_md5_hash = get_esa_scihub_md5_hash(acq_data['metadata']['id'])
+    esa_asf_hub_md5_hash = get_asf_scihub_md5_hash(args.slc_id)
 
     source = "asf"
     localize_url = None
@@ -563,8 +564,8 @@ if __name__ == "__main__":
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
         # comparing localized md5 hash with esa's md5 hash
-        if localized_md5_checksum != esa_sci_hub_md5_hash:
-            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(esa_sci_hub_md5_hash,
+        if localized_md5_checksum != esa_asf_hub_md5_hash:
+            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(esa_asf_hub_md5_hash,
                                                                                           localized_md5_checksum))
 
         '''
