@@ -16,7 +16,10 @@ from atomicwrites import atomic_write
 import hysds
 from hysds.log_utils import logger, log_prov_es
 from hysds.celery import app
+import hashlib
 from datetime import datetime
+import random
+import time
 #from utils.UrlUtils import UrlUtils
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
@@ -169,6 +172,33 @@ def check_slc_status(slc_id, index_suffix=None):
     return False
 
 
+def get_esa_scihub_md5_hash(esa_uuid):
+    '''
+    :param esa_uuid: ESA's uuid (provded in acquisition metadata.id)
+    :return: string (md5 hash from ESA sci-hub)
+             ex. 8E15BEEBBBB3DE0A7DBED50A39B6E41B -> 8e15beebbbb3de0a7dbed50a39b6e41b
+    '''
+
+    # sleeps random time between 15 and 60 seconds so we can further avoid too many requests to sci-hub
+    sleep_time = random.randrange(15, 60)
+    time.sleep(sleep_time)
+
+    md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
+    md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
+    req = requests(md5_checksum_url)
+
+    if req.status_code == 404:
+        logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+        raise("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+    elif req.status_code == 408 or req.status_code == 504:
+        logging.error("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+        raise ("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+
+    scihub_md5_hash = req.text
+    # forcing to lower case because get_md5_from_localized_file() returns lower string
+    return scihub_md5_hash.lower()
+
+
 def get_download_params(url):
     """Set osaka download params."""
 
@@ -294,6 +324,19 @@ def localize_file(url, path, cache):
     # signal run_job() to continue
     return True
 
+
+def get_md5_from_localized_file(file_name):
+    '''
+    :param file_name: file path to the local SLC file after download
+    :return: string, ex. 8e15beebbbb3de0a7dbed50a39b6e41b ALL LOWER CASE
+    '''
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
 def get_log_err(log_file):
     err_msg = None
     try:
@@ -308,7 +351,7 @@ def get_log_err(log_file):
 
     return err_msg
 
-def run_extractor(dsets_file, prod_path, url, ctx):
+def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
     """Run extractor configured in datasets JSON config."""
 
     logging.info("datasets: %s" % dsets_file)
@@ -341,6 +384,9 @@ def run_extractor(dsets_file, prod_path, url, ctx):
                                  os.path.basename(prod_path))
     dataset_file = os.path.join(prod_path, '%s.dataset.json' % \
                                  os.path.basename(prod_path))
+
+    with open(os.path.join(prod_path, '%s.zip.md5' % os.path.basename(prod_path)), 'w') as md5_file:
+        md5_file.write(md5_hash)  # writing md5 hash into zip file if it passes
 
     # load metadata
     metadata = {}
@@ -391,6 +437,9 @@ def run_extractor(dsets_file, prod_path, url, ctx):
     # set download url from context
     metadata['download_url'] = url
 
+    # add md5 hash in metadata
+    metadata['md5_hash'] = md5_hash
+
     # write it out to file
     with open(metadata_file, 'w') as f:
         json.dump(metadata, f, indent=2)
@@ -407,7 +456,7 @@ def run_extractor(dsets_file, prod_path, url, ctx):
             json.dump(datasets, f, indent=2)
         logging.info("Wrote dataset to %s" % dataset_file)
 
-def create_product(file, url, prod_name, prod_date):
+def create_product(file, url, prod_name, prod_date, md5_hash):
     """Create skeleton directory structure for product and run configured
        metadata extractor."""
 
@@ -443,7 +492,7 @@ def create_product(file, url, prod_name, prod_date):
     dsets_file = settings['DATASETS_CFG']
     if os.path.exists("./datasets.json"):
         dsets_file = "./datasets.json"
-    run_extractor(dsets_file, prod_path, url, ctx)
+    run_extractor(dsets_file, prod_path, url, ctx, md5_hash)
 
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
@@ -470,6 +519,9 @@ if __name__ == "__main__":
     logging.info("download_url : %s" %download_url)
     logging.info("archive_filename : %s" %archive_filename)
 
+    # get md5 checksum from ESA sci-hub
+    esa_sci_hub_md5_hash = get_esa_scihub_md5_hash(acq_data['metadata']['id'])
+
     source = "scihub"
     localize_url = None
     if source.lower()=="asf":
@@ -492,6 +544,14 @@ if __name__ == "__main__":
         #update _context.json with localize file info as it is used later
         update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
 
+        # getting the checksum value of the localized file
+        slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
+        localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
+
+        # comparing localized md5 hash with esa's md5 hash
+        if localized_md5_checksum != esa_sci_hub_md5_hash:
+            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(esa_sci_hub_md5_hash,
+                                                                                          localized_md5_checksum))
 
         '''
         try:
