@@ -590,7 +590,7 @@ if __name__ == "__main__":
         if not is_non_zero_file(archive_filename):
             raise Exception("File Not Found or Empty File : %s" %archive_filename)
 
-        create_product(archive_filename, localize_url, args.slc_id, prod_date, md5_hash)
+        create_product(archive_filename, localize_url, args.slc_id, prod_date, asf_md5_hash)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
