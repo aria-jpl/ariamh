@@ -175,7 +175,7 @@ def check_slc_status(slc_id, index_suffix=None):
 def get_asf_scihub_md5_hash(slc_id):
     '''
     :param slc_id: slc_id taken from the metadata of the acquisition
-    :return: string (md5 hash from ESA sci-hub) all lower case (ex. 8e15beebbbb3de0a7dbed50a39b6e41b)
+    :return: string (md5 hash from ASF sci-hub) all lower case (ex. 8e15beebbbb3de0a7dbed50a39b6e41b)
     '''
 
     # sleeps random time between 15 and 60 seconds so we can further avoid too many requests to sci-hub
@@ -533,8 +533,8 @@ if __name__ == "__main__":
     logging.info("download_url : %s" %download_url)
     logging.info("archive_filename : %s" %archive_filename)
 
-    # get md5 checksum from ESA sci-hub
-    esa_asf_hub_md5_hash = get_asf_scihub_md5_hash(args.slc_id)
+    # get md5 checksum from ASF sci-hub
+    asf_md5_hash = get_asf_scihub_md5_hash(args.slc_id)
 
     source = "asf"
     localize_url = None
@@ -563,9 +563,9 @@ if __name__ == "__main__":
         slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename)
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
-        # comparing localized md5 hash with esa's md5 hash
-        if localized_md5_checksum != esa_asf_hub_md5_hash:
-            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(esa_asf_hub_md5_hash,
+        # comparing localized md5 hash with asf's md5 hash
+        if localized_md5_checksum != asf_md5_hash:
+            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(asf_md5_hash,
                                                                                           localized_md5_checksum))
 
         '''
