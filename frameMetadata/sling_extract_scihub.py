@@ -172,7 +172,7 @@ def check_slc_status(slc_id, index_suffix=None):
     return False
 
 
-def get_esa_scihub_md5_hash(esa_uuid):
+def get_slc_checksum_md5_scihub(esa_uuid):
     '''
     :param esa_uuid: ESA's uuid (provded in acquisition metadata.id)
     :return: string (md5 hash from ESA sci-hub)
@@ -520,7 +520,7 @@ if __name__ == "__main__":
     logging.info("archive_filename : %s" %archive_filename)
 
     # get md5 checksum from ESA sci-hub
-    esa_sci_hub_md5_hash = get_esa_scihub_md5_hash(acq_data['metadata']['id'])
+    esa_sci_hub_md5_hash = get_slc_checksum_md5_scihub(acq_data['metadata']['id'])
 
     source = "scihub"
     localize_url = None
@@ -550,7 +550,7 @@ if __name__ == "__main__":
 
         # comparing localized md5 hash with esa's md5 hash
         if localized_md5_checksum != esa_sci_hub_md5_hash:
-            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(esa_sci_hub_md5_hash,
+            raise("Checksums DO NOT match: SLC checksum {}. local checksum {}".format(esa_sci_hub_md5_hash,
                                                                                           localized_md5_checksum))
 
         '''
