@@ -172,7 +172,7 @@ def check_slc_status(slc_id, index_suffix=None):
     return False
 
 
-def get_asf_scihub_md5_hash(slc_id):
+def get_slc_checksum_md5_asf(slc_id):
     '''
     :param slc_id: slc_id taken from the metadata of the acquisition
     :return: string (md5 hash from ASF sci-hub) all lower case (ex. 8e15beebbbb3de0a7dbed50a39b6e41b)
@@ -182,7 +182,6 @@ def get_asf_scihub_md5_hash(slc_id):
     sleep_time = random.randrange(15, 60)
     time.sleep(sleep_time)
 
-    slc_id = "S1B_IW_SLC__1SDV_20190404T010750_20190404T010817_015650_01D594_76A"
     asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&processingLevel=SLC&output=geojson"
     asf_geo_json_endpoint = asf_geo_json_endpoint_template.format(slc_id=slc_id)
 
@@ -534,7 +533,7 @@ if __name__ == "__main__":
     logging.info("archive_filename : %s" %archive_filename)
 
     # get md5 checksum from ASF sci-hub
-    asf_md5_hash = get_asf_scihub_md5_hash(args.slc_id)
+    asf_md5_hash = get_slc_checksum_md5_asf(args.slc_id)
 
     source = "asf"
     localize_url = None
@@ -565,8 +564,8 @@ if __name__ == "__main__":
 
         # comparing localized md5 hash with asf's md5 hash
         if localized_md5_checksum != asf_md5_hash:
-            raise("Checksums DO NOT match: Sci-hub checksum {}. local checksum {}".format(asf_md5_hash,
-                                                                                          localized_md5_checksum))
+            raise("Checksums DO NOT match: SLC checksum {}. local checksum {}".format(asf_md5_hash,
+                                                                                      localized_md5_checksum))
 
         '''
         try:
