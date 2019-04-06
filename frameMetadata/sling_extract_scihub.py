@@ -546,7 +546,7 @@ if __name__ == "__main__":
 
         # getting the checksum value of the localized file
         #slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
-        slc_file_path = os.path.join(os.getcwd(), archive_filename + ".md5")
+        slc_file_path = os.path.join(os.getcwd(), archive_filename)
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
         # comparing localized md5 hash with esa's md5 hash
