@@ -1405,10 +1405,10 @@ def main():
 
     # get band statistics
     amp_data = gdal.Open(vrt_prod_file_amp, gdal.GA_ReadOnly)
-    band_stats_amp = amp_data.GetRasterBand(1).GetStatistics(0, 1)
+    #band_stats_amp = amp_data.GetRasterBand(1).GetStatistics(0, 1)
     dis_data = gdal.Open(vrt_prod_file_dis, gdal.GA_ReadOnly)
     band_stats_dis = dis_data.GetRasterBand(1).GetStatistics(0, 1)
-    logger.info("amplitude band stats: {}".format(band_stats_amp))
+    #logger.info("amplitude band stats: {}".format(band_stats_amp))
     logger.info("displacment band stats: {}".format(band_stats_dis))
 
     # create interferogram tile layer
