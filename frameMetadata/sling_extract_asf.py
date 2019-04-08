@@ -446,9 +446,6 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
     # set download url from context
     metadata['download_url'] = url
 
-    # add md5 hash in metadata
-    metadata['md5_hash'] = md5_hash
-
     # write it out to file
     with open(metadata_file, 'w') as f:
         json.dump(metadata, f, indent=2)
