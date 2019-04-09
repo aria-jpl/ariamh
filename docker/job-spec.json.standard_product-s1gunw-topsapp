@@ -9,7 +9,7 @@
    "dependency_images": [
     {
       "container_image_name": "aria/isce_giant:latest",
-      "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-latest.tar.gz",
+      "container_image_url": "s3://s3-ap-southeast-1.amazonaws.com/ntu-hysds-code/aria-isce_giant-latest.tar.gz",
       "container_mappings": {
         "/home/ops/.netrc": ["/root/.netrc"],
         "/home/ops/.aws": ["/root/.aws", "ro"]
