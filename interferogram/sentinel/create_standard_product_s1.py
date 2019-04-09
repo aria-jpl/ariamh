@@ -1402,7 +1402,8 @@ def main():
     vrt_prod_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt"
     check_call("gdal_translate -of VRT -b 1 -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file_amp), shell=True)
     check_call("gdal_translate -of VRT -b 2 -a_nodata -10 {} {}".format(vrt_prod_file, vrt_prod_file_dis), shell=True)
-
+    
+    '''
     # get band statistics
     amp_data = gdal.Open(vrt_prod_file_amp, gdal.GA_ReadOnly)
     #band_stats_amp = amp_data.GetRasterBand(1).GetStatistics(0, 1)
@@ -1410,13 +1411,14 @@ def main():
     band_stats_dis = dis_data.GetRasterBand(1).GetStatistics(0, 1)
     #logger.info("amplitude band stats: {}".format(band_stats_amp))
     logger.info("displacment band stats: {}".format(band_stats_dis))
+    '''
 
     # create interferogram tile layer
     tiles_dir = "{}/tiles".format(prod_dir)
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
     dis_layer = "interferogram"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m hsv --clim_min {} --clim_max {} --nodata 0"
-    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_dis, tiles_dir, dis_layer, band_stats_dis[0], band_stats_dis[1]), shell=True)
+    check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file_dis, tiles_dir, dis_layer, -3.14, 3.14), shell=True)
 
     # create amplitude tile layer
     amp_layer = "amplitude"
