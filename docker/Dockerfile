@@ -1,4 +1,4 @@
-RUN docker load -i /data/docker_images/hysds-pge-isce_giant-latest.tar.gz
+FROM FROM hysds/pge-isce_giant:latest
 
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
