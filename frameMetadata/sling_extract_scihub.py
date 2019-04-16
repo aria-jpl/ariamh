@@ -551,8 +551,7 @@ if __name__ == "__main__":
 
         # comparing localized md5 hash with esa's md5 hash
         if localized_md5_checksum != esa_sci_hub_md5_hash:
-            raise RuntimeError("Checksums DO NOT match: SLC checksum {}. local checksum {}".format(esa_sci_hub_md5_hash,
-                                                                                          localized_md5_checksum))
+            raise RuntimeError("Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id, esa_sci_hub_md5_hash, localized_md5_checksum))
 
         '''
         try:
