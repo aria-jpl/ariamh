@@ -592,6 +592,7 @@ def main():
         project = project[0]
 
     master_scenes = input_metadata["master_scenes"]
+    ifg_cfg_id = input_metadata["id"]
     slave_scenes = input_metadata["slave_scenes"]
     master_ids = input_metadata["master_slcs"]
     slave_ids = input_metadata["slave_slcs"]
@@ -622,6 +623,7 @@ def main():
         dem_type = 'NED1'
 
     ctx['dem_type'] = dem_type
+    ctx['ifg_cfg_id'] = ifg_cfg_id
 
     orbit_type = 'poeorb'
     for o in (master_orbit_url, slave_orbit_url):
@@ -686,6 +688,8 @@ def main():
         dem_type
     ]).encode("utf8")).hexdigest()
 
+
+    ifg_hash = ifg_cfg_id.split('-')[-1]
     ctx['ifg_hash'] = ifg_hash
 
     logger.info("ifg_hash : %s" %ifg_hash)
@@ -1017,6 +1021,8 @@ def main():
                      ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                      "{} {} {} {}".format(*bbox), "True", do_esd,
                      esd_coh_th)
+
+    exit(0)
 
     #get the time before stating topsApp.py
     topsApp_start_time=datetime.now()
