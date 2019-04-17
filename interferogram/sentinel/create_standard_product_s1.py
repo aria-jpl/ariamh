@@ -1022,7 +1022,7 @@ def main():
                      "{} {} {} {}".format(*bbox), "True", do_esd,
                      esd_coh_th)
 
-    exit(0)
+    #exit(0)
 
     #get the time before stating topsApp.py
     topsApp_start_time=datetime.now()
