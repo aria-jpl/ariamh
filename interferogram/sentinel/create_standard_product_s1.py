@@ -690,10 +690,9 @@ def main():
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
     dem_type = input_metadata['dem_type']
-    dem_type = "SRTM+v3"
     system_version = ctx["container_image_name"].strip().split(':')[-1].strip() 
     ctx['system_version'] = system_version
-    full_id_hash = "7b66" #input_metadata['full_id_hash']
+    full_id_hash = input_metadata['full_id_hash']
     ctx['full_id_hash'] = full_id_hash
 
     new_ifg_hash = get_ifg_hash(master_ids, slave_ids)
