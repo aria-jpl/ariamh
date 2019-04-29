@@ -591,11 +591,9 @@ def main():
     if type(project) is list:
         project = project[0]
 
-    master_scenes = input_metadata["master_scenes"]
     ifg_cfg_id = input_metadata["id"]
-    slave_scenes = input_metadata["slave_scenes"]
-    master_ids = input_metadata["master_slcs"]
-    slave_ids = input_metadata["slave_slcs"]
+    master_ids = input_metadata["master_scenes"]
+    slave_ids = input_metadata["slave_scenes"]
     union_geojson = input_metadata["union_geojson"]
     direction = input_metadata["direction"]
     platform = input_metadata["platform"]
@@ -611,6 +609,8 @@ def main():
     dem_type = input_metadata['dem_type']
     system_version = ctx["container_image_name"].strip().split(':')[-1].strip() 
     ctx['system_version'] = system_version
+    full_id_hash = input_metadata['full_id_hash']
+    ctx['full_id_hash'] = full_id_hash
 
     #Hardcoding for now
     #dem_type = "SRTM+v3"
@@ -677,27 +677,16 @@ def main():
 
 
     id_tmpl = IFG_ID_SP_TMPL 
-    ifg_hash = hashlib.md5(json.dumps([
-        master_zip_url[-1],
-        master_orbit_url[-1],
-        slave_zip_url[-1],
-        slave_orbit_url[-1],
-        project,
-        track,
-        filter_strength,
-        dem_type
-    ]).encode("utf8")).hexdigest()
 
 
-    ifg_hash = ifg_cfg_id.split('-')[-1]
+    #ifg_hash = ifg_cfg_id.split('-')[-1]
+    ifg_hash = full_id_hash[0:4]
     ctx['ifg_hash'] = ifg_hash
 
     logger.info("ifg_hash : %s" %ifg_hash)
 
     # log inputs
     logger.info("project: {}".format(project))
-    logger.info("master_scenes: {}".format(master_scenes))
-    logger.info("slave_scenes: {}".format(slave_scenes))
     logger.info("master_ids: {}".format(master_ids))
     logger.info("slave_ids: {}".format(slave_ids))
     logger.info("subswaths: {}".format(subswaths))
