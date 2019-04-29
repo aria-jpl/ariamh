@@ -109,6 +109,58 @@ def check_ifg_status(ifg_id):
     logger.info("check_slc_status : returning False")
     return False
 
+def get_dataset_by_hash(ifg_hash):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+    es_index = "grq"
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        r.raise_for_status()
+
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+
+def check_ifg_status_by_hash(new_ifg_hash):
+    result = get_dataset_by_hash(new_ifg_hash)
+    total = result['hits']['total']
+    logger.info("check_slc_status : total : %s" %total)
+    if total == 1:
+        found_id = result['hits']['hits'][0]["_id"]
+        raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
+
+    logger.info("check_slc_status : returning False")
+    return False
+
 
 def update_met(md):
 
@@ -141,6 +193,37 @@ def update_met(md):
     md = delete_met_data(md, "reference")
     
     return md
+
+def get_ifg_hash(master_slcs,  slave_slcs):
+
+    master_ids_str=""
+    slave_ids_str=""
+
+    for slc in sorted(master_slcs):
+        print("get_ifg_hash : master slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if master_ids_str=="":
+            master_ids_str= slc
+        else:
+            master_ids_str += " "+slc
+
+    for slc in sorted(slave_slcs):
+        print("get_ifg_hash: slave slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if slave_ids_str=="":
+            slave_ids_str= slc
+        else:
+            slave_ids_str += " "+slc
+
+    id_hash = hashlib.md5(json.dumps([
+            master_ids_str,
+            slave_ids_str
+            ]).encode("utf8")).hexdigest()
+    return id_hash
 
 def get_date(t):
     try:
@@ -437,7 +520,7 @@ def download_file(url, outdir='.', session=None):
     return success
 
 def get_temp_id(ctx, version):
-    ifg_hash = ctx["ifg_hash"]
+    ifg_hash = ctx["new_ifg_hash"]
     direction = ctx["direction"]
     #west_lat = ctx["west_lat"]
     platform = ctx["platform"]
@@ -607,10 +690,15 @@ def main():
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
     dem_type = input_metadata['dem_type']
+    dem_type = "SRTM+v3"
     system_version = ctx["container_image_name"].strip().split(':')[-1].strip() 
     ctx['system_version'] = system_version
-    full_id_hash = input_metadata['full_id_hash']
+    full_id_hash = "7b66" #input_metadata['full_id_hash']
     ctx['full_id_hash'] = full_id_hash
+
+    new_ifg_hash = get_ifg_hash(master_ids, slave_ids)
+    ctx['new_ifg_hash'] = new_ifg_hash
+
 
     #Hardcoding for now
     #dem_type = "SRTM+v3"
@@ -680,7 +768,7 @@ def main():
 
 
     #ifg_hash = ifg_cfg_id.split('-')[-1]
-    ifg_hash = full_id_hash[0:4]
+    ifg_hash = new_ifg_hash[0:4]
     ctx['ifg_hash'] = ifg_hash
 
     logger.info("ifg_hash : %s" %ifg_hash)
@@ -751,10 +839,19 @@ def main():
     #Check if ifg_name exists
     version = get_version()
     temp_ifg_id = get_temp_id(ctx, version)
+
+    '''
     if check_ifg_status(temp_ifg_id):
         err = "S1-GUNW IFG Found : %s" %temp_ifg_id
         logger.info(err)
         raise RuntimeError(err)
+    '''
+
+    if check_ifg_status_by_hash(new_ifg_hash):
+        err = "S1-GUNW IFG Found : %s" %temp_ifg_id
+        logger.info(err)
+        raise RuntimeError(err)
+
     
     logger.info("\nS1-GUNW IFG NOT Found : %s.\nSo Proceeding ....\n" %temp_ifg_id)
   
@@ -1101,7 +1198,7 @@ def main():
     acq_center_time = get_center_time(sensing_start, sensing_stop)
 
 
-    ifg_hash = ctx["ifg_hash"]
+    ifg_hash = ctx["new_ifg_hash"]
     direction = ctx["direction"]
     #west_lat = ctx["west_lat"]
     platform = ctx["platform"]
