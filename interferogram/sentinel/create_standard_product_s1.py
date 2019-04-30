@@ -102,7 +102,7 @@ def check_ifg_status(ifg_id):
     result = get_dataset(ifg_id)
     total = result['hits']['total']
     logger.info("check_slc_status : total : %s" %total)
-    if total == 1:
+    if total> 0:
         found_id = result['hits']['hits'][0]["_id"]
         raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
 
@@ -153,8 +153,8 @@ def get_dataset_by_hash(ifg_hash):
 def check_ifg_status_by_hash(new_ifg_hash):
     result = get_dataset_by_hash(new_ifg_hash)
     total = result['hits']['total']
-    logger.info("check_slc_status : total : %s" %total)
-    if total == 1:
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
         found_id = result['hits']['hits'][0]["_id"]
         raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
 
