@@ -934,7 +934,7 @@ def main():
     '''
     # get DEM configuration
     #dem_type = ctx.get("context", {}).get("dem_type", "SRTM+v3")
-    logger.info("ctx['dem_type'] : {}".format(ctx['dem_type'])
+    logger.info("ctx['dem_type'] : {}".format(ctx['dem_type']))
     dem_type_simple = None
     dem_url = uu.dem_url
     srtm3_dem_url = uu.srtm3_dem_url
