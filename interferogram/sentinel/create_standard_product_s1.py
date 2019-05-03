@@ -102,7 +102,59 @@ def check_ifg_status(ifg_id):
     result = get_dataset(ifg_id)
     total = result['hits']['total']
     logger.info("check_slc_status : total : %s" %total)
-    if total == 1:
+    if total> 0:
+        found_id = result['hits']['hits'][0]["_id"]
+        raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
+
+    logger.info("check_slc_status : returning False")
+    return False
+
+def get_dataset_by_hash(ifg_hash):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+    es_index = "grq"
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        r.raise_for_status()
+
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+
+def check_ifg_status_by_hash(new_ifg_hash):
+    result = get_dataset_by_hash(new_ifg_hash)
+    total = result['hits']['total']
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
         found_id = result['hits']['hits'][0]["_id"]
         raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
 
@@ -141,6 +193,37 @@ def update_met(md):
     md = delete_met_data(md, "reference")
     
     return md
+
+def get_ifg_hash(master_slcs,  slave_slcs):
+
+    master_ids_str=""
+    slave_ids_str=""
+
+    for slc in sorted(master_slcs):
+        print("get_ifg_hash : master slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if master_ids_str=="":
+            master_ids_str= slc
+        else:
+            master_ids_str += " "+slc
+
+    for slc in sorted(slave_slcs):
+        print("get_ifg_hash: slave slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if slave_ids_str=="":
+            slave_ids_str= slc
+        else:
+            slave_ids_str += " "+slc
+
+    id_hash = hashlib.md5(json.dumps([
+            master_ids_str,
+            slave_ids_str
+            ]).encode("utf8")).hexdigest()
+    return id_hash
 
 def get_date(t):
     try:
@@ -437,7 +520,7 @@ def download_file(url, outdir='.', session=None):
     return success
 
 def get_temp_id(ctx, version):
-    ifg_hash = ctx["ifg_hash"]
+    ifg_hash = ctx["new_ifg_hash"]
     direction = ctx["direction"]
     #west_lat = ctx["west_lat"]
     platform = ctx["platform"]
@@ -591,10 +674,9 @@ def main():
     if type(project) is list:
         project = project[0]
 
-    master_scenes = input_metadata["master_scenes"]
-    slave_scenes = input_metadata["slave_scenes"]
-    master_ids = input_metadata["master_slcs"]
-    slave_ids = input_metadata["slave_slcs"]
+    ifg_cfg_id = input_metadata["id"]
+    master_ids = input_metadata["master_scenes"]
+    slave_ids = input_metadata["slave_scenes"]
     union_geojson = input_metadata["union_geojson"]
     direction = input_metadata["direction"]
     platform = input_metadata["platform"]
@@ -610,6 +692,12 @@ def main():
     dem_type = input_metadata['dem_type']
     system_version = ctx["container_image_name"].strip().split(':')[-1].strip() 
     ctx['system_version'] = system_version
+    full_id_hash = input_metadata['full_id_hash']
+    ctx['full_id_hash'] = full_id_hash
+
+    new_ifg_hash = get_ifg_hash(master_ids, slave_ids)
+    ctx['new_ifg_hash'] = new_ifg_hash
+
 
     #Hardcoding for now
     #dem_type = "SRTM+v3"
@@ -622,6 +710,7 @@ def main():
         dem_type = 'NED1'
 
     ctx['dem_type'] = dem_type
+    ctx['ifg_cfg_id'] = ifg_cfg_id
 
     orbit_type = 'poeorb'
     for o in (master_orbit_url, slave_orbit_url):
@@ -675,25 +764,16 @@ def main():
 
 
     id_tmpl = IFG_ID_SP_TMPL 
-    ifg_hash = hashlib.md5(json.dumps([
-        master_zip_url[-1],
-        master_orbit_url[-1],
-        slave_zip_url[-1],
-        slave_orbit_url[-1],
-        project,
-        track,
-        filter_strength,
-        dem_type
-    ]).encode("utf8")).hexdigest()
 
+
+    #ifg_hash = ifg_cfg_id.split('-')[-1]
+    ifg_hash = new_ifg_hash[0:4]
     ctx['ifg_hash'] = ifg_hash
 
     logger.info("ifg_hash : %s" %ifg_hash)
 
     # log inputs
     logger.info("project: {}".format(project))
-    logger.info("master_scenes: {}".format(master_scenes))
-    logger.info("slave_scenes: {}".format(slave_scenes))
     logger.info("master_ids: {}".format(master_ids))
     logger.info("slave_ids: {}".format(slave_ids))
     logger.info("subswaths: {}".format(subswaths))
@@ -758,10 +838,19 @@ def main():
     #Check if ifg_name exists
     version = get_version()
     temp_ifg_id = get_temp_id(ctx, version)
+
+    '''
     if check_ifg_status(temp_ifg_id):
         err = "S1-GUNW IFG Found : %s" %temp_ifg_id
         logger.info(err)
         raise RuntimeError(err)
+    '''
+
+    if check_ifg_status_by_hash(new_ifg_hash):
+        err = "S1-GUNW IFG Found : %s" %temp_ifg_id
+        logger.info(err)
+        raise RuntimeError(err)
+
     
     logger.info("\nS1-GUNW IFG NOT Found : %s.\nSo Proceeding ....\n" %temp_ifg_id)
   
@@ -845,6 +934,7 @@ def main():
     '''
     # get DEM configuration
     #dem_type = ctx.get("context", {}).get("dem_type", "SRTM+v3")
+    logger.info("ctx['dem_type'] : {}".format(ctx['dem_type']))
     dem_type_simple = None
     dem_url = uu.dem_url
     srtm3_dem_url = uu.srtm3_dem_url
@@ -901,10 +991,19 @@ def main():
             else: raise RuntimeError("Unknown dem type %s." % dem_type)
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
-            dem_S = dem_S - 1 if dem_S > -89 else dem_S
-            dem_N = dem_N + 1 if dem_N < 89 else dem_N
-            dem_W = dem_W - 1 if dem_W > -179 else dem_W
-            dem_E = dem_E + 1 if dem_E < 179 else dem_E
+ 
+            
+            dem_S = dem_S - 4 if dem_S > -86 else dem_S
+            dem_N = dem_N + 4 if dem_N < 86 else dem_N
+            dem_W = dem_W - 4 if dem_W > -176 else dem_W
+            dem_E = dem_E + 4 if dem_E < 176 else dem_E
+            '''
+            dem_S, dem_N, dem_W, dem_E = bbox
+            dem_S = int(math.floor(dem_S))
+            dem_N = int(math.ceil(dem_N))
+            dem_W = int(math.floor(dem_W))
+            dem_E = int(math.ceil(dem_E))
+            '''
             dem_cmd = [
                 "{}/ned_dem.py".format(BASE_PATH), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
@@ -1018,6 +1117,8 @@ def main():
                      "{} {} {} {}".format(*bbox), "True", do_esd,
                      esd_coh_th)
 
+    #exit(0)
+
     #get the time before stating topsApp.py
     topsApp_start_time=datetime.now()
     logger.info("TopsApp Start Time : {}".format(topsApp_start_time))
@@ -1106,7 +1207,7 @@ def main():
     acq_center_time = get_center_time(sensing_start, sensing_stop)
 
 
-    ifg_hash = ctx["ifg_hash"]
+    ifg_hash = ctx["new_ifg_hash"]
     direction = ctx["direction"]
     #west_lat = ctx["west_lat"]
     platform = ctx["platform"]
@@ -1491,7 +1592,7 @@ def main():
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
-    
+    md['full_id_hash'] = ctx['new_ifg_hash']    
     md['system_version']=ctx['system_version']
 
     try:
