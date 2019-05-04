@@ -1,0 +1,15 @@
+{
+  "label" : "AOI Merged Track Stitcher",
+  "submission_type": "individual",
+  "recommended-queues" : [ "grfn-job_worker-small" ],
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    {
+      "name": "extra_products",
+      "from": "submitter",
+      "type": "text",
+      "default": "los.rdr.geo",
+      "placeholder": "space separated list of products to process, e.g. los.rdr.geo"
+    }
+  ]
+}
