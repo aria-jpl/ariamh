@@ -18,7 +18,8 @@
     {
       "name": "extra_products",
       "from": "dataset_jpath:_source.metadata.s1-gunw_urls",
-      "type": "text"
+      "type": "text",
+      "destination": "context"
     }
   ]
 }
