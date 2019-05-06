@@ -2,6 +2,8 @@
 from scipy.ndimage.morphology import binary_dilation
 from scipy.ndimage import generate_binary_structure
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import sys
 import os
@@ -799,19 +801,22 @@ class MergedTrackStitcher:
             names, sizes = self.arrange_frames(args['filenames'])
             self.create_mask(sizes)
 
-            nnames = []
-            ssizes = []
-            for i in range(len(names[0])):
-                nm = []
-                sz = []
-                for j in range(len(names)):
-                    nm.append(names[j][i])
-                    sz.append(sizes[j][i])
-                nnames.append(nm)
-                ssizes.append(sz)
-            names = nnames
-            sizes = ssizes
-
+            if args['direction'] == 'along':
+                nnames = []
+                ssizes = []
+                for i in range(len(names[0])):
+                    nm = []
+                    sz = []
+                    for j in range(len(names)):
+                        nm.append(names[j][i])
+                        sz.append(sizes[j][i])
+                    nnames.append(nm)
+                    ssizes.append(sz)
+                names = nnames
+                sizes = ssizes
+            elif args['direction'] != 'across':
+                print('Stitch direction either across or along. Entered',args['direction'])
+                raise Exception
             # im1,cm1,size1 = self.stitch_sequence(names[1], sizes[1])
             # if there is only one subswath and the direction is along than
             # the stich _equence will already stitch all the ifgs so give
@@ -897,11 +902,11 @@ class MergedTrackStitcher:
 # fname is the name of the json file with keys
 # "outname":"output filename", #normally something like filt_topophase.unw.geo
 # "filenames":[[["run_1_1/merged/filt_topophase.unw.geo",
-# "run_1_2/merged/filt_topophase.unw.geo",
-# "run_1_3/merged/filt_topophase.unw.geo"],
-# ["run_2_1/merged/filt_topophase.unw.geo",
-# "run_2_2/merged/filt_topophase.unw.geo",
-# "run_2_3/merged/filt_topophase.unw.geo"]]]
+#                "run_1_2/merged/filt_topophase.unw.geo",
+#                "run_1_3/merged/filt_topophase.unw.geo"],
+#                ["run_2_1/merged/filt_topophase.unw.geo",
+#                "run_2_2/merged/filt_topophase.unw.geo",
+#                "run_2_3/merged/filt_topophase.unw.geo"]]]
 ### NOTE: each row the names must be arranged by subswath increasing number
 
 def main(fname):
@@ -913,4 +918,28 @@ def main(fname):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1]))
+    cwd = os.getcwd()
+
+    ctx_file = os.path.abspath('_context.json')  # get context
+    if not os.path.exists(ctx_file):
+        raise RuntimeError("Failed to find _context.json.")
+    with open(ctx_file) as f:
+        ctx = json.load(f)
+
+    input_files = ctx.get('localize_urls', [])
+    outname = 'filt_topophase.unw.geo'
+    extra_products = ctx.get('extra_products', [])
+
+    inp = {
+        'direction': 'along',
+        'extra_products': extra_products,
+        'filenames': input_files,
+        'outname': outname,
+    }
+    ifg_stitch_file = "ifg_stitch.json"
+    ifg_stitch_file = os.path.join(os.getcwd(), ifg_stitch_file)
+
+    with open(ifg_stitch_file, 'w') as f:
+        json.dump(inp, f, indent=2)
+
+    sys.exit(main(ifg_stitch_file))

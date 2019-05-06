@@ -17,9 +17,11 @@
   "params" : [
     {
       "name": "extra_products",
-      "from": "dataset_jpath:_source.metadata.s1-gunw_urls",
-      "type": "text",
       "destination": "context"
+    },
+    {
+      "name": "localize_products",
+      "destination": "localize"
     }
   ]
 }
