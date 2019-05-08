@@ -17,6 +17,7 @@ import argparse
 import json
 import tempfile
 import copy
+import re
 from contrib.UnwrapComp.unwrapComponents import UnwrapComponents
 
 WATER_VALUE = 255
@@ -909,12 +910,30 @@ class MergedTrackStitcher:
 #                "run_2_3/merged/filt_topophase.unw.geo"]]]
 ### NOTE: each row the names must be arranged by subswath increasing number
 
+
+def order_gunw_filenames(ls):
+    '''
+    :param ls: List[str]: list of gunw file names
+    ex. s3://s3-us-west-2.amazonaws.com:80/aria-ops-dataset-bucket/datasets/interferogram/v2.0.0/2018/11/28/S1-GUNW-...
+    :return: List[str] ordered list of GUNWs, ordered by first timestamp, also add + '/merged/filt_topophase.unw.geo'
+    '''
+    regex_string = r'([0-9]{8}T[0-9]{6})'
+    localize_products = [{
+        'file': p.split('/')[-1],
+        'date': re.search(regex_string, p).group(1),
+    } for p in ls]
+
+    ordered_localize_products = [[p['file'] + '/merged/filt_topophase.unw.geo'] for p in
+                                 sorted(localize_products, key=lambda i: i['date'])]
+    return ordered_localize_products
+
+
 def main(fname):
     inps = json.load(open(fname))
     st = MergedTrackStitcher()
     st.stitch(inps)
     # st.two_stage_unwrap('filt_topophase.unw.geo','filt_topophase.unw.conncomp.geo')
-    pass
+    return True
 
 
 if __name__ == '__main__':
@@ -926,9 +945,15 @@ if __name__ == '__main__':
     with open(ctx_file) as f:
         ctx = json.load(f)
 
-    input_files = ctx.get('localize_urls', [])
+    localize_products = ctx['job_specification']['params'][1]['value'][0]
+    input_files = order_gunw_filenames(localize_products)
+
     outname = 'filt_topophase.unw.geo'
     extra_products = ctx.get('extra_products', [])
+    extra_products = [p.strip() for p in extra_products.split(' ')]
+
+    # TODO: also create naming convention for GUNW naming convention WITH TRACK NUMBER
+    # TODO: MORE MASSAGING DATA TO GET MIN AND MAX FOR ARRAY OF TIMESTAMPS
 
     inp = {
         'direction': 'along',
