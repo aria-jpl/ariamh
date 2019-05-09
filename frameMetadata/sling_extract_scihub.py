@@ -190,10 +190,10 @@ def get_slc_checksum_md5_scihub(esa_uuid):
 
     if req.status_code == 404:
         logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
-        raise("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+        raise Exception("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
     elif req.status_code == 408 or req.status_code == 504:
         logging.error("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
-        raise ("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+        raise Exception("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
 
     scihub_md5_hash = req.text
     # forcing to lower case because get_md5_from_localized_file() returns lower string
