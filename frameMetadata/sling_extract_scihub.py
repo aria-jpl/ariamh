@@ -185,7 +185,8 @@ def get_slc_checksum_md5_scihub(esa_uuid):
 
     md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
     md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
-    req = requests(md5_checksum_url)
+    logging.info("md5_checksum_url : %s" %md5_checksum_url)
+    req = requests.get(md5_checksum_url)
 
     if req.status_code == 404:
         logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
