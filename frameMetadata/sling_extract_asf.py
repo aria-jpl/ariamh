@@ -526,7 +526,13 @@ if __name__ == "__main__":
         logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
         exit(0)
 
-    acq_data = get_acquisition_data_from_slc(args.slc_id)['fields']['partial'][0]
+    acq_datas = get_acquisition_data_from_slc(args.slc_id)['fields']['partial']
+    acq_data = acq_datas[0]
+    if len(acq_datas)>1:
+        for acq_data_t in acq_datas:
+            acq_data = acq_data_t
+            if 'esa_scihub' in acq_data['metadata']['id']:
+                break
     download_url = acq_data['metadata']['download_url']
     archive_filename = acq_data['metadata']['archive_filename']
     logging.info("download_url : %s" %download_url)
