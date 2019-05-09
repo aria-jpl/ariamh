@@ -188,12 +188,12 @@ def get_slc_checksum_md5_asf(slc_id):
     req = requests.get(asf_geo_json_endpoint, timeout=30)
 
     if req.status_code != 200:
-        raise BaseException("API Request failed for md5 retrieval from ASF: ERROR CODE: {}".format(req.status_code))
+        raise RuntimeError("API Request failed for md5 retrieval from ASF: ERROR CODE: {}".format(req.status_code))
 
     geojson = json.loads(req.text)
     if len(geojson["features"]) < 1:
         # {u'type': u'FeatureCollection', u'features': []} if SLC not found in ASF
-        raise BaseException("SLC_ID {} not found in ASF: no available md5 checksum for SLC".format(slc_id))
+        raise RuntimeError("SLC_ID {} not found in ASF: no available md5 checksum for SLC".format(slc_id))
 
     md5_hash = geojson["features"][0]["properties"]["md5sum"]  # md5 checksum is lower case
     return md5_hash
