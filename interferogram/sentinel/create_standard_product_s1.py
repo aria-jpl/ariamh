@@ -1617,11 +1617,16 @@ def main():
 
 
     #copy files to merged directory
+    pickle_dir = "{}/PICKLE".format(prod_dir)
+    fine_interferogram_xml = "{}/fine_interferogram/IW1.xml".format(prod_dir) 
+  
     met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
     ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
     shutil.copy(ds_file, ds_file_merged)
     shutil.copy(met_file, met_file_merged)
     shutil.copytree("merged", os.path.join(prod_dir_merged, "merged"))
+    shutil.copytree(pickle_dir, os.path.join(prod_dir_merged, "PICKLE"))
+    shutil.copy(fine_interferogram_xml, os.path.join(prod_dir_merged, "fine_interferogram.xml"))
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
     
     #logger.info( json.dump(md, f, indent=2))
