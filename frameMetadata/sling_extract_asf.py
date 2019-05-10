@@ -533,6 +533,7 @@ if __name__ == "__main__":
             acq_data = acq_data_t
             if 'esa_scihub' in acq_data['metadata']['id']:
                 break
+    logging.info("Acquisition : {}".format(acq_data['metadata']['id'])
     download_url = acq_data['metadata']['download_url']
     archive_filename = acq_data['metadata']['archive_filename']
     logging.info("download_url : %s" %download_url)
