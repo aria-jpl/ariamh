@@ -150,7 +150,7 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
 
 
 def check_ifg_status_by_hash(new_ifg_hash):
-    es_index="grq_*_s1-gunw",
+    es_index="grq_*_s1-gunw"
     result = get_dataset_by_hash(new_ifg_hash)
     total = result['hits']['total']
     logger.info("check_slc_status_by_hash : total : %s" %total)
