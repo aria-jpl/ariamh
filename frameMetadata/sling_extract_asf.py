@@ -529,8 +529,9 @@ if __name__ == "__main__":
     acq_datas = get_acquisition_data_from_slc(args.slc_id)['fields']['partial']
     acq_data = acq_datas[0]
     if len(acq_datas)>1:
-        for acq_data_t in acq_datas:
-            acq_data = acq_data_t
+        for x in range(len(acq_datas)):
+            acq_data = acq_datas[x]
+            logging.info("Processing : {}".format(acq_data['metadata']['id']))
             if 'esa_scihub' in acq_data['metadata']['id']:
                 break
     logging.info("Acquisition : {}".format(acq_data['metadata']['id']))
