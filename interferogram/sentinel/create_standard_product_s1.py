@@ -109,13 +109,12 @@ def check_ifg_status(ifg_id):
     logger.info("check_slc_status : returning False")
     return False
 
-def get_dataset_by_hash(ifg_hash):
+def get_dataset_by_hash(ifg_hash, es_index="grq"):
     """Query for existence of dataset by ID."""
 
     uu = UrlUtils()
     es_url = uu.rest_url
     #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
-    es_index = "grq"
 
     # query
     query = {
@@ -151,6 +150,7 @@ def get_dataset_by_hash(ifg_hash):
 
 
 def check_ifg_status_by_hash(new_ifg_hash):
+    es_index="grq_*_s1-gunw",
     result = get_dataset_by_hash(new_ifg_hash)
     total = result['hits']['total']
     logger.info("check_slc_status_by_hash : total : %s" %total)
