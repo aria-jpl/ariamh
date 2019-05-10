@@ -122,6 +122,7 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
             "bool":{
                 "must":[
                     { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} }
                 ]
             }
         }
