@@ -204,7 +204,7 @@ def download(url_list, username, password):
     return dem_files
 
 
-def stitch(dem_files, downsample=None):
+def stitch(bbox, dem_files, downsample=None):
     """Stitch NED1/NED13 dems."""
 
     # unzip dem zip files
@@ -219,8 +219,8 @@ def stitch(dem_files, downsample=None):
     check_call("gdalbuildvrt combinedDEM.vrt *.hgt", shell=True)
     if downsample is None: outsize_opt = ""
     else: outsize_opt = "-outsize {} {}".format(downsample, downsample)
-    check_call("gdal_translate -of ENVI {} combinedDEM.vrt stitched.dem".format(outsize_opt), shell=True)
-
+    #check_call("gdal_translate -of ENVI {} -projwin {} {} {} {} combinedDEM.vrt stitched.dem".format(outsize_opt, bbox[2], bbox[0], bbox[3], bbox[1]), shell=True)
+    check_call("gdalwarp combinedDEM.vrt -te {} {} {} {} -of ENVI {} stitched.dem".format( bbox[2], bbox[0], bbox[3], bbox[1], outsize_opt), shell=True)
     #updte data to fill extream values with default value(-32768). First create a new dem file with the update
     #check_call('gdal_calc.py -A stitched.dem --outfile=stitched_new.dem --calc="-32768*(A<-32768)+A*(A>=-32768)"', shell=True) 
     check_call('gdal_calc.py --format=ENVI -A stitched.dem --outfile=stitchedFix.dem --calc="A*(A>-1000)" --NoDataValue=0', shell=True)
@@ -290,7 +290,7 @@ def main(url_base, username, password, action, bbox, downsample):
 
     # stitch
     if action == 'stitch':
-        stitched_dem = stitch(dem_files, downsample)
+        stitched_dem = stitch(bbox, dem_files, downsample)
         logger.info("stitched_dem: {}".format(stitched_dem))
 
 

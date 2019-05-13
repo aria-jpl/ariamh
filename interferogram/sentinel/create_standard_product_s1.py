@@ -109,13 +109,12 @@ def check_ifg_status(ifg_id):
     logger.info("check_slc_status : returning False")
     return False
 
-def get_dataset_by_hash(ifg_hash):
+def get_dataset_by_hash(ifg_hash, es_index="grq"):
     """Query for existence of dataset by ID."""
 
     uu = UrlUtils()
     es_url = uu.rest_url
     #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
-    es_index = "grq"
 
     # query
     query = {
@@ -123,6 +122,7 @@ def get_dataset_by_hash(ifg_hash):
             "bool":{
                 "must":[
                     { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} }
                 ]
             }
         }
@@ -151,7 +151,8 @@ def get_dataset_by_hash(ifg_hash):
 
 
 def check_ifg_status_by_hash(new_ifg_hash):
-    result = get_dataset_by_hash(new_ifg_hash)
+    es_index="grq_*_s1-gunw"
+    result = get_dataset_by_hash(new_ifg_hash, es_index)
     total = result['hits']['total']
     logger.info("check_slc_status_by_hash : total : %s" %total)
     if total>0:
@@ -992,11 +993,11 @@ def main():
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
  
-            
-            dem_S = dem_S - 4 if dem_S > -86 else dem_S
-            dem_N = dem_N + 4 if dem_N < 86 else dem_N
-            dem_W = dem_W - 4 if dem_W > -176 else dem_W
-            dem_E = dem_E + 4 if dem_E < 176 else dem_E
+           
+            dem_S = dem_S - 1 if dem_S > -89 else dem_S
+            dem_N = dem_N + 1 if dem_N < 89 else dem_N
+            dem_W = dem_W - 1 if dem_W > -179 else dem_W
+            dem_E = dem_E + 1 if dem_E < 179 else dem_E
             '''
             dem_S, dem_N, dem_W, dem_E = bbox
             dem_S = int(math.floor(dem_S))
@@ -1617,11 +1618,16 @@ def main():
 
 
     #copy files to merged directory
+    pickle_dir = "{}/PICKLE".format(prod_dir)
+    fine_interferogram_xml = "fine_interferogram/IW1.xml"
+  
     met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
     ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
     shutil.copy(ds_file, ds_file_merged)
     shutil.copy(met_file, met_file_merged)
     shutil.copytree("merged", os.path.join(prod_dir_merged, "merged"))
+    shutil.copytree("PICKLE", os.path.join(prod_dir_merged, "PICKLE"))
+    shutil.copy(fine_interferogram_xml, os.path.join(prod_dir_merged, "fine_interferogram.xml"))
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
     
     #logger.info( json.dump(md, f, indent=2))
