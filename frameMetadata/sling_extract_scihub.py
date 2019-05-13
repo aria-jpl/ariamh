@@ -112,7 +112,7 @@ def get_acquisition_data_from_slc(slc_id):
 
     result = r.json()
     logging.info(result['hits']['total'])
-    return result['hits']['hits'][0]
+    return result['hits']['hits']
 
 
 def get_dataset(id, es_index_data=None):
@@ -185,14 +185,15 @@ def get_slc_checksum_md5_scihub(esa_uuid):
 
     md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
     md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
-    req = requests(md5_checksum_url)
+    logging.info("md5_checksum_url : %s" %md5_checksum_url)
+    req = requests.get(md5_checksum_url, timeout=30)
 
     if req.status_code == 404:
         logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
-        raise("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+        raise RuntimeError("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
     elif req.status_code == 408 or req.status_code == 504:
         logging.error("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
-        raise ("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+        raise RuntimeError("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
 
     scihub_md5_hash = req.text
     # forcing to lower case because get_md5_from_localized_file() returns lower string
@@ -513,11 +514,22 @@ if __name__ == "__main__":
         logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
         exit(0)
 
-    acq_data = get_acquisition_data_from_slc(args.slc_id)['fields']['partial'][0]
+    acq_datas = get_acquisition_data_from_slc(args.slc_id)
+    acq_data = acq_datas[0]
+    if len(acq_datas)>1:
+        for x in range(len(acq_datas)):
+            acq_data = acq_datas[x]
+            logging.info("Processing : {}".format(acq_data['_id']))
+            if 'esa_scihub' in acq_data['_id']:
+                break
+
+    logging.info("Acquisition : {}".format(acq_data['_id']))
+    acq_data = acq_data['fields']['partial'][0]
     download_url = acq_data['metadata']['download_url']
     archive_filename = acq_data['metadata']['archive_filename']
     logging.info("download_url : %s" %download_url)
     logging.info("archive_filename : %s" %archive_filename)
+    logging.info("acq_data['metadata']['id'] : %s" %acq_data['metadata']['id'])
 
     # get md5 checksum from ESA sci-hub
     esa_sci_hub_md5_hash = get_slc_checksum_md5_scihub(acq_data['metadata']['id'])
