@@ -928,6 +928,26 @@ def order_gunw_filenames(ls):
     return ordered_localize_products
 
 
+def get_min_max_timestamp(ls):
+    # TODO: get min of slave time and max of master time (DONE)
+    '''
+    :param ls: List[str]: list of gunw file names
+    ex. s3://s3-us-west-2.amazonaws.com:80/aria-ops-dataset-bucket/datasets/interferogram/v2.0.0/2018/11/28/...
+        .../S1-GUNW-MERGED_RM_M1S2_TN042_20181210T140904-20181116T140812_s123-poeorb-96da
+    :return: Str, Str: string timestamps YYYYMMDDTHHMMSS (ex. 20190506T103055)
+                       first timestamp is the min of the master timestamp
+                       second timestamp is the max of the slave timestamp
+    '''
+    regex_string = r'([0-9]{8}T[0-9]{6})-([0-9]{8}T[0-9]{6})'
+    master_timestamps = []
+    slave_tiemstamps = []
+    for product in ls:
+        regex_matches = re.search(regex_string, product)
+        slave_tiemstamps.append(regex_matches.group(2))
+        master_timestamps.append(regex_matches.group(1))
+    return min(slave_tiemstamps), max(master_timestamps)
+
+
 def main(fname):
     inps = json.load(open(fname))
     st = MergedTrackStitcher()
@@ -948,12 +968,15 @@ if __name__ == '__main__':
     localize_products = ctx['job_specification']['params'][1]['value'][0]
     input_files = order_gunw_filenames(localize_products)
 
+    # getting timestamps to name the new dataset
+    master_timestamp, slave_timestamp = get_min_max_timestamp(localize_products)
+
     outname = 'filt_topophase.unw.geo'
     extra_products = ctx.get('extra_products', [])
     extra_products = [p.strip() for p in extra_products.split(' ')]
 
     # TODO: also create naming convention for GUNW naming convention WITH TRACK NUMBER
-    # TODO: MORE MASSAGING DATA TO GET MIN AND MAX FOR ARRAY OF TIMESTAMPS
+    # TODO: MORE MASSAGING DATA TO GET MIN AND MAX FOR ARRAY OF TIMESTAMPS (DONE)
 
     inp = {
         'direction': 'along',
