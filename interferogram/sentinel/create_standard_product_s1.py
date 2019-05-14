@@ -157,7 +157,8 @@ def check_ifg_status_by_hash(new_ifg_hash):
     logger.info("check_slc_status_by_hash : total : %s" %total)
     if total>0:
         found_id = result['hits']['hits'][0]["_id"]
-        raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
 
     logger.info("check_slc_status : returning False")
     return False
