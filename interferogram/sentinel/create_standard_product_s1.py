@@ -664,6 +664,8 @@ def main():
         raise RuntimeError("Failed to find _context.json.")
     with open(ctx_file) as f:
         ctx = json.load(f)
+
+
     #logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
 
@@ -1653,5 +1655,25 @@ if __name__ == '__main__':
             f.write("%s\n" % str(e))
         with open('_alt_traceback.txt', 'w') as f:
             f.write("%s\n" % traceback.format_exc())
+        
+
+        max_retry = 5
+        ctx_file = "_context.json"
+        job_file = "_job.json"
+        with open(ctx_file) as f:
+            ctx = json.load(f)
+       
+        with open(job_file) as f:
+            job = json.load(f)
+        
+        retry_count = job.get('retry_count', 0)
+        ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
+        
+
+        if retry_count < max_retry:
+            ctx['_triage_disabled'] = True
+
+        with open(ctx_file, 'w') as f:
+            json.dump(ctx, f, sort_keys=True, indent=2)
         raise
     sys.exit(status)
