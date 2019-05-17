@@ -1666,7 +1666,7 @@ if __name__ == '__main__':
         with open(job_file) as f:
             job = json.load(f)
         
-        retry_count = job.get('retry_count', 0)
+        retry_count = int(job.get('retry_count', 0))
         ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
         
 
