@@ -25,7 +25,7 @@ echo -n "Finished running S1 Standard Propduct interferogram generation: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
   echo "Failed to run S1 Standard Product interferogram generation." 1>&2
-  echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_standard_product
+  echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_standard_product_s1.log >> _alt_traceback.txt
   cat create_standard_product_s1.log 1>&2
   echo "{}"
   exit $STATUS
