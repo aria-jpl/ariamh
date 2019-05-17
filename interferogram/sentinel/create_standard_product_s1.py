@@ -149,6 +149,28 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
     logger.info(result['hits']['total'])
     return result
 
+def fileContainsMsg(file_name, msg):
+    with open(file_name, 'r') as f:
+        datafile = f.readlines()
+    for line in datafile:
+        if msg in line:
+            # found = True # Not necessary
+            return True, line
+    return False, None
+
+def checkBurstError():
+    msg = "cannot continue for interferometry applications"
+
+    found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+    if found:
+        logger.info("checkBurstError : %s" %line)
+        raise RuntimeError(line)
+    ''' 
+    found, line = fileContainsMsg("_stderr.txt", msg)
+    if found:
+        logger.info("checkBurstError : %s" %line)
+        raise RuntimeError(line)
+    '''
 
 def check_ifg_status_by_hash(new_ifg_hash):
     es_index="grq_*_s1-gunw"
@@ -1019,6 +1041,8 @@ def main():
             preprocess_dem_file = "stitched.dem"
     logger.info("Preprocess DEM file: {}".format(preprocess_dem_file))
 
+    checkBurstError()
+
     preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
 
 
@@ -1058,6 +1082,7 @@ def main():
     geocode_dem_file = os.path.join(geocode_dem_dir, geocode_dem_file)
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
     '''
+    checkBurstError()
 
     preprocess_vrt_file=""
     if dem_type.startswith("SRTM"):
@@ -1088,6 +1113,7 @@ def main():
         geocode_dem_file = os.path.join(geocode_dem_dir, "stitched.dem")
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
 
+    checkBurstError()
 
     # fix file path in Geocoding DEM xml
     fix_cmd = [
@@ -1180,6 +1206,7 @@ def main():
     topsapp_cmd_line = " ".join(topsapp_cmd)
     logger.info("Calling topsApp.py to geocode step: {}".format(topsapp_cmd_line))
 
+    checkBurstError()
 
     check_call(topsapp_cmd_line, shell=True)
 
@@ -1647,14 +1674,33 @@ def main():
     complete_run_time=complete_end_time - complete_start_time
     logger.info("New TopsApp Run Time : {}".format(complete_run_time))
 
+def updateErrorFiles(msg):
+    with open('_alt_error.ixt', 'w') as f:
+        f.write("%s\n" %msg)
+    with open('_alt_traceback.txt', 'w') as f:
+        f.write("%s\n" % traceback.format_exc())
 
 if __name__ == '__main__':
-    try: status = main()
+    try: 
+        status = main()
+        checkBurstError()        
     except Exception as e:
-        with open('_alt_error.txt', 'w') as f:
-            f.write("%s\n" % str(e))
-        with open('_alt_traceback.txt', 'w') as f:
-            f.write("%s\n" % traceback.format_exc())
+        found = False
+        msg = "cannot continue for interferometry applications"
+        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        if found:
+            logger.info("Found Error : %s" %line)
+            updateErrorFiles(line)
+        '''
+        if not found:
+            found, line = fileContainsMsg("_stderr.txt", msg)
+            if found:
+                logger.info("Found Error : %s" %line)
+                updateErrorFiles(line)
+        '''
+
+        if not found:
+            updateErrorFiles(str(e))
         
 
         max_retry = 3
