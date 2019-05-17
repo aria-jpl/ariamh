@@ -1657,7 +1657,7 @@ if __name__ == '__main__':
             f.write("%s\n" % traceback.format_exc())
         
 
-        max_retry = 5
+        max_retry = 3
         ctx_file = "_context.json"
         job_file = "_job.json"
         with open(ctx_file) as f:
