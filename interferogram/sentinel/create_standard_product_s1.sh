@@ -20,7 +20,7 @@ echo "##########################################" 1>&2
 echo -n "Running S1 Standard Product interferogram generation : " 1>&2
 date 1>&2
 python3 $BASE_PATH/create_standard_product_s1.py > create_standard_product_s1.log 2>&1
-echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_standard_product_s1.log.txt >> _alt_traceback.txt
+echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_standard_product_s1.log >> _alt_traceback.txt
 STATUS=$?
 echo -n "Finished running S1 Standard Propduct interferogram generation: " 1>&2
 date 1>&2
