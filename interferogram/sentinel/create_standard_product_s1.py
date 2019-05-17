@@ -1688,12 +1688,12 @@ def updateErrorFiles(msg):
     with open('_alt_error.txt', 'w') as f:
         f.write("%s\n" %msg)
     with open('_alt_traceback.txt', 'w') as f:
-        f.write("%s\n" % traceback.format_exc())
         with open("create_standard_product_s1.log", 'r') as f2:
             datafile = f2.readlines()
             for line in datafile:
                 if "error" in line.lower() or "exception" in line.lower():
                     f.write("%s\n" %line)
+        f.write("%s\n" % traceback.format_exc())
 
 if __name__ == '__main__':
     try: 
