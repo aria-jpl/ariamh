@@ -1682,16 +1682,43 @@ def main():
     logger.info("New TopsApp Run Time : {}".format(complete_run_time))
 
 def updateErrorFiles(msg):
+    err1 = "# ----- errors|exception found in log -----"
+    err2 = "error\|exception"
+
     with open('_alt_error.ixt', 'w') as f:
         f.write("%s\n" %msg)
     with open('_alt_traceback.txt', 'w') as f:
         f.write("%s\n" % traceback.format_exc())
+        with open("create_standard_product_s1.log", 'r') as f2:
+            datafile = f2.readlines()
+            for line in datafile:
+                if "error" in line.lower() or "exception" in line.lower():
+                    f.write("%s\n" %line)
 
 if __name__ == '__main__':
     try: 
         status = main()
         checkBurstError()        
     except Exception as e:
+        max_retry = 3
+        ctx_file = "_context.json"
+        job_file = "_job.json"
+        with open(ctx_file) as f:
+            ctx = json.load(f)
+
+        with open(job_file) as f:
+            job = json.load(f)
+
+        retry_count = int(job.get('retry_count', 0))
+        ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
+
+
+        if retry_count < max_retry:
+            ctx['_triage_disabled'] = True
+
+        with open(ctx_file, 'w') as f:
+            json.dump(ctx, f, sort_keys=True, indent=2)
+
         found = False
         msg = "cannot continue for interferometry applications"
         found, line = fileContainsMsg("create_standard_product_s1.log", msg)
@@ -1709,26 +1736,6 @@ if __name__ == '__main__':
         if not found:
             updateErrorFiles(str(e))
         
-
-        max_retry = 3
-        ctx_file = "_context.json"
-        job_file = "_job.json"
-        with open(ctx_file) as f:
-            ctx = json.load(f)
-       
-        with open(job_file) as f:
-            job = json.load(f)
-        
-        retry_count = int(job.get('retry_count', 0))
-        ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
-        
-
-        if retry_count < max_retry:
-            ctx['_triage_disabled'] = True
-
-        with open(ctx_file, 'w') as f:
-            json.dump(ctx, f, sort_keys=True, indent=2)
-        
-        sys.exit(1)
+        raise
 
     sys.exit(status)
