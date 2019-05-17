@@ -1685,7 +1685,7 @@ def updateErrorFiles(msg):
     err1 = "# ----- errors|exception found in log -----"
     err2 = "error\|exception"
 
-    with open('_alt_error.ixt', 'w') as f:
+    with open('_alt_error.txt', 'w') as f:
         f.write("%s\n" %msg)
     with open('_alt_traceback.txt', 'w') as f:
         f.write("%s\n" % traceback.format_exc())
