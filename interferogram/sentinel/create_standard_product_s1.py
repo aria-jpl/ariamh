@@ -165,6 +165,13 @@ def checkBurstError():
     if found:
         logger.info("checkBurstError : %s" %line)
         raise RuntimeError(line)
+    if not found:
+        msg = "Could not determine a suitable burst offset"
+        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        if found:
+            logger.info("Found Error : %s" %line)
+            raise RuntimeError(line)
+
     ''' 
     found, line = fileContainsMsg("_stderr.txt", msg)
     if found:
@@ -1691,13 +1698,13 @@ if __name__ == '__main__':
         if found:
             logger.info("Found Error : %s" %line)
             updateErrorFiles(line)
-        '''
+        
         if not found:
-            found, line = fileContainsMsg("_stderr.txt", msg)
+            msg = "Could not determine a suitable burst offset"
+            found, line = fileContainsMsg("create_standard_product_s1.log", msg)
             if found:
                 logger.info("Found Error : %s" %line)
                 updateErrorFiles(line)
-        '''
 
         if not found:
             updateErrorFiles(str(e))
@@ -1721,5 +1728,7 @@ if __name__ == '__main__':
 
         with open(ctx_file, 'w') as f:
             json.dump(ctx, f, sort_keys=True, indent=2)
-        raise
+        
+        sys.exit(1)
+
     sys.exit(status)
