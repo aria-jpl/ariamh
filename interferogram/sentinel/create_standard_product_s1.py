@@ -163,14 +163,14 @@ def checkBurstError():
 
     found, line = fileContainsMsg("create_standard_product_s1.log", msg)
     if found:
-        logger.info("checkBurstError : %s" %line)
-        raise RuntimeError(line)
+        logger.info("checkBurstError : %s" %line.strip())
+        raise RuntimeError(line.strip())
     if not found:
-        msg = "Could not determine a suitable burst offset"
+        msg = "Exception: Could not determine a suitable burst offset"
         found, line = fileContainsMsg("create_standard_product_s1.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
-            raise RuntimeError(line)
+            raise RuntimeError(line.strip())
 
     ''' 
     found, line = fileContainsMsg("_stderr.txt", msg)
@@ -1048,7 +1048,7 @@ def main():
             preprocess_dem_file = "stitched.dem"
     logger.info("Preprocess DEM file: {}".format(preprocess_dem_file))
 
-    checkBurstError()
+    #checkBurstError()
 
     preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
 
@@ -1089,7 +1089,7 @@ def main():
     geocode_dem_file = os.path.join(geocode_dem_dir, geocode_dem_file)
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
     '''
-    checkBurstError()
+    #checkBurstError()
 
     preprocess_vrt_file=""
     if dem_type.startswith("SRTM"):
@@ -1682,6 +1682,7 @@ def main():
     logger.info("New TopsApp Run Time : {}".format(complete_run_time))
 
 def updateErrorFiles(msg):
+    msg = msg.strip()
     err1 = "# ----- errors|exception found in log -----"
     err2 = "error\|exception"
 
@@ -1726,14 +1727,14 @@ if __name__ == '__main__':
         found, line = fileContainsMsg("create_standard_product_s1.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
-            updateErrorFiles(line)
+            updateErrorFiles(line.strip())
         
         if not found:
-            msg = "Could not determine a suitable burst offset"
+            msg = "Exception: Could not determine a suitable burst offset"
             found, line = fileContainsMsg("create_standard_product_s1.log", msg)
             if found:
-                logger.info("Found Error : %s" %line)
-                updateErrorFiles(line)
+                logger.info("Found Error : %s" %line.strip())
+                updateErrorFiles(line.strip())
 
         if not found:
             updateErrorFiles(str(e))
