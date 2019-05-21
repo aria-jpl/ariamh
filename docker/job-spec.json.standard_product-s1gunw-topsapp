@@ -17,10 +17,11 @@
     }
   ],
   "recommended-queues" : [
-    "standard_product-s1gunw-topsapp"
+    "standard_product-s1gunw-topsapp-asg-fleet"
   ],
   "soft_time_limit": 7200,
   "time_limit": 7500,
+  "post": [ "hysds.utils.triage" ],
   "params" : [
     {
       "name": "dataset_tag",

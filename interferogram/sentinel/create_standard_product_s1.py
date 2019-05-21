@@ -149,6 +149,35 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
     logger.info(result['hits']['total'])
     return result
 
+def fileContainsMsg(file_name, msg):
+    with open(file_name, 'r') as f:
+        datafile = f.readlines()
+    for line in datafile:
+        if msg in line:
+            # found = True # Not necessary
+            return True, line
+    return False, None
+
+def checkBurstError():
+    msg = "cannot continue for interferometry applications"
+
+    found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+    if found:
+        logger.info("checkBurstError : %s" %line.strip())
+        raise RuntimeError(line.strip())
+    if not found:
+        msg = "Exception: Could not determine a suitable burst offset"
+        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        if found:
+            logger.info("Found Error : %s" %line)
+            raise RuntimeError(line.strip())
+
+    ''' 
+    found, line = fileContainsMsg("_stderr.txt", msg)
+    if found:
+        logger.info("checkBurstError : %s" %line)
+        raise RuntimeError(line)
+    '''
 
 def check_ifg_status_by_hash(new_ifg_hash):
     es_index="grq_*_s1-gunw"
@@ -157,7 +186,8 @@ def check_ifg_status_by_hash(new_ifg_hash):
     logger.info("check_slc_status_by_hash : total : %s" %total)
     if total>0:
         found_id = result['hits']['hits'][0]["_id"]
-        raise RuntimeError("S1-GUNW IFG already exists : %s" %found_id)
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
 
     logger.info("check_slc_status : returning False")
     return False
@@ -663,6 +693,8 @@ def main():
         raise RuntimeError("Failed to find _context.json.")
     with open(ctx_file) as f:
         ctx = json.load(f)
+
+
     #logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
 
@@ -1016,6 +1048,8 @@ def main():
             preprocess_dem_file = "stitched.dem"
     logger.info("Preprocess DEM file: {}".format(preprocess_dem_file))
 
+    #checkBurstError()
+
     preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
 
 
@@ -1055,6 +1089,7 @@ def main():
     geocode_dem_file = os.path.join(geocode_dem_dir, geocode_dem_file)
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
     '''
+    #checkBurstError()
 
     preprocess_vrt_file=""
     if dem_type.startswith("SRTM"):
@@ -1085,6 +1120,7 @@ def main():
         geocode_dem_file = os.path.join(geocode_dem_dir, "stitched.dem")
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
 
+    checkBurstError()
 
     # fix file path in Geocoding DEM xml
     fix_cmd = [
@@ -1177,6 +1213,7 @@ def main():
     topsapp_cmd_line = " ".join(topsapp_cmd)
     logger.info("Calling topsApp.py to geocode step: {}".format(topsapp_cmd_line))
 
+    checkBurstError()
 
     check_call(topsapp_cmd_line, shell=True)
 
@@ -1644,13 +1681,64 @@ def main():
     complete_run_time=complete_end_time - complete_start_time
     logger.info("New TopsApp Run Time : {}".format(complete_run_time))
 
+def updateErrorFiles(msg):
+    msg = msg.strip()
+    err1 = "# ----- errors|exception found in log -----"
+    err2 = "error\|exception"
+
+    with open('_alt_error.txt', 'w') as f:
+        f.write("%s\n" %msg)
+    with open('_alt_traceback.txt', 'w') as f:
+        '''
+        with open("create_standard_product_s1.log", 'r') as f2:
+            datafile = f2.readlines()
+            for line in datafile:
+                if "error" in line.lower() or "exception" in line.lower():
+                    f.write("%s\n" %line)a
+        '''
+        f.write("%s\n" % traceback.format_exc())
 
 if __name__ == '__main__':
-    try: status = main()
+    try: 
+        status = main()
+        checkBurstError()        
     except Exception as e:
-        with open('_alt_error.txt', 'w') as f:
-            f.write("%s\n" % str(e))
-        with open('_alt_traceback.txt', 'w') as f:
-            f.write("%s\n" % traceback.format_exc())
+        max_retry = 3
+        ctx_file = "_context.json"
+        job_file = "_job.json"
+        with open(ctx_file) as f:
+            ctx = json.load(f)
+
+        with open(job_file) as f:
+            job = json.load(f)
+
+        retry_count = int(job.get('retry_count', 0))
+        ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
+
+
+        if retry_count < max_retry:
+            ctx['_triage_disabled'] = True
+
+        with open(ctx_file, 'w') as f:
+            json.dump(ctx, f, sort_keys=True, indent=2)
+
+        found = False
+        msg = "cannot continue for interferometry applications"
+        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        if found:
+            logger.info("Found Error : %s" %line)
+            updateErrorFiles(line.strip())
+        
+        if not found:
+            msg = "Exception: Could not determine a suitable burst offset"
+            found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+            if found:
+                logger.info("Found Error : %s" %line.strip())
+                updateErrorFiles(line.strip())
+
+        if not found:
+            updateErrorFiles(str(e))
+        
         raise
+
     sys.exit(status)
