@@ -86,7 +86,8 @@ def get_acquisition_data_from_slc(slc_id):
                 "metadata.identifier.raw": slc_id 
               }
             }
-          ]
+          ],
+         "must_not":{"term": {"metadata.tags": "deprecated"}}
         }
       },
       "partial_fields" : {
@@ -515,6 +516,9 @@ if __name__ == "__main__":
         exit(0)
 
     acq_datas = get_acquisition_data_from_slc(args.slc_id)
+    if len(acq_datas)<1:
+        raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(args.slc_id))
+
     acq_data = acq_datas[0]
     if len(acq_datas)>1:
         for x in range(len(acq_datas)):
