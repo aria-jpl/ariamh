@@ -970,6 +970,8 @@ if __name__ == '__main__':
 
     # getting timestamps to name the new dataset
     master_timestamp, slave_timestamp = get_min_max_timestamp(localize_products)
+    print("master_timestamp: " + master_timestamp)
+    print("slave_timestamp: " + slave_timestamp)
 
     outname = 'filt_topophase.unw.geo'
     extra_products = ctx.get('extra_products', [])
