@@ -951,9 +951,13 @@ def get_min_max_timestamp(ls):
 def main(fname):
     inps = json.load(open(fname))
     st = MergedTrackStitcher()
-    st.stitch(inps)
+    stither_status = st.stitch(inps)
     # st.two_stage_unwrap('filt_topophase.unw.geo','filt_topophase.unw.conncomp.geo')
-    return True
+
+    if stither_status:
+        return 0  # sys.exit(0) so it exits without error
+    else:
+        return 1  # sys.exit(1) so it exits with error to inform mozart
 
 
 if __name__ == '__main__':
@@ -977,8 +981,10 @@ if __name__ == '__main__':
     extra_products = ctx.get('extra_products', [])
     extra_products = [p.strip() for p in extra_products.split(' ')]
 
-    # TODO: also create naming convention for GUNW naming convention WITH TRACK NUMBER
     # TODO: MORE MASSAGING DATA TO GET MIN AND MAX FOR ARRAY OF TIMESTAMPS (DONE)
+    # TODO: create _dataset.json https://github.com/aria-jpl/ariamh/blob/develop/interferogram/stitch_ifgs.py#L62-L91
+    # TODO: also create naming convention for GUNW naming convention WITH TRACK NUMBER
+    # TODO: write all output files to the dataset directory path fo verdi and do its post-processing
 
     inp = {
         'direction': 'along',
