@@ -7,8 +7,9 @@ import re
 import hashlib
 import glob
 from .ifg_stitcher import IfgStitcher
+from .enumerate_stitch_cfgs import *
 from utils.createImage import createImage
-from osgeo import ogr, osr
+
 
 import matplotlib
 matplotlib.use('Agg')
@@ -157,8 +158,7 @@ if __name__ == '__main__':
     print('stitched gunw id: %s' % stitch_dataset_id)
 
     dataset_dir = os.path.join(cwd, stitch_dataset_id)
-    if not os.path.exists(dataset_dir):
-        # generating the dataset directory so verdi can publish when done
+    if not os.path.exists(dataset_dir):  # generating the dataset directory so verdi can publish when done
         os.mkdir(dataset_dir)
         print('created dataset directory: %s' % dataset_dir)
 
@@ -181,6 +181,10 @@ if __name__ == '__main__':
     dataset_files = generate_files_to_move_to_dataset_directory(extra_products)
     move_files_to_dataset_directory(dataset_files)  # moving all proper files to dataset dir
     print('files moved to {}: {}'.format(dataset_dir, json.dumps(dataset_files, indent=2)))
+
+    # using the get_stitch_cfgs function from enumerate_stitch_cfgs.py
+    stitch_cfgs = get_stitch_cfgs(ctx_file)
+    print(stitch_cfgs)
 
     # create browse images
     os.chdir(dataset_dir)
