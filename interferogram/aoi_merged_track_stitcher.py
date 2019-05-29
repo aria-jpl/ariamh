@@ -1,28 +1,18 @@
 #!/usr/bin/env python3
-from scipy.ndimage.morphology import binary_dilation
-from scipy.ndimage import generate_binary_structure
-import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
 import sys
 import os
-import isce
-from isceobj.Image.Image import Image
-from isceobj.Image.BILImage import BILImage
-from utils.imutils import *
-from utils.UrlUtils import UrlUtils
 import shutil
-import argparse
 import json
-import tempfile
-import copy
 import re
-from contrib.UnwrapComp.unwrapComponents import UnwrapComponents
-from .ifg_stitcher import IfgStitcher
-from utils.createImage import createImage
 import hashlib
 import glob
+from .ifg_stitcher import IfgStitcher
+from utils.createImage import createImage
+from osgeo import ogr, osr
+
+import matplotlib
+matplotlib.use('Agg')
+# from matplotlib import pyplot as plt
 
 
 def order_gunw_filenames(ls):
@@ -124,6 +114,22 @@ def run_stitcher(inps):
         raise Exception("Something happened in the IfgStitcher.stitch() code, need to contact author of code")
 
 
+# copied from stitch_ifgs.get_union_polygon()
+# def get_union_polygon(ds_files):
+#     """Get GeoJSON polygon of union of IFGs."""
+#
+#     geom_union = None
+#     for ds_file in ds_files:
+#         with open(ds_file) as f:
+#             ds = json.load(f)
+#         geom = ogr.CreateGeometryFromJson(json.dumps(ds['location'], indent=2, sort_keys=True))
+#         if geom_union is None:
+#             geom_union = geom
+#         else:
+#             geom_union = geom_union.Union(geom)
+#     return json.loads(geom_union.ExportToJson()), geom_union.GetEnvelope()
+
+
 if __name__ == '__main__':
     cwd = os.getcwd()
 
@@ -142,11 +148,10 @@ if __name__ == '__main__':
     # getting timestamps to name the new dataset
     master_timestamp, slave_timestamp = get_min_max_timestamp(localize_products)
     track_number = re.search(r'S1-GUNW-MERGED_RM_.+_TN([0-9].+?)_', localize_products[0]).group(1)
-    stitch_dataset_id = 'S1-GUNW-MERGED_TN{track}_{master_end_time}-{slave_start_time}-poeorb-{hash}'
-
     list_datatset_ids = generate_list_dataset_ids(localize_products)
     four_digit_hash = generate_4digit_hash(list_datatset_ids)
 
+    stitch_dataset_id = 'S1-GUNW-MERGED_TN{track}_{master_end_time}-{slave_start_time}-poeorb-{hash}'
     stitch_dataset_id = stitch_dataset_id.format(master_end_time=master_timestamp, slave_start_time=slave_timestamp,
                                                  track=track_number, hash=four_digit_hash)
     print('stitched gunw id: %s' % stitch_dataset_id)
@@ -171,7 +176,7 @@ if __name__ == '__main__':
     print('stitcher inputs: {}'.format(json.dumps(stitcher_inputs, indent=2)))
 
     run_stitcher(stitcher_inputs)  # the function will exit out if the stitching fails
-    print("Stitcher completed correctly, outputted .geo, .xrt and .xml files")
+    print("Stitcher completed, outputted .geo, .xrt and .xml files")
 
     dataset_files = generate_files_to_move_to_dataset_directory(extra_products)
     move_files_to_dataset_directory(dataset_files)  # moving all proper files to dataset dir
@@ -191,3 +196,8 @@ if __name__ == '__main__':
     #   this regex works: S1-GUNW-MERGED_TN.*?_.*?-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(?P<rest>.+)
     # TODO: create met.json file
     #   CREATE UTILITY FUNCTIONS IN utils.py AND USE **kwargs INPUTS
+    #   add stitch_count (or scene_count), int: is len(localize_urls) or 1 as default
+    #   add polygon to dataset.json
+    #   the <dataset_id>.context.json is the same as _context.json
+
+    sys.exit(0)
