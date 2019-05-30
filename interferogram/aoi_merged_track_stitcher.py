@@ -6,8 +6,8 @@ import json
 import re
 import hashlib
 import glob
-from .ifg_stitcher import IfgStitcher
-from .enumerate_stitch_cfgs import *
+from ifg_stitcher import IfgStitcher
+from enumerate_stitch_cfgs import *
 from utils.createImage import createImage
 
 
@@ -100,6 +100,9 @@ def move_files_to_dataset_directory(ls, destination):
     :return: void
     '''
     for file in ls:
+        new_file_path = os.path.join(destination, file)
+        if os.path.isfile(new_file_path):
+            os.remove(new_file_path)
         shutil.move(file, destination)
     return True
 
@@ -179,12 +182,8 @@ if __name__ == '__main__':
     print("Stitcher completed, outputted .geo, .xrt and .xml files")
 
     dataset_files = generate_files_to_move_to_dataset_directory(extra_products)
-    move_files_to_dataset_directory(dataset_files)  # moving all proper files to dataset dir
+    move_files_to_dataset_directory(dataset_files, dataset_dir)  # moving all proper files to dataset dir
     print('files moved to {}: {}'.format(dataset_dir, json.dumps(dataset_files, indent=2)))
-
-    # using the get_stitch_cfgs function from enumerate_stitch_cfgs.py
-    stitch_cfgs = get_stitch_cfgs(ctx_file)
-    print(stitch_cfgs)
 
     # create browse images
     os.chdir(dataset_dir)
@@ -203,5 +202,11 @@ if __name__ == '__main__':
     #   add stitch_count (or scene_count), int: is len(localize_urls) or 1 as default
     #   add polygon to dataset.json
     #   the <dataset_id>.context.json is the same as _context.json
+    # TODO: in the enumerate stitch_cfg file, it reads from context.json which we dont have
+    #   project, min_stitch_count, query, etc. (not sure how to approach)
+
+    # using the get_stitch_cfgs function from enumerate_stitch_cfgs.py
+    stitch_cfgs = get_stitch_cfgs(ctx_file)
+    print(stitch_cfgs)
 
     sys.exit(0)
