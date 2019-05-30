@@ -16,7 +16,7 @@ from utils.time_utils import getTemporalSpanInDays
 from check_interferogram import check_int
 from create_input_xml_standard_product import create_input_xml
 from dateutil import parser
-
+import hashlib
 import os
 from scipy.constants import c
 import isce
@@ -96,6 +96,10 @@ def get_dataset(id):
     result = r.json()
     logger.info(result['hits']['total'])
     return result
+
+def touch(path):
+    with open(path, 'a'):
+        os.utime(path, None)
 
 def check_ifg_status(ifg_id):
 
@@ -178,6 +182,17 @@ def checkBurstError():
         logger.info("checkBurstError : %s" %line)
         raise RuntimeError(line)
     '''
+
+def get_md5_from_file(file_name):
+    '''
+    :param file_name: file path to the local SLC file after download
+    :return: string, ex. 8e15beebbbb3de0a7dbed50a39b6e41b ALL LOWER CASE
+    '''
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 def check_ifg_status_by_hash(new_ifg_hash):
     es_index="grq_*_s1-gunw"
@@ -1653,6 +1668,12 @@ def main():
     logger.info("creating dataset file : %s" %ds_file)
     create_dataset_json(id, version, met_file, ds_file)
 
+    nc_file = os.path.join(prod_dir, "{}.nc".format(id))
+    nc_file_md5 = get_md5_from_file(nc_file)
+    md5_nc_file = "{}.md5".format(nc_file_md5)
+    md5_nc_file = os.path.join(prod_dir, md5_nc_file)
+    touch(md5_nc_file)
+
 
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
@@ -1666,7 +1687,15 @@ def main():
     shutil.copytree("PICKLE", os.path.join(prod_dir_merged, "PICKLE"))
     shutil.copy(fine_interferogram_xml, os.path.join(prod_dir_merged, "fine_interferogram.xml"))
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
-    
+   
+    # Copying all the vrt files to merged 
+    for f in os.listdir("."):
+        if f.endswith(".vrt"):
+            shutil.copy(f, os.path.join(prod_dir_merged, f))
+            
+
+
+
     #logger.info( json.dump(md, f, indent=2))
 
     # clean out SAFE directories, DEM files and water masks
