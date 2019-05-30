@@ -1689,9 +1689,9 @@ def main():
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
    
     # Copying all the vrt files to merged 
-    for f in os.listdir("."):
+    for f in os.listdir("merged"):
         if f.endswith(".vrt"):
-            shutil.copy(f, os.path.join(prod_dir_merged, f))
+            shutil.copy(os.path.join("merged", f), os.path.join(prod_dir_merged, f))
             
 
 
