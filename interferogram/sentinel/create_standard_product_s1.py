@@ -1670,10 +1670,10 @@ def main():
 
     nc_file = os.path.join(prod_dir, "{}.nc".format(id))
     nc_file_md5 = get_md5_from_file(nc_file)
-    md5_nc_file = "{}.md5".format(nc_file_md5)
-    md5_nc_file = os.path.join(prod_dir, md5_nc_file)
-    touch(md5_nc_file)
-
+    nc_checksum_file = os.path.join(prod_dir, "{}.nc.md5".format(id))
+    logger.info("nc_file_md5 : {}".format(nc_file_md5))
+    with open(nc_checksum_file, 'w') as f:
+        f.write(nc_file_md5)
 
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
@@ -1689,11 +1689,27 @@ def main():
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
    
     # Copying all the vrt files to merged 
+    for f in os.listdir("."):
+        if f.endswith(".vrt"):
+            src = os.path.join(os.getcwd(), f)
+            dest = os.path.join(os.getcwd(), prod_dir_merged, f)
+            logger.info("Copying {} to {}".format(src, dest))
+            try:
+                shutil.copy(src, dest)
+            except Exception as err:
+                logger.info(str(err))
+    '''
     for f in os.listdir("merged"):
         if f.endswith(".vrt"):
-            shutil.copy(os.path.join("merged", f), os.path.join(prod_dir_merged, f))
+            src = os.path.join(os.getcwd(), "merged", f)
+            dest = os.path.join(os.getcwd(), prod_dir_merged, f)
+            logger.info("Copying {} to {}".format(src, dest))
+            try:
+                shutil.copy(src, dest)
+            except Exception as err:
+                logger.info(str(err))
             
-
+    '''
 
 
     #logger.info( json.dump(md, f, indent=2))
