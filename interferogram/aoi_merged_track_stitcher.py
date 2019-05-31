@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 import sys
 import os
+import glob
 import shutil
 import json
+import math
+import numpy as np
 import re
 import hashlib
-import glob
+from datetime import datetime
+
 from ifg_stitcher import IfgStitcher
-from enumerate_stitch_cfgs import *
+from utils.create_datasets import create_dataset_json
 from utils.createImage import createImage
 
-
+from osgeo import ogr, osr
 import matplotlib
 matplotlib.use('Agg')
-# from matplotlib import pyplot as plt
 
 
 def order_gunw_filenames(ls):
@@ -79,7 +82,7 @@ def generate_files_to_move_to_dataset_directory(list_extra_products):
         first generates list of all files to move
         one by one moves the files to directory
 
-    :param list_extra_products: list[str], default value ["los.rdr.geo"],
+    :param list_extra_products: list[str], default value ['los.rdr.geo'],
            specified in TOSCA inputs: space separated list of products to process, e.g. los.rdr.geo
     :param destination: where we want to copy the files os.cwd() + dataset_directory
     :return: list[str] list of all files to move
@@ -97,6 +100,7 @@ def move_files_to_dataset_directory(ls, destination):
     '''
     :param ls: list[str] files we want to move to the dataset directory, ie. destination
     :param destination: str, dataset directory
+    :param *args are additional files you want to move
     :return: void
     '''
     for file in ls:
@@ -113,33 +117,161 @@ def run_stitcher(inps):
         # the stitcher code doesnt raise a proper exception so it will be raised here just to be safe
         st.stitch(inps)  # this will generate a bunch of .geo, .vrt and .xml files in your workdir
     except Exception as e:
-        print("Something happened in the IfgStitcher.stitch() code, need to contact author of code")
+        print('Something happened in the IfgStitcher.stitch() code, need to contact author of code')
         print(e)
-        raise Exception("Something happened in the IfgStitcher.stitch() code, need to contact author of code")
+        raise Exception('Something happened in the IfgStitcher.stitch() code, need to contact author of code')
+
+
+def generate_list_of_gunw_merged_dataset_met_files(localize_urls, cur_dir=os.getcwd()):
+    '''
+    takes context.json and returns a list of S1-GUNW-MERGED_RM_<filler>_.json dataset files
+    the output will be fed into another function to spit out the union polygon to be added into datasets.json
+    :param: list[str], list of download urls, containing the S1 GUNW MERGED ID
+    :param: cur_dir: current_directory (os.getcwd())
+    :return: list[str], list of directories
+    '''
+    list_dataset_json_files = []
+    list_met_json_files = []
+    for url in localize_urls:
+        dataset_id = url.split('/')[-1]
+
+        dataset_json_file = '%s.dataset.json' % dataset_id
+        met_json_file = '%s.met.json' % dataset_id
+
+        dataset_json_path = os.path.join(cur_dir, dataset_id, dataset_json_file)
+        met_json_path = os.path.join(cur_dir, dataset_id, met_json_file)
+
+        list_dataset_json_files.append(dataset_json_path)
+        list_met_json_files.append(met_json_path)
+    return list_dataset_json_files, list_met_json_files
 
 
 # copied from stitch_ifgs.get_union_polygon()
-# def get_union_polygon(ds_files):
-#     """Get GeoJSON polygon of union of IFGs."""
-#
-#     geom_union = None
-#     for ds_file in ds_files:
-#         with open(ds_file) as f:
-#             ds = json.load(f)
-#         geom = ogr.CreateGeometryFromJson(json.dumps(ds['location'], indent=2, sort_keys=True))
-#         if geom_union is None:
-#             geom_union = geom
-#         else:
-#             geom_union = geom_union.Union(geom)
-#     return json.loads(geom_union.ExportToJson()), geom_union.GetEnvelope()
+def get_union_polygon(ds_files):
+    '''Get GeoJSON polygon of union of IFGs.'''
+
+    geom_union = None
+    for ds_file in ds_files:
+        with open(ds_file) as f:
+            ds = json.load(f)
+        geom = ogr.CreateGeometryFromJson(json.dumps(ds['location'], indent=2, sort_keys=True))
+        if geom_union is None:
+            geom_union = geom
+        else:
+            geom_union = geom_union.Union(geom)
+    return json.loads(geom_union.ExportToJson()), geom_union.GetEnvelope()
+
+
+# copied straight from stitch_ifgs.py, but altered it a little
+def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_files, met_json_filename, direction):
+    '''
+    :param dataset_id: string, id of the stitched GUNW
+    :param version: string, version of GUNW
+    :param env: list[float], corner coordinates of stitch gunw(?)
+    :param starttime: string, timestamps of job start time
+    :param endtime: string, timestamps of job end time
+    :param met_files: list[str], list of met filepaths the function will read out of
+    :param met_json_filename: met json filename
+    :param direction: string, direction of stitcher
+    :return: void
+    '''
+    # build met
+    bbox = [
+        [env[3], env[0]],
+        [env[3], env[1]],
+        [env[2], env[1]],
+        [env[2], env[0]],
+    ]
+    met = {
+        'stitch_direction': direction,
+        'product_type': 'interferogram',
+        'refbbox': [],
+        'esd_threshold': [],
+        'frame_id': [],
+        'temporal_span': None,
+        'track_number': None,
+        'archive_filename': dataset_id,
+        'dataset_type': 'slc',
+        'tile_layers': ['amplitude', 'displacement'],
+        'latitude_index_min': int(math.floor(env[2] * 10)),
+        'latitude_index_max': int(math.ceil(env[3] * 10)),
+        'parallel_baseline': [],
+        'url': [],
+        'doppler': [],
+        'version': [],
+        'orbit_type': [],
+        'frame_number': None,
+        'bbox': bbox,
+        'ogr_bbox': [[x, y] for y, x in bbox],
+        'orbit_number': [],
+        'input_file': 'ifg_stitch.json',
+        'perpendicular_baseline': [],
+        'orbit_repeat': [],
+        'sensing_stop': endtime,
+        'polarization': [],
+        'scene_count': 0,
+        'beam_id': None,
+        'sensor': [],
+        'look_direction': [],
+        'platform': [],
+        'starting_range': [],
+        'frame_name': [],
+        'tiles': True,
+        'sensing_start': starttime,
+        'beam_mode': [],
+        'image_corners': [], # may keep
+        'prf': [],
+        "sha224sum": hashlib.sha224(str.encode(os.path.basename(met_json_filename))).hexdigest(),
+    }
+
+    # collect values
+    set_params = ('esd_threshold', 'frame_id', 'parallel_baseline', 'doppler', 'orbit_type', 'orbit_number',
+                  'perpendicular_baseline', 'orbit_repeat', 'polarization', 'sensor', 'look_direction', 'platform',
+                  'starting_range', 'beam_mode', 'prf')
+    single_params = ('temporal_span', 'track_number')
+    list_params = ('platform', 'perpendicular_baseline', 'parallel_baseline')
+    mean_params = ('perpendicular_baseline', 'parallel_baseline')
+
+    print("list individual GUNW merged met.json files: {}".format(met_files))
+
+    for i, met_file in enumerate(met_files):
+        with open(met_file) as f:
+            md = json.load(f)
+        for param in set_params:
+            # logger.info("param: {}".format(param))
+            if isinstance(md[param], list):
+                met[param].extend(md[param])
+            else:
+                met[param].append(md[param])
+        if i == 0:
+            for param in single_params:
+                met[param] = md[param]
+        met['scene_count'] += 1
+    for param in set_params:
+        tmp_met = list(set(met[param]))
+        if param in list_params:
+            met[param] = tmp_met
+        else:
+            met[param] = tmp_met[0] if len(tmp_met) == 1 else tmp_met
+    for param in mean_params:
+        met[param] = np.mean(met[param])
+    print('generated met.json object: {}'.format(json.dumps(met, indent=2)))
+
+    with open(met_json_filename, 'w') as f:  # writing the met.json
+        met_json = json.dumps(met, indent=2)
+        f.write(met_json)
+    return True
 
 
 if __name__ == '__main__':
-    cwd = os.getcwd()
+    VERSION = 'v2.0'  # values needed for the dataset.json file
+    START_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    DIRECTION = 'along'
 
+    cwd = os.getcwd()
     ctx_file = os.path.abspath('_context.json')  # get context
     if not os.path.exists(ctx_file):
-        raise RuntimeError("Failed to find _context.json.")
+        raise RuntimeError('Failed to find _context.json.')
 
     with open(ctx_file) as f:
         ctx = json.load(f)
@@ -171,42 +303,53 @@ if __name__ == '__main__':
 
     # these are the inputs needed to run the scientist's ifg stitcher function
     stitcher_inputs = {
-        'direction': 'along',
+        'direction': DIRECTION,
         'extra_products': extra_products,
         'filenames': input_files,
         'outname': outname,
     }
+    stitcher_inputs_filename = 'inputs.json'
+    with open(stitcher_inputs_filename, 'w') as f:  # scientists want this json file in the dataset directory
+        f.write(json.dumps(stitcher_inputs, indent=2))
     print('stitcher inputs: {}'.format(json.dumps(stitcher_inputs, indent=2)))
 
+    list_gunws_dataset_json, list_gunws_met_json = generate_list_of_gunw_merged_dataset_met_files(localize_products)
+    print('List of GUNW MERGED dataset.json files: {}'.format(json.dumps(list_gunws_dataset_json, indent=2)))
+
     run_stitcher(stitcher_inputs)  # the function will exit out if the stitching fails
-    print("Stitcher completed, outputted .geo, .xrt and .xml files")
+    print('Stitcher completed, outputted .geo, .xrt and .xml files')
 
     dataset_files = generate_files_to_move_to_dataset_directory(extra_products)
+    dataset_files.append(stitcher_inputs_filename)
     move_files_to_dataset_directory(dataset_files, dataset_dir)  # moving all proper files to dataset dir
     print('files moved to {}: {}'.format(dataset_dir, json.dumps(dataset_files, indent=2)))
 
     # create browse images
     os.chdir(dataset_dir)
-    mdx_app_path = "{}/applications/mdx.py".format(os.environ['ISCE_HOME'])
-    mdx_path = "{}/bin/mdx".format(os.environ['ISCE_HOME'])
-    unw_file = "filt_topophase.unw.geo"
+    mdx_app_path = '{}/applications/mdx.py'.format(os.environ['ISCE_HOME'])
+    mdx_path = '{}/bin/mdx'.format(os.environ['ISCE_HOME'])
+    unw_file = 'filt_topophase.unw.geo'
+    createImage('{} -P {}'.format(mdx_app_path, unw_file), unw_file)  # ** uses the mdx.py **
 
-    # ** uses the mdx.py **
-    createImage("{} -P {}".format(mdx_app_path, unw_file), unw_file)
+    union_polygon = get_union_polygon(list_gunws_dataset_json)
+    union_polygon_coordinates = union_polygon[0]
+    image_corners = union_polygon[1]
+
+    print('union polygon: {}'.format(json.dumps(union_polygon, indent=2)))
+
+    # CREATING DATASET.JSON FILE
+    END_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    create_dataset_json(stitch_dataset_id, VERSION, START_TIME, end_time=END_TIME, location=union_polygon_coordinates)
+
+    # CREATING MET.JSON METADATA
+    # create_met_json(id, version, env, starttime, endtime, met_files, met_json_file, direction)
+    met_json_filename = '%s.met.json' % stitch_dataset_id
+
+    generate_met_json_file(stitch_dataset_id, VERSION, image_corners, START_TIME, END_TIME, list_gunws_met_json,
+                    met_json_filename, DIRECTION)
+    print("wrote met.json file: %s" % os.path.join(cwd, met_json_filename))
 
     # TODO:
     #   create _dataset.json https://github.com/aria-jpl/ariamh/blob/develop/interferogram/stitch_ifgs.py#L62-L91
     #   this regex works: S1-GUNW-MERGED_TN.*?_.*?-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(?P<rest>.+)
-    # TODO: create met.json file
-    #   CREATE UTILITY FUNCTIONS IN utils.py AND USE **kwargs INPUTS
-    #   add stitch_count (or scene_count), int: is len(localize_urls) or 1 as default
-    #   add polygon to dataset.json
-    #   the <dataset_id>.context.json is the same as _context.json
-    # TODO: in the enumerate stitch_cfg file, it reads from context.json which we dont have
-    #   project, min_stitch_count, query, etc. (not sure how to approach)
-
-    # using the get_stitch_cfgs function from enumerate_stitch_cfgs.py
-    stitch_cfgs = get_stitch_cfgs(ctx_file)
-    print(stitch_cfgs)
-
     sys.exit(0)

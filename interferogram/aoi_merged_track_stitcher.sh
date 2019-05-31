@@ -25,7 +25,7 @@ echo -n "Finished running aoi merged track stitcher sciflo: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
   echo "Failed to run AOI merged track stitcher sciflo." 1>&2
-  cat sciflo_ifg_stitcher.log 1>&2
+  cat aoi_merged_track_stitcher.log 1>&2
   echo "{}"
   exit $STATUS
 fi

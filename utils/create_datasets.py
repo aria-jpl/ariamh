@@ -29,7 +29,3 @@ def create_dataset_json(dataset_id, version, start_time,
         metadata_json = json.dumps(metadata, indent=2)
         f.write(metadata_json)
     return True
-
-
-def create_met_json():
-    pass
