@@ -19,6 +19,17 @@ import matplotlib
 matplotlib.use('Agg')
 
 
+def get_version():
+    # dataset version: stored in conf/dataset_versions.json
+    ds_vers_cfg = os.path.normpath(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            '..', 'conf', 'dataset_versions.json'))
+    with open(ds_vers_cfg) as f:
+        ds_vers = json.load(f)
+    return ds_vers['S1-IFG-STITCHED']
+
+
 def order_gunw_filenames(ls):
     '''
     :param ls: List[str]: list of gunw file names
@@ -264,7 +275,7 @@ def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_fil
 
 
 if __name__ == '__main__':
-    VERSION = 'v2.0'  # values needed for the dataset.json file
+    VERSION = get_version()
     START_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
     DIRECTION = 'along'
 
@@ -349,7 +360,4 @@ if __name__ == '__main__':
                     met_json_filename, DIRECTION)
     print("wrote met.json file: %s" % os.path.join(cwd, met_json_filename))
 
-    # TODO:
-    #   create _dataset.json https://github.com/aria-jpl/ariamh/blob/develop/interferogram/stitch_ifgs.py#L62-L91
-    #   this regex works: S1-GUNW-MERGED_TN.*?_.*?-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(?P<rest>.+)
     sys.exit(0)
