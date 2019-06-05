@@ -101,7 +101,7 @@ def generate_files_to_move_to_dataset_directory(list_extra_products):
     files_to_move = []
     file_types = list_extra_products + ['filt_topophase', 'phsig']  # list of all file types to move to the dataset dir
     for file_type in file_types:
-        pattern = file_type + '.*'  # capture all files starting with specified file names
+        pattern = file_type + '*'  # capture all files starting with specified file names
         files_to_move += glob.glob(pattern)
     print('identified list of files to move: {}'.format(files_to_move))
     return files_to_move
@@ -306,6 +306,7 @@ if __name__ == '__main__':
     dataset_dir = os.path.join(cwd, stitch_dataset_id)
     if not os.path.exists(dataset_dir):  # generating the dataset directory so verdi can publish when done
         os.mkdir(dataset_dir)
+        os.mkdir(dataset_dir + '/merged')
         print('created dataset directory: %s' % dataset_dir)
 
     outname = 'filt_topophase.unw.geo'  # main outputted file name from the stitcher
@@ -332,7 +333,7 @@ if __name__ == '__main__':
 
     dataset_files = generate_files_to_move_to_dataset_directory(extra_products)
     dataset_files.append(stitcher_inputs_filename)
-    move_files_to_dataset_directory(dataset_files, dataset_dir)  # moving all proper files to dataset dir
+    move_files_to_dataset_directory(dataset_files, dataset_dir + '/merged')  # moving all proper files to dataset dir
     print('files moved to {}: {}'.format(dataset_dir, json.dumps(dataset_files, indent=2)))
 
     # create browse images
@@ -340,7 +341,7 @@ if __name__ == '__main__':
     mdx_app_path = '{}/applications/mdx.py'.format(os.environ['ISCE_HOME'])
     mdx_path = '{}/bin/mdx'.format(os.environ['ISCE_HOME'])
     unw_file = 'filt_topophase.unw.geo'
-    createImage('{} -P {}'.format(mdx_app_path, unw_file), unw_file)  # ** uses the mdx.py **
+    createImage('{} -P {}'.format(mdx_app_path, 'merged/' + unw_file), unw_file)  # ** uses the mdx.py **
 
     union_polygon = get_union_polygon(list_gunws_dataset_json)
     union_polygon_coordinates = union_polygon[0]
