@@ -1,0 +1,11 @@
+{
+  "label" : "Data Sling and Extract for asf",
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    {
+      "name": "slc_id",
+      "from": "dataset_jpath:_source.metadata.identifier",
+      "type": "text"
+    }
+  ]
+}

@@ -87,6 +87,8 @@ def parser():
 
 if __name__ == "__main__":
     args = parser().parse_args()
+    print("args.zip_file : %s" %args.zip_file)
+    print("args.job_dir : %s" %args.job_dir)
     if re.search(r'S1\w_IW_SLC', args.zip_file): typ = 'slc'
     elif re.search(r'S1\w_IW_RAW', args.zip_file): typ = 'raw'
     else: raise RuntimeError("Unknown type: %s" % args.zip_file)
@@ -95,3 +97,4 @@ if __name__ == "__main__":
     harvest(extracted, safe_dir, typ)
     browse(extracted, safe_dir, typ)
     os.system("rm -rf %s" % safe_dir)
+    print("COMPLETED SPLIT SWATH")

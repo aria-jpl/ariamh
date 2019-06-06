@@ -1,13 +1,14 @@
 {
-  "command": "/home/ops/verdi/ops/spyddder-man/extract.py",
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract_scihub.py",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
-    "$HOME/verdi/etc/settings.json": "/home/ops/verdi/ops/spyddder-man/settings.json",
+    "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/frameMetadata/settings.json",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "grfn-job_worker-small",
+    "spyddder-sling-extract-scihub",
+    "factotum-job_worker-scihub_throttled",
     "aria-job_worker-small",
     "mem-job_worker-small",
     "dwr-job_worker-small",
@@ -15,24 +16,10 @@
     "floodmap-job_worker-small",
     "urgent-response-job_worker-small"
   ],
-  "soft_time_limit": 6000,
-  "time_limit": 6400,
   "disk_usage": "50GB",
   "params" : [
     { 
-      "name": "localize_url",
-      "destination": "localize"
-    },
-    { 
-      "name": "file",
-      "destination": "positional"
-    },
-    { 
-      "name": "prod_name",
-      "destination": "positional"
-    },
-    { 
-      "name": "prod_date",
+      "name": "slc_id",
       "destination": "positional"
     }
   ]
