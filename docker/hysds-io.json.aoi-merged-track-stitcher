@@ -9,7 +9,7 @@
       "from": "submitter",
       "type": "text",
       "default": "los.rdr.geo",
-      "placeholder": "space separated list of products to process, e.g. los.rdr.geo"=
+      "placeholder": "space separated list of products to process, e.g. los.rdr.geo"
     },
     {
       "name": "localize_products",
