@@ -27,7 +27,7 @@ def get_version():
             '..', 'conf', 'dataset_versions.json'))
     with open(ds_vers_cfg) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-IFG-STITCHED']
+    return ds_vers['S1-GUNW-MERGED-STITCHED']
 
 
 def order_gunw_filenames(ls):
