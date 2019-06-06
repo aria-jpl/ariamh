@@ -16,6 +16,8 @@
     "floodmap-job_worker-small",
     "urgent-response-job_worker-small"
   ],
+  "soft_time_limit": 6000,
+  "time_limit": 6400,
   "disk_usage": "50GB",
   "params" : [
     { 

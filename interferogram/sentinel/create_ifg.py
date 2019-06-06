@@ -551,13 +551,13 @@ def main():
     tiles_dir = "{}/tiles".format(prod_dir)
     vrt_prod_file = "{}/merged/filt_topophase.unw.geo.vrt".format(prod_dir)
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', '..', 'map_tiler'))
-    dis_layer = "displacement"
+    dis_layer = "interferogram"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 2 -m prism --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, dis_layer), shell=True)
 
     # create amplitude tile layer
     amp_layer = "amplitude"
-    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 80 --nodata 0"
+    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 90 --nodata 0"
     check_call(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, amp_layer), shell=True)
 
     # create COG (cloud optimized geotiff) with no_data set

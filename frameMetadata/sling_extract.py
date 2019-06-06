@@ -17,7 +17,6 @@ import hysds
 from hysds.log_utils import logger, log_prov_es
 from hysds.celery import app
 from datetime import datetime
-#from utils.UrlUtils import UrlUtils
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
 
@@ -37,6 +36,89 @@ CONF_FILE="/home/ops/ariamh/conf/settings.conf"
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
+def get_download_params(url):
+    """Set osaka download params."""
+
+    params = {}
+
+    # set profile
+    for prof in app.conf.get('BUCKET_PROFILES', []):
+        if 'profile_name' in params: break
+        if prof.get('bucket_patterns', None) is None:
+            params['profile_name'] = prof['profile']
+            break
+        else:
+            if isinstance(prof['bucket_patterns'], list):
+                bucket_patterns = prof['bucket_patterns']
+            else: bucket_patterns = [ prof['bucket_patterns'] ]
+            for bucket_pattern in prof['bucket_patterns']:
+                regex = re.compile(bucket_pattern)
+                match = regex.search(url)
+                if match:
+                    logger.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
+                    params['profile_name'] = prof['profile']
+                    break
+                
+    return params
+
+def update_context_file(localize_url, file_name):
+    print("update_context_file :%s,  %s" %(localize_url, file_name))
+    ctx_file = "_context.json"
+    localized_url_array = []
+    url_dict = {}
+    url_dict["local_path"] = file_name
+    url_dict["url"]=localize_url
+
+    localized_url_array.append(url_dict)
+    with open(ctx_file) as f:
+        ctx = json.load(f)
+    ctx["localize_urls"] = localized_url_array
+
+    with open(ctx_file, 'w') as f:
+        json.dump(ctx, f, indent=2, sort_keys=True)
+ 
+def download_file(url, path, cache=False):
+    """Download file/dir for input."""
+
+    params = get_download_params(url)
+    if cache:
+        url_hash = hashlib.md5(url).hexdigest()
+        hash_dir = os.path.join(app.conf.ROOT_WORK_DIR, 'cache', *url_hash[0:4])
+        cache_dir = os.path.join(hash_dir, url_hash)
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        signal_file = os.path.join(cache_dir, '.localized')
+        if os.path.exists(signal_file):
+            logger.info("cache hit for {} at {}".format(url, cache_dir))
+        else:
+            logger.info("cache miss for {}".format(url))
+            try: osaka.main.get(url, cache_dir, params=params)
+            except Exception, e:
+                shutil.rmtree(cache_dir)
+                tb = traceback.format_exc()
+                raise(RuntimeError("Failed to download %s to cache %s: %s\n%s" % \
+                    (url, cache_dir, str(e), tb)))
+            with atomic_write(signal_file, overwrite=True) as f:
+                f.write("%sZ\n" % datetime.utcnow().isoformat())
+        for i in os.listdir(cache_dir):
+            if i == '.localized': continue
+            cached_obj = os.path.join(cache_dir, i)
+            if os.path.isdir(cached_obj):
+                dst = os.path.join(path, i) if os.path.isdir(path) else path
+                try: os.symlink(cached_obj, dst)
+                except:
+                    logger.error("Failed to soft link {} to {}".format(cached_obj, dst))
+                    raise
+            else:
+                try: os.symlink(cached_obj, path)
+                except:
+                    logger.error("Failed to soft link {} to {}".format(cached_obj, path))
+                    raise
+    else: return osaka.main.get(url, path, params=params)
+
+
+def localize_file(url, path, cache):
+    """Localize urls for job inputs. Track metrics."""
 
 
 def getConf():

@@ -56,9 +56,9 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--band", dest="band", type=int, default=1,
                         help="raster band")
     parser.add_argument("--clim_min_pct", dest="clim_min_pct", type=float,
-                        default=20, help="color limit min percent")
+                        default=10, help="color limit min percent")
     parser.add_argument("--clim_max_pct", dest="clim_max_pct", type=float,
-                        default=80, help="color limit max percent")
+                        default=90, help="color limit max percent")
     args = parser.parse_args()
     min, max, min_pct, max_pct = get_clims(args.raster, args.band,
                                            args.clim_min_pct, args.clim_max_pct)

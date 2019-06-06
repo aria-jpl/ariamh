@@ -30,7 +30,7 @@ def get_version():
                           '..', 'conf', 'dataset_versions.json'))
     with open(DS_VERS_CFG) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-IFG-STITCHED']
+    return ds_vers['S1-GUNW-MERGED-STITCHED']
 
 
 def get_union_polygon(ds_files):
@@ -107,57 +107,55 @@ def create_met_json(id, version, env, starttime, endtime, met_files, met_json_fi
         'master_scenes': [],
         'refbbox': [],
         'esd_threshold': [],
-        'frameID': [],
+        'frame_id': [],
         'temporal_span': None,
-        'swath': [],
-        'trackNumber': None,
+        'track_number': None,
         'archive_filename': id,
         'dataset_type': 'slc',
-        'tile_layers': [ 'amplitude', 'displacement' ],
-        'latitudeIndexMin': int(math.floor(env[2] * 10)),
-        'latitudeIndexMax': int(math.ceil(env[3] * 10)),
-        'parallelBaseline': [],
+        'tile_layers': [ 'interferogram' ],
+        'latitude_index_min': int(math.floor(env[2] * 10)),
+        'latitude_index_max': int(math.ceil(env[3] * 10)),
+        'parallel_baseline': [],
         'url': [],
         'doppler': [],
         'version': [],
         'slave_scenes': [],
         'orbit_type': [],
-        'spacecraftName': [],
-        'frameNumber': None,
+        'frame_number': None,
         'reference': None,
         'bbox': bbox,
         'ogr_bbox': [[x, y] for y, x in bbox],
-        'orbitNumber': [],
+        'orbit_number': [],
         'inputFile': 'ifg_stitch.json',
-        'perpendicularBaseline': [],
-        'orbitRepeat': [],
-        'sensingStop': endtime,
+        'perpendicular_baseline': [],
+        'orbit_repeat': [],
+        'sensing_stop': endtime,
         'polarization': [],
         'scene_count': 0,
         'beamID': None,
         'sensor': [],
-        'lookDirection': [],
+        'look_direction': [],
         'platform': [],
-        'startingRange': [],
-        'frameName': [],
+        'starting_range': [],
+        'frame_name': [],
         'tiles': True,
-        'sensingStart': starttime,
-        'beamMode': [],
-        'imageCorners': [],
-        'direction': [],
+        'sensing_start': starttime,
+        'beam_mode': [],
+        'image_corners': [],
+        'orbit_direction': [],
         'prf': [],
         "sha224sum": hashlib.sha224(str.encode(os.path.basename(met_json_file))).hexdigest(),
     }
 
     # collect values
-    set_params = ('master_scenes', 'esd_threshold', 'frameID', 'swath', 'parallelBaseline',
-                  'doppler', 'version', 'slave_scenes', 'orbit_type', 'spacecraftName',
-                  'orbitNumber', 'perpendicularBaseline', 'orbitRepeat', 'polarization', 
-                  'sensor', 'lookDirection', 'platform', 'startingRange',
-                  'beamMode', 'direction', 'prf' )
-    single_params = ('temporal_span', 'trackNumber')
-    list_params = ('master_scenes', 'slave_scenes', 'platform', 'swath', 'perpendicularBaseline', 'parallelBaseline')
-    mean_params = ('perpendicularBaseline', 'parallelBaseline')
+    set_params = ('master_scenes', 'esd_threshold', 'frame_id', 'parallel_baseline',
+                  'doppler', 'version', 'slave_scenes', 'orbit_type', 'orbit_number',
+                  'perpendicular_baseline', 'orbit_repeat', 'polarization', 
+                  'sensor', 'look_direction', 'platform', 'starting_range',
+                  'beam_mode', 'orbit_direction', 'prf' )
+    single_params = ('temporal_span', 'track_number')
+    list_params = ('master_scenes', 'slave_scenes', 'platform', 'perpendicular_baseline', 'parallel_baseline')
+    mean_params = ('perpendicular_baseline', 'parallel_baseline')
     for i, met_file in enumerate(met_files):
         with open(met_file) as f:
             md = json.load(f)
@@ -235,7 +233,7 @@ def main():
     # get endpoint configurations
     uu = UrlUtils()
     es_url = uu.rest_url
-    es_index = "{}_{}_s1-ifg-stitched".format(uu.grq_index_prefix, version)
+    es_index = "{}_{}_s1-gunw-merged-stitched".format(uu.grq_index_prefix, version)
 
     # check if interferogram already exists
     logger.info("GRQ url: {}".format(es_url))
@@ -350,14 +348,14 @@ def main():
     tiles_dir = "{}/tiles".format(dataset_dir)
     vrt_prod_file = "{}/filt_topophase.unw.geo.vrt".format(dataset_dir)
     tiler_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', 'map_tiler'))
-    dis_layer = "displacement"
+    dis_layer = "interferogram"
     tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 2 -m prism --nodata 0"
     call_noerr(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, dis_layer))
 
     # create amplitude tile layer
-    amp_layer = "amplitude"
-    tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 80 --nodata 0"
-    call_noerr(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, amp_layer))
+    #amp_layer = "amplitude"
+    #tiler_cmd_tmpl = "{}/create_tiles.py {} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 80 --nodata 0"
+    #call_noerr(tiler_cmd_tmpl.format(tiler_cmd_path, vrt_prod_file, tiles_dir, amp_layer))
 
     # create COG (cloud optimized geotiff) with no_data set
     cog_prod_file = "{}/filt_topophase.unw.geo.tif".format(dataset_dir)

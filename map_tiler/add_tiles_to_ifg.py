@@ -82,13 +82,13 @@ while True:
 
         # create displacement tile layer
         vrt_prod_file = "{}.vrt".format(unw_prod_file)
-        dis_layer = "displacement"
+        dis_layer = "interferogram"
         cmd = "{}/create_tiles.py merged/{} {}/{} -b 2 -m prism --nodata 0"
         check_call(cmd.format(BASE_PATH, vrt_prod_file, 'tiles', dis_layer), shell=True)
 
         # create amplitude tile layer
         amp_layer = "amplitude"
-        cmd = "{}/create_tiles.py merged/{} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 80 --nodata 0"
+        cmd = "{}/create_tiles.py merged/{} {}/{} -b 1 -m gray --clim_min 10 --clim_max_pct 90 --nodata 0"
         check_call(cmd.format(BASE_PATH, vrt_prod_file, 'tiles', amp_layer), shell=True)
 
         # upload tiles

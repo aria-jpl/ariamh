@@ -1,0 +1,36 @@
+{
+  "submission_type": "iteration",
+  "label" : "Standard Product S1-GUNW - topsApp",
+  "allowed_accounts": [ "ops" ],
+  "enable_dedup": false,
+  "params" : [
+    { 
+      "name": "dataset_tag",
+      "from": "submitter",
+      "type": "text",
+      "default": "standard_product",
+      "placeholder": "A value to append to the dataset identifier"
+    },
+    {
+      "name": "input_metadata",
+      "type": "text",
+      "from": "dataset_jpath:_source.metadata"
+    },
+    {
+     "name":"localize_products",
+     "from": "dataset_jpath:_source.metadata.localize_urls"
+    },
+    { 
+      "name": "query",
+      "from": "passthrough"
+    },
+    { 
+      "name": "name",
+      "from": "passthrough"
+    },
+    { 
+      "name": "username",
+      "from": "passthrough"
+    }
+  ]
+}

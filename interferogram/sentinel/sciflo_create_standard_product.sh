@@ -3,6 +3,7 @@ BASE_PATH=$(dirname "${BASH_SOURCE}")
 BASE_PATH=$(cd "${BASE_PATH}"; pwd)
 
 # source ISCE env
+export PYTHONPATH=${PYTHONPATH}:${HOME}/verdi/etc
 export GMT_HOME=/usr/local/gmt
 export ARIAMH_HOME=$HOME/ariamh
 source $ARIAMH_HOME/isce.sh
@@ -17,15 +18,15 @@ export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 source $HOME/verdi/bin/activate
 
 echo "##########################################" 1>&2
-echo -n "Running validated interferogram stack stitcher sciflo: " 1>&2
+echo -n "Running S1 create standard product interferogram sciflo: " 1>&2
 date 1>&2
-/usr/bin/python $BASE_PATH/sciflo_validated_stitcher.py > sciflo_validated_stitcher.log 2>&1
+/usr/bin/python $BASE_PATH/sciflo_create_standard_product.py > sciflo_create_standard_product.log 2>&1
 STATUS=$?
-echo -n "Finished running validated interferogram stack stitcher sciflo: " 1>&2
+echo -n "Finished running S1 create standard product interferogram sciflo: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
-  echo "Failed to run validated interferogram stack stitcher sciflo." 1>&2
-  cat sciflo_validated_stitcher.log 1>&2
+  echo "Failed to run S1 create standard product interferogram sciflo." 1>&2
+  cat sciflo_create_standard_product.log 1>&2
   echo "{}"
   exit $STATUS
 fi

@@ -1,8 +1,11 @@
 {
   "S1-IW_SLC": "v1.1",
   "S1-IW_SLC_SWATH": "v1.1",
-  "S1-IFG": "v1.2.2",
-  "S1-IFG-STITCHED": "v1.2.2",
+  "S1-IFG": "v2.0.0",
+  "S1-IFG-STITCHED": "v2.0.0",
+  "S1-GUNW": "v2.0.2",
+  "S1-GUNW-MERGED": "v2.0.2",
+  "S1-GUNW-MERGED-STITCHED": "v2.0.0",
   "S1-VALIDATED_IFG_STACK": "v1.0",
   "S1-VALIDATED_TS_STACK": "v1.0",
   "S1-SLCP": "v1.2",

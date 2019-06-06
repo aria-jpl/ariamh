@@ -3,6 +3,7 @@ from scipy.ndimage.morphology import binary_dilation
 from scipy.ndimage import generate_binary_structure
 import numpy as np
 from matplotlib import pyplot as plt
+plt.ion()
 import sys
 import os
 import isce
@@ -162,21 +163,28 @@ class IfgStitcher:
     def arrange_frames(self,fnames):
         sizes = []
         alats = []
+        blats = []
         alons = []
         for names in fnames:
             sz = []
             lats = []
             lons = []
+            blat = [] 
             for name in names:
                 size = get_size(name + '.xml')
                 sz.append(size)
                 lats.append(size['lat']['val'])
                 lons.append(size['lon']['val'])
+                blat.append(lats[-1] + size['lat']['delta']*size['lat']['size'])
             sizes.append(sz)
             alats.append(lats)
             alons.append(lons)
+            blats.append(blat)
         alats = np.array(alats)
         alons = np.array(alons)
+        blats = np.array(blats)
+        if not self.check_overlap(blats,alats):
+            return None,None
         #just need one col (lat) and one row (lon) to determine the order
         lat = alats[:,0]
         lon = alons[0,:]
@@ -207,13 +215,16 @@ class IfgStitcher:
         lonstart2 = im2.coord1.coordStart
         lonsize2 = im2.coord1.coordSize
         londelta2 = im2.coord1.coordDelta
+        #if mask has diffrent resolution then image
+        factor = int(round(londelta1/londelta2))
+
         ilatstart = abs(int(round((latstart2-latstart1)/latdelta2)))
-        ilatend = ilatstart + latsize1
+        ilatend = ilatstart + factor*latsize1
         ilonstart = abs(int(round((lonstart2-lonstart1)/londelta2)))
-        ilonend = ilonstart + lonsize1
+        ilonend = ilonstart + factor*lonsize1
         imIn = im2.memMap(band=0)
         imCrop = np.memmap(outname,im2.toNumpyDataType(),'w+',shape=(latsize1,lonsize1))    
-        imCrop[:,:] =  imIn[ilatstart:ilatend,ilonstart:ilonend]
+        imCrop[:,:] =  imIn[ilatstart:ilatend:factor,ilonstart:ilonend:factor]
         return np.copy(imCrop)
     
     #create a memmap. if filename is empty create a tempfile
@@ -230,6 +241,7 @@ class IfgStitcher:
     #conncomps.
     #return which image convers the most [0 or 1] and the connected components
     #in the two image ovelaps, without the zero  
+
     def ref_image(self,imo1,imo2,factor=1):
         #find the connected components in the overlap
         uim1 = np.unique(imo1)
@@ -241,20 +253,23 @@ class IfgStitcher:
         for i in uim1:
             cover1.append(np.nonzero(imo1 == i)[0].size)
         cover1 = np.array(cover1)
-        cover1 = cover1
+        
         sel = cover1 > self._keepth/factor
         discard1 = uim1[np.logical_and(np.logical_not(sel),cover1 > self._keepth/(2*factor))]
         uim1 = uim1[sel]
         cover1 = cover1[sel]
+        if len(cover1) == 0:
+            return -1,None,None,None,None
         cover2 = []
         for i in uim2:
             cover2.append(np.nonzero(imo2 == i)[0].size)
         cover2 = np.array(cover2)
-        cover2 = cover2
         sel = cover2 > self._keepth/factor
         discard2 = uim2[np.logical_and(np.logical_not(sel),cover2 > self._keepth/(2*factor))]
         uim2 = uim2[sel]
         cover2 = cover2[sel]
+        if len(cover2) == 0:
+            return -1,None,None,None,None
         sc1 = np.sum(cover1)
         sc2 = np.sum(cover2)
         ret = -1
@@ -427,7 +442,9 @@ class IfgStitcher:
             #first update with adjust_rest_conncomp then update
             selc[u2] = sel      
             newcomps[k2][u2] = newcomp
-        addcc = np.max(np.unique(cims[k1][::10,::10]))
+        tmp_unique = np.unique(cims[k1][::10,::10])
+        sel = tmp_unique != WATER_VALUE
+        addcc = np.max(tmp_unique[sel])
         ims[k2] = self.adjust_rest_conncomp(ims[k2],cims[k2],uccs[k2],ccoffset,addcc)
         ims[k1] = self.adjust_rest_conncomp(ims[k1],cims[k1],uccs[k1],ccoffset,0)
         for k,v in selc.items():
@@ -538,15 +555,14 @@ class IfgStitcher:
             length = int(((lat2 - lat1) + nlat1*delta)/delta)
             i1 = int((lat2 - lat1)/delta)
             i2 = 0
-
-        wmsk1 = self.crop_mask(size1,self._wmask,'dummy.out') 
+        
+        wmsk1 = self.crop_mask(size1,self._wmask,'dummy.out')
         wmsk2 = self.crop_mask(size2,self._wmask,'dummy.out')
         #compute the overlap
        
         over,overlap_mask = self.get_ovelap([im,im1],[wmsk1,wmsk2],length,width,[i1,i2],[j1,j2],False)
         if len(over[0]) == 0:
             return None,None,None,None
-
         #don't touch the zeros so use this mask
         nmask1 = np.nonzero(np.abs(im) < self._small)
         nmask2 = np.abs(im1) < self._small
@@ -578,10 +594,10 @@ class IfgStitcher:
         else:
             tcim = self.get_memmap(np.uint8,'w+',(length,width),outname)
             tpim = self.get_memmap(pim.dtype,'w+',(length,width),outname)
-
+        
         self.generate_extra_memmaps(width, length,outname)
         tcim[:,:] = WATER_VALUE
-
+   
         #get phase offset between the two images
         imo = im[over[0] - i1,over[1] - j1]
         cimo = cim[over[0] - i1,over[1] - j1]
@@ -734,7 +750,7 @@ class IfgStitcher:
         self.zero_n2pi_full(mm1[:,1,:]) 
         self.remove_small_cc(cmm1,mm1[:,1,:])
         size1 = sizes[0]
-        #if there is only one image in the sequence the set is as the output product
+        #if there is only one image in the sequence then set is as the output product
         if len(names) == 1:
             self.generate_extra_memmaps(mm1.shape[2],mm1.shape[0],outname)
             for i in range(len(self._extra_prds_in1)):
@@ -762,7 +778,7 @@ class IfgStitcher:
             if outname and i == len(names) - 1:
                 fname = outname
             else:
-                fname= ''
+                fname= ''     
             #get the new image and the new lat lon
             mm1,cmm1,pmm1,size1 = self.stitch_pair([mm1,cmm1,pmm1], [mm2,cmm2,pmm2], size1, sizes[i],fname)
             self._extra_prds_in1 = []
@@ -770,7 +786,7 @@ class IfgStitcher:
                 self._extra_prds_in1.append(p.copy())
             if mm1 is None:
                 return None,None,None,None
-
+            
         return mm1,cmm1,pmm1,size1
     
     def zero_products(self,cc,cor):
@@ -790,6 +806,20 @@ class IfgStitcher:
                         self._extra_prds_out[i][ii,mask[0],mask[1]] = 0
         return
 
+    def check_overlap(self,blats,elats):
+        ret = True
+        for blat,elat in zip(blats,elats):
+            indx = np.lexsort((blat,elat))
+            sblat = blat[indx]
+            selat = elat[indx]
+            if np.any(selat[:-1] - sblat[1:] < 0):
+                ret = False
+                break
+        return ret
+            
+            
+        
+        
         
     def stitch(self,args):
         while True:#just a trick to avoid a lot of nested if statements
@@ -798,6 +828,9 @@ class IfgStitcher:
             if 'stitch_only' in args:
                 self._stitch_only = args['stitch_only'] 
             names,sizes = self.arrange_frames(args['filenames'])
+            if names is None:
+                print('No contiguous frames')
+                raise Exception
             self.create_mask(sizes)
             if args['direction'] == 'along':
                 nnames = []
@@ -832,7 +865,7 @@ class IfgStitcher:
             if im1 is None:
                 print('Stitching failed')
                 break
-
+            
             i = 1
             for name,size in zip(names[1:],sizes[1:]):
                 im2,cm2,pm2,size2 = self.stitch_sequence(name, size)
@@ -856,6 +889,12 @@ class IfgStitcher:
                
                 i += 1
             #zero where ccomp == 0
+            sel = np.nonzero(cm1 == 0)
+            #zero the amp
+            im1[sel[0],0,sel[1]] = 0
+            if len(names[0]) == 1:
+                #the mmap has not been generated for te final product su just dump im1
+                im1.tofile(outname)
             self.zero_products(cm1,pm1)
             self.save_image(os.path.join(os.path.dirname(names[0][0]),outname),outname,size1)
             ccname = outname.replace('.geo','.conncomp.geo')
