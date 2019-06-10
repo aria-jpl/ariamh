@@ -142,13 +142,13 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
     logger.info("search_url : %s" %search_url)
 
     r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
 
     if r.status_code != 200:
         logger.info("Failed to query %s:\n%s" % (es_url, r.text))
         logger.info("query: %s" % json.dumps(query, indent=2))
         logger.info("returned: %s" % r.text)
-        r.raise_for_status()
-
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
     result = r.json()
     logger.info(result['hits']['total'])
     return result
