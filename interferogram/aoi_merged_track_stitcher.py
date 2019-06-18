@@ -287,7 +287,7 @@ if __name__ == '__main__':
     with open(ctx_file) as f:
         ctx = json.load(f)
 
-    localize_products = ctx['job_specification']['params'][1]['value'][0]
+    localize_products = ctx['job_specification']['params'][1]['value']
     print('localized products: {}'.format(json.dumps(localize_products, indent=2)))
     input_files = order_gunw_filenames(localize_products)
     print('ordered input files: {}'.format(json.dumps(input_files, indent=2)))
