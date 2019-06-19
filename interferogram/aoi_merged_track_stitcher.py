@@ -46,6 +46,30 @@ def order_gunw_filenames(ls):
     return sorted_localize_producted
 
 
+def get_master_slave_scene_count():
+    '''
+    Gets the master scene count and slave scene count from each met.json file in localized directories
+    :return: int, int
+    '''
+    localized_datasets = [x for x in os.listdir('.') if x.startswith('S1-GUNW-MERGED')]
+    master_scenes = set()
+    slave_scenes = set()
+
+    for localized_dataset_dir in localized_datasets:
+        met_json_file_path = localized_dataset_dir + '/' + localized_dataset_dir + '.met.json'
+
+        with open(met_json_file_path) as f:
+            met_json_metadata = json.load(f)
+            secondary_scenes = met_json_metadata.get('secondary_scenes', [])
+            reference_scenes = met_json_metadata.get('reference_scenes', [])
+            [master_scenes.add(scene) for scene in reference_scenes]
+            [slave_scenes.add(scene) for scene in secondary_scenes]
+
+    print('master scenes: {}'.format(json.dumps(list(master_scenes), indent=2)))
+    print('slave scenes: {}'.format(json.dumps(list(slave_scenes), indent=2)))
+    return len(master_scenes), len(slave_scenes)
+
+
 def get_min_max_timestamp(ls):
     '''
     :param ls: List[str]: list of gunw file names
@@ -298,8 +322,11 @@ if __name__ == '__main__':
     list_datatset_ids = generate_list_dataset_ids(localize_products)
     four_digit_hash = generate_4digit_hash(list_datatset_ids)
 
-    stitch_dataset_id = 'S1-GUNW-MERGED_TN{track}_{master_end_time}-{slave_start_time}-poeorb-{hash}'
+    master_count, slave_count = get_master_slave_scene_count()
+
+    stitch_dataset_id = 'S1-GUNW-MERGED_RM_M{master_count}S{slave_count}_TN{track}_{master_end_time}-{slave_start_time}-poeorb-{hash}'
     stitch_dataset_id = stitch_dataset_id.format(master_end_time=master_timestamp, slave_start_time=slave_timestamp,
+                                                 master_count=master_count, slave_count=slave_count,
                                                  track=track_number, hash=four_digit_hash)
     print('stitched gunw id: %s' % stitch_dataset_id)
 
