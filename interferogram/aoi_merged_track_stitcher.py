@@ -27,7 +27,7 @@ def get_version():
             '..', 'conf', 'dataset_versions.json'))
     with open(ds_vers_cfg) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-GUNW-MERGED-STITCHED']
+    return ds_vers['S1-GUNW-MERGED-STITCHED'] + 'b'
 
 
 def order_gunw_filenames(ls):
@@ -256,14 +256,17 @@ def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_fil
         'beam_mode': [],
         'image_corners': [], # may keep
         'prf': [],
+        'reference_scenes': [],
+        'secondary_scenes': [],
+        'orbit_direction': [],
         "sha224sum": hashlib.sha224(str.encode(os.path.basename(met_json_filename))).hexdigest(),
     }
 
     # collect values
     set_params = ('esd_threshold', 'frame_id', 'parallel_baseline', 'doppler', 'orbit_type', 'orbit_number',
                   'perpendicular_baseline', 'orbit_repeat', 'polarization', 'sensor', 'look_direction', 'platform',
-                  'starting_range', 'beam_mode', 'prf')
-    single_params = ('temporal_span', 'track_number')
+                  'starting_range', 'beam_mode', 'prf', 'reference_scenes', 'secondary_scenes')
+    single_params = ('temporal_span', 'track_number', 'orbit_direction')
     list_params = ('platform', 'perpendicular_baseline', 'parallel_baseline')
     mean_params = ('perpendicular_baseline', 'parallel_baseline')
 
