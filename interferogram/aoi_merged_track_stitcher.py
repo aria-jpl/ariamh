@@ -49,7 +49,7 @@ def order_gunw_filenames(ls):
 def get_master_slave_scene_count():
     '''
     Gets the master scene count and slave scene count from each met.json file in localized directories
-    :return: int, int
+    :return: list[str], int, list[str], int
     '''
     localized_datasets = [x for x in os.listdir('.') if x.startswith('S1-GUNW-MERGED')]
     master_scenes = set()
@@ -67,7 +67,7 @@ def get_master_slave_scene_count():
 
     print('master scenes: {}'.format(json.dumps(list(master_scenes), indent=2)))
     print('slave scenes: {}'.format(json.dumps(list(slave_scenes), indent=2)))
-    return len(master_scenes), len(slave_scenes)
+    return list(master_scenes), len(master_scenes), list(slave_scenes), len(slave_scenes)
 
 
 def get_min_max_timestamp(ls):
@@ -198,7 +198,8 @@ def get_union_polygon(ds_files):
 
 
 # copied straight from stitch_ifgs.py, but altered it a little
-def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_files, met_json_filename, direction):
+def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_files, met_json_filename, direction,
+                           ref_scenes, sec_scenes):
     '''
     :param dataset_id: string, id of the stitched GUNW
     :param version: string, version of GUNW
@@ -256,16 +257,16 @@ def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_fil
         'beam_mode': [],
         'image_corners': [], # may keep
         'prf': [],
-        'reference_scenes': [],
-        'secondary_scenes': [],
         'orbit_direction': [],
+        'reference_scenes': ref_scenes,
+        'secondary_scenes': sec_scenes,
         "sha224sum": hashlib.sha224(str.encode(os.path.basename(met_json_filename))).hexdigest(),
     }
 
     # collect values
     set_params = ('esd_threshold', 'frame_id', 'parallel_baseline', 'doppler', 'orbit_type', 'orbit_number',
                   'perpendicular_baseline', 'orbit_repeat', 'polarization', 'sensor', 'look_direction', 'platform',
-                  'starting_range', 'beam_mode', 'prf', 'reference_scenes', 'secondary_scenes')
+                  'starting_range', 'beam_mode', 'prf')
     single_params = ('temporal_span', 'track_number', 'orbit_direction')
     list_params = ('platform', 'perpendicular_baseline', 'parallel_baseline')
     mean_params = ('perpendicular_baseline', 'parallel_baseline')
@@ -303,7 +304,7 @@ def generate_met_json_file(dataset_id, version, env, starttime, endtime, met_fil
 
 if __name__ == '__main__':
     VERSION = get_version()
-    START_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    START_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     DIRECTION = 'along'
 
     cwd = os.getcwd()
@@ -325,19 +326,13 @@ if __name__ == '__main__':
     list_datatset_ids = generate_list_dataset_ids(localize_products)
     four_digit_hash = generate_4digit_hash(list_datatset_ids)
 
-    master_count, slave_count = get_master_slave_scene_count()
+    master_scenes, master_count, slave_scenes, slave_count = get_master_slave_scene_count()
 
     stitch_dataset_id = 'S1-GUNW-MERGED_RM_M{master_count}S{slave_count}_TN{track}_{master_end_time}-{slave_start_time}-poeorb-{hash}'
     stitch_dataset_id = stitch_dataset_id.format(master_end_time=master_timestamp, slave_start_time=slave_timestamp,
                                                  master_count=master_count, slave_count=slave_count,
                                                  track=track_number, hash=four_digit_hash)
     print('stitched gunw id: %s' % stitch_dataset_id)
-
-    dataset_dir = os.path.join(cwd, stitch_dataset_id)
-    if not os.path.exists(dataset_dir):  # generating the dataset directory so verdi can publish when done
-        os.mkdir(dataset_dir)
-        os.mkdir(dataset_dir + '/merged')
-        print('created dataset directory: %s' % dataset_dir)
 
     outname = 'filt_topophase.unw.geo'  # main outputted file name from the stitcher
     extra_products = ctx.get('extra_products', [])
@@ -361,6 +356,13 @@ if __name__ == '__main__':
     run_stitcher(stitcher_inputs)  # the function will exit out if the stitching fails
     print('Stitcher completed, outputted .geo, .xrt and .xml files')
 
+    # create dataset directory
+    dataset_dir = os.path.join(cwd, stitch_dataset_id)
+    if not os.path.exists(dataset_dir):  # generating the dataset directory so verdi can publish when done
+        os.mkdir(dataset_dir)
+        os.mkdir(dataset_dir + '/merged')
+        print('created dataset directory: %s' % dataset_dir)
+
     dataset_files = generate_files_to_move_to_dataset_directory(extra_products)
     dataset_files.append(stitcher_inputs_filename)
     move_files_to_dataset_directory(dataset_files, dataset_dir + '/merged')  # moving all proper files to dataset dir
@@ -380,7 +382,7 @@ if __name__ == '__main__':
     print('union polygon: {}'.format(json.dumps(union_polygon, indent=2)))
 
     # CREATING DATASET.JSON FILE
-    END_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    END_TIME = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     create_dataset_json(stitch_dataset_id, VERSION, START_TIME, end_time=END_TIME, location=union_polygon_coordinates)
 
     # CREATING MET.JSON METADATA
@@ -388,7 +390,7 @@ if __name__ == '__main__':
     met_json_filename = '%s.met.json' % stitch_dataset_id
 
     generate_met_json_file(stitch_dataset_id, VERSION, image_corners, START_TIME, END_TIME, list_gunws_met_json,
-                    met_json_filename, DIRECTION)
+                    met_json_filename, DIRECTION, master_scenes, slave_scenes)
     print("wrote met.json file: %s" % os.path.join(cwd, met_json_filename))
 
     sys.exit(0)
