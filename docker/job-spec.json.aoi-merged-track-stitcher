@@ -1,0 +1,27 @@
+{
+  "command": "/home/ops/ariamh/interferogram/aoi_merged_track_stitcher.sh",
+  "imported_worker_files": {
+    "$HOME/.netrc": ["/home/ops/.netrc"],
+    "$HOME/.aws": ["/home/ops/.aws", "ro"],
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "recommended-queues" : [
+    "grfn-job_worker-small",
+    "aria-job_worker-small",
+    "mem-job_worker-small",
+    "dwr-job_worker-small",
+    "chevron-job_worker-small",
+    "floodmap-job_worker-small",
+    "urgent-response-job_worker-small"
+  ],
+  "params" : [
+    {
+      "name": "extra_products",
+      "destination": "context"
+    },
+    {
+      "name": "localize_products",
+      "destination": "localize"
+    }
+  ]
+}

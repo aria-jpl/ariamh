@@ -1,0 +1,26 @@
+{
+  "label" : "AOI Merged Track Stitcher",
+  "submission_type": "iteration",
+  "recommended-queues" : [ "grfn-job_worker-small" ],
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    {
+      "name": "extra_products",
+      "from": "submitter",
+      "type": "text",
+      "default": "los.rdr.geo",
+      "placeholder": "space separated list of products to process, e.g. los.rdr.geo"
+    },
+    {
+      "name": "localize_products",
+      "from": "dataset_jpath:_source.metadata.s1-gunw_urls",
+      "type": "text"
+    },
+    {
+      "name":"localize_products",
+      "from":"dataset_jpath:",
+      "type":"text",
+      "lambda" : "lambda met: get_partial_products(met['_id'],get_best_url(met['_source']['urls']),['fine_interferogram.xml',met['_id']+'.met.json','PICKLE/computeBaselines', 'merged/filt_topophase.unw.geo', 'merged/phsig.cor.geo', 'merged/filt_topophase.unw.geo.hdr', 'merged/phsig.cor.geo.hdr', 'merged/filt_topophase.unw.geo.xml', 'merged/phsig.cor.geo.xml', 'merged/filt_topophase.unw.geo.vrt', 'merged/phsig.cor.geo.vrt' ])"
+    }
+  ]
+}
