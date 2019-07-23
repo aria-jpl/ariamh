@@ -36,11 +36,18 @@ def order_gunw_filenames(ls):
     ex. s3://s3-us-west-2.amazonaws.com:80/aria-ops-dataset-bucket/datasets/interferogram/v2.0.0/2018/11/28/S1-GUNW-...
     :return: List[str] ordered list of GUNWs, ordered by first timestamp, also add + '/merged/filt_topophase.unw.geo'
     '''
-    regex_string = r'([0-9]{8}T[0-9]{6})'
-    localize_products = [{
-        'file': p.split('/')[-1],
-        'date': re.search(regex_string, p).group(1),
-    } for p in ls]
+    localize_products = []
+    for p in ls:
+        file_name = p.split('/')[-1]
+        try:
+            date_match = re.search(r'([0-9]{8}T[0-9]{6})', p).group(1)
+        except Exception as e:
+            date_match = re.search(r'([0-9]{8})', p).group(1)
+
+        localize_products.append({
+            'file': file_name,
+            'date': date_match,
+        })
     sorted_localize_producted = sorted(localize_products, key=lambda i: i['date'])
     sorted_localize_producted = [[p['file'] + '/merged/filt_topophase.unw.geo'] for p in sorted_localize_producted]
     return sorted_localize_producted
