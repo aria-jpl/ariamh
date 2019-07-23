@@ -86,13 +86,17 @@ def get_min_max_timestamp(ls):
                        first timestamp is the min of the master timestamp
                        second timestamp is the max of the slave timestamp
     '''
-    regex_string = r'([0-9]{8}T[0-9]{6})-([0-9]{8}T[0-9]{6})'
     master_timestamps = []
     slave_timestamps = []
     for product in ls:
-        regex_matches = re.search(regex_string, product)
-        slave_timestamps.append(regex_matches.group(2))
-        master_timestamps.append(regex_matches.group(1))
+        try:
+            regex_matches = re.search(r'([0-9]{8}T[0-9]{6})-([0-9]{8}T[0-9]{6})', product)
+            slave_timestamps.append(regex_matches.group(2))
+            master_timestamps.append(regex_matches.group(1))
+        except Exception as e:
+            regex_matches = re.search(r'([0-9]{8})-([0-9]{8})', product)
+            slave_timestamps.append(regex_matches.group(2))
+            master_timestamps.append(regex_matches.group(1))
     return min(slave_timestamps), max(master_timestamps)
 
 
