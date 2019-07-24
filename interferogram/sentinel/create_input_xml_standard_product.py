@@ -4,7 +4,7 @@ from string import Template
 
 
 def create_input_xml(tmpl_file, xml_file, master_safe_dir, slave_safe_dir,
-                     master_orbit, slave_orbit, master_pol, slave_pol,
+                     master_orbit, slave_orbit,
                      dem_file, geocode_dem_file, swathnum, azimuth_looks, range_looks,
                      filter_strength, bbox, use_virtual_files, do_esd, 
                      esd_coherence_threshold):
@@ -49,7 +49,7 @@ def main():
     do_esd = sys.argv[17]
     esd_coherence_threshold = sys.argv[18]
     create_input_xml(tmpl_file, xml_file, master_safe_dir, slave_safe_dir,
-                     master_orbit, slave_orbit, master_pol, slave_pol,
+                     master_orbit, slave_orbit, 
                      dem_file, geocode_dem_file, swathnum, azimuth_looks, range_looks, 
                      filter_strength, bbox, use_virtual_files, do_esd, 
                      esd_coherence_threshold)
