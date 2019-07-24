@@ -877,7 +877,7 @@ def main():
 
     #Pull topsApp configs
     ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 7)
-    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 19
+    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 19)
     
     ctx['swathnum'] = None
     # stitch all subswaths?
@@ -1189,7 +1189,7 @@ def main():
     create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                      str(master_safe_dirs), str(slave_safe_dirs), 
                      ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                     master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                     preprocess_dem_file, geocode_dem_file,
                      "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                      ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                      "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1230,7 +1230,7 @@ def main():
                 create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                                  str(master_safe_dirs), str(slave_safe_dirs), 
                                  ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                                 master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                                 preprocess_dem_file, geocode_dem_file,
                                  "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                                  ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                                  "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1241,7 +1241,7 @@ def main():
             create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                              str(master_safe_dirs), str(slave_safe_dirs), 
                              ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                             master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                             preprocess_dem_file, geocode_dem_file,
                              "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                              ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                              "{} {} {} {}".format(*bbox), "True", do_esd,
