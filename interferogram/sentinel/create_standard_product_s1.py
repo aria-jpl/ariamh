@@ -591,6 +591,25 @@ def get_temp_id(ctx, version):
 
     return ifg_id
 
+def get_polarization2(id):
+    """Return polarization."""
+    """
+    SH (single HH polarisation)
+    SV (single VV polarisation)
+    DH (dual HH+HV polarisation)
+    DV (dual VV+VH polarisation)
+    """
+
+    match = POL_RE.search(id)
+    if not match:
+        raise RuntimeError("Failed to extract polarization from %s" % id)
+    pp = match.group(1)
+    if pp == "DV": return "vv+vh"
+    elif pp == "SV": return "vv"
+    elif pp == "DH": return "hh+hv"
+    elif pp == "SH": return "hh"
+    else: raise RuntimeError("Unrecognized polarization: %s" % pp)
+
 def get_polarization(id):
     """Return polarization."""
 
@@ -780,12 +799,12 @@ def main():
             logger.info("key %s already in ctx with value %s and input_metadata value is %s" %(k, ctx[k], input_metadata[k]))
     logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
-    azimuth_looks = 19
+    azimuth_looks = 7
     if 'azimuth_looks' in input_metadata:
         azimuth_looks = int(input_metadata['azimuth_looks'])
     ctx['azimuth_looks'] = azimuth_looks
 
-    range_looks = 7
+    range_looks = 19
     if 'range_looks' in input_metadata:
         range_looks = int(input_metadata['range_looks'])
     ctx['range_looks'] = range_looks
@@ -857,8 +876,8 @@ def main():
 
 
     #Pull topsApp configs
-    ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 19)
-    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 7)
+    ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 7)
+    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 19
     
     ctx['swathnum'] = None
     # stitch all subswaths?
@@ -929,6 +948,13 @@ def main():
         match_pol = master_pol
     else:
         match_pol = "{{{},{}}}".format(master_pol, slave_pol)
+
+    master_pol_met = get_polarization2(master_safe_dirs[0])
+    slave_pol_met = get_polarization2(slave_safe_dirs[0])
+    if master_pol_met == slave_pol_met:
+        match_pol_met = master_pol_met
+    else:
+        match_pol_met = "{{{},{}}}".format(master_pol_met, slave_pol_met)
 
     # get union bbox
     logger.info("Determining envelope bbox from SLC swaths.")
@@ -1642,6 +1668,7 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
+    md['polarization2']= match_pol_met
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
