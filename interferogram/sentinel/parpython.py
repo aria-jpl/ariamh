@@ -21,6 +21,7 @@ def create_ifg_job(project, stitched, auto_bbox, ifg_id, master_zip_url, master_
 
     # set job queue based on project
     job_queue = "%s-job_worker-large" % project
+    job_queue = "standard_product-s1gunw-topsapp"
 
     # set localize urls
     localize_urls = [
@@ -94,6 +95,8 @@ def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master
 
     # set job queue based on project
     job_queue = "standard_product_s1ifg-s1ifg_single_scene"
+    job_queue = "standard_product-s1gunw-topsapp"
+
     #job_queue = "factotum-job_worker-small"
     # set localize urls
     localize_urls = [
