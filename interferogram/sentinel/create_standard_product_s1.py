@@ -604,9 +604,9 @@ def get_polarization2(id):
     if not match:
         raise RuntimeError("Failed to extract polarization from %s" % id)
     pp = match.group(1)
-    if pp == "DV": return "vv+vh"
+    if pp == "DV": return "vv"
     elif pp == "SV": return "vv"
-    elif pp == "DH": return "hh+hv"
+    elif pp == "DH": return "hh"
     elif pp == "SH": return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
@@ -618,7 +618,7 @@ def get_polarization(id):
         raise RuntimeError("Failed to extract polarization from %s" % id)
     pp = match.group(1)
     if pp in ("SV", "DV"): return "vv"
-    elif pp == "DH": return "hv"
+    elif pp == "DH": return "hh"
     elif pp == "SH": return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
@@ -947,7 +947,10 @@ def main():
     if master_pol == slave_pol:
         match_pol = master_pol
     else:
-        match_pol = "{{{},{}}}".format(master_pol, slave_pol)
+        err_msg = "Reference and Secondary Polarization are NOT SAME"
+        err_msg += "\nReference Polarization : {} Secondary Polarization : {}".format(master_pol, slave_pol)
+        raise RuntimeError(err_msg)
+        #match_pol = "{{{},{}}}".format(master_pol, slave_pol)
 
     master_pol_met = get_polarization2(master_safe_dirs[0])
     slave_pol_met = get_polarization2(slave_safe_dirs[0])
