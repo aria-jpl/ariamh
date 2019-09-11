@@ -618,8 +618,7 @@ def get_polarization(id):
         raise RuntimeError("Failed to extract polarization from %s" % id)
     pp = match.group(1)
     if pp in ("SV", "DV"): return "vv"
-    elif pp == "DH": return "hh"
-    elif pp == "SH": return "hh"
+    elif pp in ("DH", "SH"): return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
 
@@ -952,12 +951,14 @@ def main():
         raise RuntimeError(err_msg)
         #match_pol = "{{{},{}}}".format(master_pol, slave_pol)
 
+    '''
     master_pol_met = get_polarization2(master_safe_dirs[0])
     slave_pol_met = get_polarization2(slave_safe_dirs[0])
     if master_pol_met == slave_pol_met:
         match_pol_met = master_pol_met
     else:
         match_pol_met = "{{{},{}}}".format(master_pol_met, slave_pol_met)
+    '''
 
     # get union bbox
     logger.info("Determining envelope bbox from SLC swaths.")
@@ -1671,7 +1672,7 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
-    md['polarization2']= match_pol_met
+    md['polarization']= match_pol
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
