@@ -16,7 +16,7 @@ from utils.time_utils import getTemporalSpanInDays
 from check_interferogram import check_int
 from create_input_xml_standard_product import create_input_xml
 from dateutil import parser
-
+import hashlib
 import os
 from scipy.constants import c
 import isce
@@ -97,6 +97,10 @@ def get_dataset(id):
     logger.info(result['hits']['total'])
     return result
 
+def touch(path):
+    with open(path, 'a'):
+        os.utime(path, None)
+
 def check_ifg_status(ifg_id):
 
     result = get_dataset(ifg_id)
@@ -138,13 +142,13 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
     logger.info("search_url : %s" %search_url)
 
     r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
 
     if r.status_code != 200:
         logger.info("Failed to query %s:\n%s" % (es_url, r.text))
         logger.info("query: %s" % json.dumps(query, indent=2))
         logger.info("returned: %s" % r.text)
-        r.raise_for_status()
-
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
     result = r.json()
     logger.info(result['hits']['total'])
     return result
@@ -178,6 +182,17 @@ def checkBurstError():
         logger.info("checkBurstError : %s" %line)
         raise RuntimeError(line)
     '''
+
+def get_md5_from_file(file_name):
+    '''
+    :param file_name: file path to the local SLC file after download
+    :return: string, ex. 8e15beebbbb3de0a7dbed50a39b6e41b ALL LOWER CASE
+    '''
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 def check_ifg_status_by_hash(new_ifg_hash):
     es_index="grq_*_s1-gunw"
@@ -576,6 +591,25 @@ def get_temp_id(ctx, version):
 
     return ifg_id
 
+def get_polarization2(id):
+    """Return polarization."""
+    """
+    SH (single HH polarisation)
+    SV (single VV polarisation)
+    DH (dual HH+HV polarisation)
+    DV (dual VV+VH polarisation)
+    """
+
+    match = POL_RE.search(id)
+    if not match:
+        raise RuntimeError("Failed to extract polarization from %s" % id)
+    pp = match.group(1)
+    if pp == "DV": return "vv"
+    elif pp == "SV": return "vv"
+    elif pp == "DH": return "hh"
+    elif pp == "SH": return "hh"
+    else: raise RuntimeError("Unrecognized polarization: %s" % pp)
+
 def get_polarization(id):
     """Return polarization."""
 
@@ -584,8 +618,7 @@ def get_polarization(id):
         raise RuntimeError("Failed to extract polarization from %s" % id)
     pp = match.group(1)
     if pp in ("SV", "DV"): return "vv"
-    elif pp == "DH": return "hv"
-    elif pp == "SH": return "hh"
+    elif pp in ("DH", "SH"): return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
 
@@ -765,12 +798,12 @@ def main():
             logger.info("key %s already in ctx with value %s and input_metadata value is %s" %(k, ctx[k], input_metadata[k]))
     logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
-    azimuth_looks = 19
+    azimuth_looks = 7
     if 'azimuth_looks' in input_metadata:
         azimuth_looks = int(input_metadata['azimuth_looks'])
     ctx['azimuth_looks'] = azimuth_looks
 
-    range_looks = 7
+    range_looks = 19
     if 'range_looks' in input_metadata:
         range_looks = int(input_metadata['range_looks'])
     ctx['range_looks'] = range_looks
@@ -842,8 +875,8 @@ def main():
 
 
     #Pull topsApp configs
-    ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 19)
-    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 7)
+    ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 7)
+    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 19)
     
     ctx['swathnum'] = None
     # stitch all subswaths?
@@ -913,7 +946,19 @@ def main():
     if master_pol == slave_pol:
         match_pol = master_pol
     else:
-        match_pol = "{{{},{}}}".format(master_pol, slave_pol)
+        err_msg = "Reference and Secondary Polarization are NOT SAME"
+        err_msg += "\nReference Polarization : {} Secondary Polarization : {}".format(master_pol, slave_pol)
+        raise RuntimeError(err_msg)
+        #match_pol = "{{{},{}}}".format(master_pol, slave_pol)
+
+    '''
+    master_pol_met = get_polarization2(master_safe_dirs[0])
+    slave_pol_met = get_polarization2(slave_safe_dirs[0])
+    if master_pol_met == slave_pol_met:
+        match_pol_met = master_pol_met
+    else:
+        match_pol_met = "{{{},{}}}".format(master_pol_met, slave_pol_met)
+    '''
 
     # get union bbox
     logger.info("Determining envelope bbox from SLC swaths.")
@@ -1148,7 +1193,7 @@ def main():
     create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                      str(master_safe_dirs), str(slave_safe_dirs), 
                      ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                     master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                     preprocess_dem_file, geocode_dem_file,
                      "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                      ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                      "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1189,7 +1234,7 @@ def main():
                 create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                                  str(master_safe_dirs), str(slave_safe_dirs), 
                                  ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                                 master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                                 preprocess_dem_file, geocode_dem_file,
                                  "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                                  ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                                  "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1200,7 +1245,7 @@ def main():
             create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                              str(master_safe_dirs), str(slave_safe_dirs), 
                              ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                             master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                             preprocess_dem_file, geocode_dem_file,
                              "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                              ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                              "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1627,6 +1672,7 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
+    md['polarization']= match_pol
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
@@ -1653,6 +1699,12 @@ def main():
     logger.info("creating dataset file : %s" %ds_file)
     create_dataset_json(id, version, met_file, ds_file)
 
+    nc_file = os.path.join(prod_dir, "{}.nc".format(id))
+    nc_file_md5 = get_md5_from_file(nc_file)
+    nc_checksum_file = os.path.join(prod_dir, "{}.nc.md5".format(id))
+    logger.info("nc_file_md5 : {}".format(nc_file_md5))
+    with open(nc_checksum_file, 'w') as f:
+        f.write(nc_file_md5)
 
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
@@ -1666,7 +1718,31 @@ def main():
     shutil.copytree("PICKLE", os.path.join(prod_dir_merged, "PICKLE"))
     shutil.copy(fine_interferogram_xml, os.path.join(prod_dir_merged, "fine_interferogram.xml"))
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
-    
+   
+    # Copying all the vrt files to merged 
+    for f in os.listdir("."):
+        if f.endswith(".vrt"):
+            src = os.path.join(os.getcwd(), f)
+            dest = os.path.join(os.getcwd(), prod_dir_merged, f)
+            logger.info("Copying {} to {}".format(src, dest))
+            try:
+                shutil.copy(src, dest)
+            except Exception as err:
+                logger.info(str(err))
+    '''
+    for f in os.listdir("merged"):
+        if f.endswith(".vrt"):
+            src = os.path.join(os.getcwd(), "merged", f)
+            dest = os.path.join(os.getcwd(), prod_dir_merged, f)
+            logger.info("Copying {} to {}".format(src, dest))
+            try:
+                shutil.copy(src, dest)
+            except Exception as err:
+                logger.info(str(err))
+            
+    '''
+
+
     #logger.info( json.dump(md, f, indent=2))
 
     # clean out SAFE directories, DEM files and water masks

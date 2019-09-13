@@ -16,7 +16,11 @@ from atomicwrites import atomic_write
 import hysds
 from hysds.log_utils import logger, log_prov_es
 from hysds.celery import app
+import hashlib
 from datetime import datetime
+import random
+import time
+#from utils.UrlUtils import UrlUtils
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
 
@@ -36,89 +40,6 @@ CONF_FILE="/home/ops/ariamh/conf/settings.conf"
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
-def get_download_params(url):
-    """Set osaka download params."""
-
-    params = {}
-
-    # set profile
-    for prof in app.conf.get('BUCKET_PROFILES', []):
-        if 'profile_name' in params: break
-        if prof.get('bucket_patterns', None) is None:
-            params['profile_name'] = prof['profile']
-            break
-        else:
-            if isinstance(prof['bucket_patterns'], list):
-                bucket_patterns = prof['bucket_patterns']
-            else: bucket_patterns = [ prof['bucket_patterns'] ]
-            for bucket_pattern in prof['bucket_patterns']:
-                regex = re.compile(bucket_pattern)
-                match = regex.search(url)
-                if match:
-                    logger.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
-                    params['profile_name'] = prof['profile']
-                    break
-                
-    return params
-
-def update_context_file(localize_url, file_name):
-    print("update_context_file :%s,  %s" %(localize_url, file_name))
-    ctx_file = "_context.json"
-    localized_url_array = []
-    url_dict = {}
-    url_dict["local_path"] = file_name
-    url_dict["url"]=localize_url
-
-    localized_url_array.append(url_dict)
-    with open(ctx_file) as f:
-        ctx = json.load(f)
-    ctx["localize_urls"] = localized_url_array
-
-    with open(ctx_file, 'w') as f:
-        json.dump(ctx, f, indent=2, sort_keys=True)
- 
-def download_file(url, path, cache=False):
-    """Download file/dir for input."""
-
-    params = get_download_params(url)
-    if cache:
-        url_hash = hashlib.md5(url).hexdigest()
-        hash_dir = os.path.join(app.conf.ROOT_WORK_DIR, 'cache', *url_hash[0:4])
-        cache_dir = os.path.join(hash_dir, url_hash)
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-        signal_file = os.path.join(cache_dir, '.localized')
-        if os.path.exists(signal_file):
-            logger.info("cache hit for {} at {}".format(url, cache_dir))
-        else:
-            logger.info("cache miss for {}".format(url))
-            try: osaka.main.get(url, cache_dir, params=params)
-            except Exception, e:
-                shutil.rmtree(cache_dir)
-                tb = traceback.format_exc()
-                raise(RuntimeError("Failed to download %s to cache %s: %s\n%s" % \
-                    (url, cache_dir, str(e), tb)))
-            with atomic_write(signal_file, overwrite=True) as f:
-                f.write("%sZ\n" % datetime.utcnow().isoformat())
-        for i in os.listdir(cache_dir):
-            if i == '.localized': continue
-            cached_obj = os.path.join(cache_dir, i)
-            if os.path.isdir(cached_obj):
-                dst = os.path.join(path, i) if os.path.isdir(path) else path
-                try: os.symlink(cached_obj, dst)
-                except:
-                    logger.error("Failed to soft link {} to {}".format(cached_obj, dst))
-                    raise
-            else:
-                try: os.symlink(cached_obj, path)
-                except:
-                    logger.error("Failed to soft link {} to {}".format(cached_obj, path))
-                    raise
-    else: return osaka.main.get(url, path, params=params)
-
-
-def localize_file(url, path, cache):
-    """Localize urls for job inputs. Track metrics."""
 
 
 def getConf():
@@ -165,7 +86,8 @@ def get_acquisition_data_from_slc(slc_id):
                 "metadata.identifier.raw": slc_id 
               }
             }
-          ]
+          ],
+         "must_not":{"term": {"metadata.tags": "deprecated"}}
         }
       },
       "partial_fields" : {
@@ -175,7 +97,7 @@ def get_acquisition_data_from_slc(slc_id):
         }
     }
 
-    logger.info(query)
+    logging.info(query)
 
     if es_url.endswith('/'):
         search_url = '%s%s/_search' % (es_url, es_index)
@@ -184,14 +106,14 @@ def get_acquisition_data_from_slc(slc_id):
     r = requests.post(search_url, data=json.dumps(query))
 
     if r.status_code != 200:
-        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
-        logger.info("query: %s" % json.dumps(query, indent=2))
-        logger.info("returned: %s" % r.text)
+        logging.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logging.info("query: %s" % json.dumps(query, indent=2))
+        logging.info("returned: %s" % r.text)
         r.raise_for_status()
 
     result = r.json()
-    logger.info(result['hits']['total'])
-    return result['hits']['hits'][0]
+    logging.info(result['hits']['total'])
+    return result['hits']['hits']
 
 
 def get_dataset(id, es_index_data=None):
@@ -218,37 +140,65 @@ def get_dataset(id, es_index_data=None):
         "fields": []
     }
 
-    logger.info(query)
+    logging.info(query)
 
     if es_url.endswith('/'):
         search_url = '%s%s/_search' % (es_url, es_index)
     else:
         search_url = '%s/%s/_search' % (es_url, es_index)
-    logger.info("search_url : %s" %search_url)
+    logging.info("search_url : %s" %search_url)
 
     r = requests.post(search_url, data=json.dumps(query))
 
     if r.status_code != 200:
-        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
-        logger.info("query: %s" % json.dumps(query, indent=2))
-        logger.info("returned: %s" % r.text)
+        logging.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logging.info("query: %s" % json.dumps(query, indent=2))
+        logging.info("returned: %s" % r.text)
         r.raise_for_status()
 
     result = r.json()
-    logger.info(result['hits']['total'])
+    logging.info(result['hits']['total'])
     return result
 
 def check_slc_status(slc_id, index_suffix=None):
 
     result = get_dataset(slc_id, index_suffix)
     total = result['hits']['total']
-    logger.info("check_slc_status : total : %s" %total)
+    logging.info("check_slc_status : total : %s" %total)
     if total > 0:
-        logger.info("check_slc_status : returning True")
+        logging.info("check_slc_status : returning True")
         return True
 
-    logger.info("check_slc_status : returning False")
+    logging.info("check_slc_status : returning False")
     return False
+
+
+def get_slc_checksum_md5_scihub(esa_uuid):
+    '''
+    :param esa_uuid: ESA's uuid (provded in acquisition metadata.id)
+    :return: string (md5 hash from ESA sci-hub)
+             ex. 8E15BEEBBBB3DE0A7DBED50A39B6E41B -> 8e15beebbbb3de0a7dbed50a39b6e41b
+    '''
+
+    # sleeps random time between 15 and 60 seconds so we can further avoid too many requests to sci-hub
+    sleep_time = random.randrange(15, 60)
+    time.sleep(sleep_time)
+
+    md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
+    md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
+    logging.info("md5_checksum_url : %s" %md5_checksum_url)
+    req = requests.get(md5_checksum_url, timeout=30)
+
+    if req.status_code == 404:
+        logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+        raise RuntimeError("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+    elif req.status_code == 408 or req.status_code == 504:
+        logging.error("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+        raise RuntimeError("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+
+    scihub_md5_hash = req.text
+    # forcing to lower case because get_md5_from_localized_file() returns lower string
+    return scihub_md5_hash.lower()
 
 
 def get_download_params(url):
@@ -270,14 +220,15 @@ def get_download_params(url):
                 regex = re.compile(bucket_pattern)
                 match = regex.search(url)
                 if match:
-                    logger.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
+                    logging.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
                     params['profile_name'] = prof['profile']
                     break
                 
     return params
 
-def update_context_file(localize_url, file_name):
-    logger.info("update_context_file :%s,  %s" %(localize_url, file_name))
+
+def update_context_file(localize_url, file_name, prod_name, prod_date, download_url):
+    logging.info("update_context_file :%s,  %s" %(localize_url, file_name))
     ctx_file = "_context.json"
     localized_url_array = []
     url_dict = {}
@@ -288,6 +239,10 @@ def update_context_file(localize_url, file_name):
     with open(ctx_file) as f:
         ctx = json.load(f)
     ctx["localize_urls"] = localized_url_array
+    ctx["prod_name"] = prod_name
+    ctx["file"] = file_name
+    ctx["download_url"] = download_url
+    ctx["prod_date"] = prod_date
 
     with open(ctx_file, 'w') as f:
         json.dump(ctx, f, indent=2, sort_keys=True)
@@ -304,9 +259,9 @@ def download_file(url, path, cache=False):
             os.makedirs(cache_dir)
         signal_file = os.path.join(cache_dir, '.localized')
         if os.path.exists(signal_file):
-            logger.info("cache hit for {} at {}".format(url, cache_dir))
+            logging.info("cache hit for {} at {}".format(url, cache_dir))
         else:
-            logger.info("cache miss for {}".format(url))
+            logging.info("cache miss for {}".format(url))
             try: osaka.main.get(url, cache_dir, params=params)
             except Exception, e:
                 shutil.rmtree(cache_dir)
@@ -346,7 +301,7 @@ def localize_file(url, path, cache):
     if os.path.isdir(path) or path.endswith('/'):
         path = os.path.join(path, os.path.basename(url))
     dir_path = os.path.dirname(path)
-    logger.info(dir_path)
+    logging.info(dir_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
     loc_t1 = datetime.utcnow()
@@ -372,7 +327,33 @@ def localize_file(url, path, cache):
     return True
 
 
-def run_extractor(dsets_file, prod_path, url, ctx):
+def get_md5_from_localized_file(file_name):
+    '''
+    :param file_name: file path to the local SLC file after download
+    :return: string, ex. 8e15beebbbb3de0a7dbed50a39b6e41b ALL LOWER CASE
+    '''
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def get_log_err(log_file):
+    err_msg = None
+    try:
+        with open(log_file, 'r') as f:
+            last = None
+            for last in (line for line in f if line.rstrip('\n')):
+                pass
+            if last:
+                err_msg = last
+    except Exception as err:
+        logging.info("Error reading %s : %s" %(log_file, str(err)))
+
+    return err_msg
+
+def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
     """Run extractor configured in datasets JSON config."""
 
     logging.info("datasets: %s" % dsets_file)
@@ -406,6 +387,9 @@ def run_extractor(dsets_file, prod_path, url, ctx):
     dataset_file = os.path.join(prod_path, '%s.dataset.json' % \
                                  os.path.basename(prod_path))
 
+    with open(os.path.join(prod_path, '%s.zip.md5' % os.path.basename(prod_path)), 'w') as md5_file:
+        md5_file.write(md5_hash)  # writing md5 hash into zip file if it passes
+
     # load metadata
     metadata = {}
     if os.path.exists(metadata_file):
@@ -422,7 +406,28 @@ def run_extractor(dsets_file, prod_path, url, ctx):
         try:
             m = check_output([extractor, prod_path])
         except CalledProcessError as e:
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+            err_msg = e.message
+            root_dir = os.getcwd()
+            logging.info("root_dir with getcwd() : %s" %root_dir)
+            if not root_dir.endswith("Z"):
+                root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+            logging.info("root_dir final : %s" %root_dir)
+            prov_log = os.path.join(root_dir, 'create_prov_es.log')
+            split_log  = os.path.join(root_dir, 'split_swath_products.log')
+            logging.info("%s\n%s" %(prov_log, split_log))
+            if os.path.isfile(prov_log):
+                prov_err = get_log_err(prov_log)
+                if prov_err:
+                    err_msg = prov_err
+            elif os.path.isfile(split_log):
+                split_err = get_log_err(split_log)
+                if split_err:
+                    err_msg=split_err
+            else:
+                logging.info("%s file NOT Found" %split_log)
+
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, err_msg))
 
         if os.path.exists(metadata_file):
             with open(metadata_file) as f:
@@ -433,6 +438,9 @@ def run_extractor(dsets_file, prod_path, url, ctx):
 
     # set download url from context
     metadata['download_url'] = url
+
+    # add md5 hash in metadata
+    metadata['md5_hash'] = md5_hash
 
     # write it out to file
     with open(metadata_file, 'w') as f:
@@ -450,7 +458,7 @@ def run_extractor(dsets_file, prod_path, url, ctx):
             json.dump(datasets, f, indent=2)
         logging.info("Wrote dataset to %s" % dataset_file)
 
-def create_product(file, url, prod_name, prod_date):
+def create_product(file, url, prod_name, prod_date, md5_hash):
     """Create skeleton directory structure for product and run configured
        metadata extractor."""
 
@@ -486,7 +494,7 @@ def create_product(file, url, prod_name, prod_date):
     dsets_file = settings['DATASETS_CFG']
     if os.path.exists("./datasets.json"):
         dsets_file = "./datasets.json"
-    run_extractor(dsets_file, prod_path, url, ctx)
+    run_extractor(dsets_file, prod_path, url, ctx, md5_hash)
 
 def is_non_zero_file(fpath):  
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
@@ -507,13 +515,30 @@ if __name__ == "__main__":
         logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
         exit(0)
 
-    acq_data = get_acquisition_data_from_slc(args.slc_id)['fields']['partial'][0]
+    acq_datas = get_acquisition_data_from_slc(args.slc_id)
+    if len(acq_datas)<1:
+        raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(args.slc_id))
+
+    acq_data = acq_datas[0]
+    if len(acq_datas)>1:
+        for x in range(len(acq_datas)):
+            acq_data = acq_datas[x]
+            logging.info("Processing : {}".format(acq_data['_id']))
+            if 'esa_scihub' in acq_data['_id']:
+                break
+
+    logging.info("Acquisition : {}".format(acq_data['_id']))
+    acq_data = acq_data['fields']['partial'][0]
     download_url = acq_data['metadata']['download_url']
     archive_filename = acq_data['metadata']['archive_filename']
     logging.info("download_url : %s" %download_url)
     logging.info("archive_filename : %s" %archive_filename)
+    logging.info("acq_data['metadata']['id'] : %s" %acq_data['metadata']['id'])
 
-    source = "asf"
+    # get md5 checksum from ESA sci-hub
+    esa_sci_hub_md5_hash = get_slc_checksum_md5_scihub(acq_data['metadata']['id'])
+
+    source = "scihub"
     localize_url = None
     if source.lower()=="asf":
         vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
@@ -533,8 +558,16 @@ if __name__ == "__main__":
         localize_file(localize_url, archive_filename, False)
 
         #update _context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename)
+        update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
 
+        # getting the checksum value of the localized file
+        #slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
+        slc_file_path = os.path.join(os.getcwd(), archive_filename)
+        localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
+
+        # comparing localized md5 hash with esa's md5 hash
+        if localized_md5_checksum != esa_sci_hub_md5_hash:
+            raise RuntimeError("Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id, esa_sci_hub_md5_hash, localized_md5_checksum))
 
         '''
         try:
@@ -558,10 +591,11 @@ if __name__ == "__main__":
         if not is_non_zero_file(archive_filename):
             raise Exception("File Not Found or Empty File : %s" %archive_filename)
 
-        create_product(archive_filename, localize_url, args.slc_id, prod_date)
+        create_product(archive_filename, localize_url, args.slc_id, prod_date, esa_sci_hub_md5_hash)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
         with open('_alt_traceback.txt', 'w') as f:
             f.write("%s\n" % traceback.format_exc())
         raise
+x
