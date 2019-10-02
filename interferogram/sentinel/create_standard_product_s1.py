@@ -610,6 +610,22 @@ def get_polarization2(id):
     elif pp == "SH": return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
+def get_pol_data_from_slcs(slcs):
+    pol_data = []
+    for slc in slcs:
+        pol = get_polarization(slc).strip().lower()
+        logger.info("get_pol_data_from_slcs: pol data of SLC : {} is {}".format(slc, pol))
+        if pol not in pol_data:
+            pol_data.append(pol)
+
+    if len(pol_data)==0 or len(pol_data)>1:
+        err_msg = "get_pol_data_from_slcs: Found Multiple Polarization or No Polarization for slcs {} : {}".format(slcs, pol_data)
+        print(err_msg)
+        raise RuntimeError(err_msg)
+
+    return pol_data[0]
+
+
 def get_polarization(id):
     """Return polarization."""
 
@@ -941,8 +957,8 @@ def main():
         slave_safe_dirs.append(i.replace(".zip", ".SAFE"))
 
     # get polarization values
-    master_pol = get_polarization(master_safe_dirs[0])
-    slave_pol = get_polarization(slave_safe_dirs[0])
+    master_pol = get_pol_data_from_slcs(master_safe_dirs)
+    slave_pol = get_pol_data_from_slcs(slave_safe_dirs)
     if master_pol == slave_pol:
         match_pol = master_pol
     else:
