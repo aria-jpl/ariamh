@@ -1,5 +1,5 @@
 {
-  "command": "python3 /home/ops/ariamh/frameMetadata/sling_extract_asf.py",
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract_asf.py",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
