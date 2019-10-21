@@ -1340,13 +1340,13 @@ def main():
     logger.info("ifg_id_merged : %s" %ifg_id_merged)
 
     prod_dir = id
-    prod_dir_merged = ifg_id_merged
+    #prod_dir_merged = ifg_id_merged
 
     logger.info("prod_dir : %s" %prod_dir)
-    logger.info("prod_dir_merged : %s" %prod_dir_merged)
+    #logger.info("prod_dir_merged : %s" %prod_dir_merged)
 
     os.makedirs(prod_dir, 0o755)
-    os.makedirs(prod_dir_merged, 0o755)
+    #os.makedirs(prod_dir_merged, 0o755)
 
     # make metadata geocube
     os.chdir("merged")
@@ -1408,7 +1408,7 @@ def main():
 
     # save other files to product directory
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
-    shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
+    #shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
 
     fine_int_xmls = []
     for swathnum in swath_list:
@@ -1725,7 +1725,7 @@ def main():
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
     fine_interferogram_xml = "fine_interferogram/IW1.xml"
-  
+    '''
     met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
     ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
     shutil.copy(ds_file, ds_file_merged)
@@ -1745,6 +1745,7 @@ def main():
                 shutil.copy(src, dest)
             except Exception as err:
                 logger.info(str(err))
+    '''
     '''
     for f in os.listdir("merged"):
         if f.endswith(".vrt"):
