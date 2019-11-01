@@ -166,9 +166,10 @@ def removeDuplicates(qlist):
       
 def postQuery(query,sv='',conf=''):
     #r = requests.post('%s/%s/_search?search_type=scan&scroll=10m&size=100' % (es_url, index), data=json.dumps(query))
-    index,es_url = getIndexAndUrl(sv,conf)
+    index, es_url = getIndexAndUrl(sv,conf)
+    es_url = "https://c-datasets.aria.hysds.io/es"
     #r = requests.post('%s/%s/_search?search_type=scan&scroll=10m&size=100' % (es_url, index), data=query)
-    r = requests.post('%s/%s/_search?search_type=scan&scroll=10m&size=100' % (es_url, index), data=json.dumps(query))
+    r = requests.post('%s/%s/_search?search_type=scan&scroll=10m&size=100' % (es_url, index), data=json.dumps(query), verify=False)
     status = True
     retList = []
     if r.status_code != 200:
@@ -179,7 +180,7 @@ def postQuery(query,sv='',conf=''):
         if '_scroll_id' in scan_result:
             scroll_id = scan_result['_scroll_id']
             while True:
-                r = requests.post('%s/_search/scroll?scroll=10m' % es_url, data=scroll_id)
+                r = requests.post('%s/_search/scroll?scroll=10m' % es_url, data=scroll_id, verify=False)
                 res = r.json()
                 scroll_id = res['_scroll_id']
                 if len(res['hits']['hits']) == 0: break

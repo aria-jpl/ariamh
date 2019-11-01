@@ -141,7 +141,7 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
         search_url = '%s/%s/_search' % (es_url, es_index)
     logger.info("search_url : %s" %search_url)
 
-    r = requests.post(search_url, data=json.dumps(query))
+    r = requests.post(search_url, data=json.dumps(query), verify=False)
     r.raise_for_status()
 
     if r.status_code != 200:
@@ -202,7 +202,7 @@ def check_ifg_status_by_hash(new_ifg_hash):
     if total>0:
         found_id = result['hits']['hits'][0]["_id"]
         logger.info("Duplicate dataset found: %s" %found_id)
-        sys.exit(0)
+        # sys.exit(0)
 
     logger.info("check_slc_status : returning False")
     return False
