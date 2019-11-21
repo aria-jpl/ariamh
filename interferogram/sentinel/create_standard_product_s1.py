@@ -1092,7 +1092,6 @@ def main():
     dem_pass = uu.dem_p
    
 
-    do_esd = False
     preprocess_dem_dir="preprocess_dem"
     geocode_dem_dir="geocode_dem"
 
@@ -1257,7 +1256,7 @@ def main():
     check_call(aux_cmd_line, shell=True)
         
     # create initial input xml
-    do_esd = False
+    do_esd = True
     esd_coh_th = 0.85
     xml_file = "topsApp.xml"
     create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
