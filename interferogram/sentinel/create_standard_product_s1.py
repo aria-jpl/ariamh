@@ -387,7 +387,10 @@ def convert_number(x):
     if int(post_y)>999:
         post_y = post_y[:3]
     else:
-        post_y = post_y.ljust(3, '0')
+        if (y%1)<0.0001:
+            post_y = '000'
+        else:
+            post_y =post_y.ljust(3, '0')
         
     print("post_y : %s " %post_y)
 
@@ -1370,9 +1373,15 @@ def main():
 
 
     lats = get_geocoded_lats("merged/filt_topophase.unw.geo.vrt")
-
+    logger.info("lats : {}".format(lats))
+    logger.info("max(lats) : {} : {}".format(max(lats), convert_number(max(lats))))
+    logger.info("min(lats) : {} : {}".format(min(lats), convert_number(min(lats))))
+    logger.info("sorted(lats)[-2] : {} : {}".format(sorted(lats)[-2], convert_number(sorted(lats)[-2])))
+    logger.info("sorted(lats)[1]  {} : {}".format(sorted(lats)[1], convert_number(sorted(lats)[1])))
 
     sat_direction = "D"
+    logger.info("sat_direction : {}".format(sat_direction))
+
     west_lat= "{}_{}".format(convert_number(sorted(lats)[-2]), convert_number(min(lats)))
 
     if direction.lower() == 'asc':
