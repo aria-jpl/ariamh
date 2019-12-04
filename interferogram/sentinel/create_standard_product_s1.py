@@ -387,7 +387,8 @@ def convert_number(x):
     if int(post_y)>999:
         post_y = post_y[:3]
     else:
-        if (y%1)<0.0001:
+        print("post_y[0:3] : {}".format(post_y[0:3]))
+        if post_y[0:3] == '000':
             post_y = '000'
         else:
             post_y =post_y.ljust(3, '0')
