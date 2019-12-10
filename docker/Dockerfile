@@ -18,7 +18,6 @@ RUN set -ex \
  && sudo /usr/bin/pip3 install joblib netcdf4 \
  && sudo rm -rf /root/.cache \
  && sudo chown -R ops:ops /home/ops/ariamh \
- && mv /home/ops/ariamh/spyddder-man /home/ops/verdi/ops/ \
  && mv /home/ops/ariamh/slcp2pm /home/ops/verdi/ops/ \
  && mv /home/ops/ariamh/slcp2cor /home/ops/verdi/ops/ \
  && cd /home/ops/verdi/ops/slcp2pm/src \
