@@ -1,0 +1,51 @@
+{
+  "command": "/home/ops/ariamh/interferogram/sentinel/create_standard_product_s1.sh",
+  "imported_worker_files": {
+    "/home/ops/.netrc": ["/home/ops/.netrc"],
+    "/home/ops/.aws": ["/home/ops/.aws", "ro"],
+    "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+  },
+  "disk_usage":"200GB",
+   "dependency_images": [
+    {
+      "container_image_name": "aria/isce_giant:latest",
+      "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-latest.tar.gz",
+      "container_mappings": {
+        "/home/ops/.netrc": ["/root/.netrc"],
+        "/home/ops/.aws": ["/root/.aws", "ro"]
+      }
+    }
+  ],
+  "recommended-queues" : [
+    "standard_product-s1gunw-topsapp-asg-fleet"
+  ],
+  "soft_time_limit": 7200,
+  "time_limit": 7500,
+  "post": [ "hysds.utils.triage" ],
+  "params" : [
+    {
+      "name": "dataset_tag",
+      "destination": "context"
+    },
+    {
+      "name": "input_metadata",
+      "destination": "context"
+    },
+    {
+      "name":"localize_products",
+      "destination":"localize"
+    },
+    {
+      "name": "query",
+      "destination": "context"
+    },
+    {
+      "name": "name",
+      "destination": "context"
+    },
+    {
+      "name": "username",
+      "destination": "context"
+    }
+  ]
+}
