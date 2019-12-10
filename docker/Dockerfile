@@ -6,7 +6,7 @@ LABEL description="GRFN PGE container"
 
 USER root
 
-RUN $HOME/verdi/bin/pip3 install 'pyproj==1.9.6'
+RUN /home/ops/verdi/bin/pip3 install 'pyproj==1.9.6'
 RUN pip install 'pyproj==1.9.6'
 
 USER ops
@@ -15,7 +15,7 @@ USER ops
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 RUN set -ex \
- && sudo $HOME/verdi/bin/pip3 install joblib netcdf4 \
+ && sudo /home/ops/verdi/bin/pip3 install joblib netcdf4 \
  && sudo rm -rf /root/.cache \
  && sudo chown -R ops:ops /home/ops/ariamh \
  && mv /home/ops/ariamh/spyddder-man /home/ops/verdi/ops/ \
