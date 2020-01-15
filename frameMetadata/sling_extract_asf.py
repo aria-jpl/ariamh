@@ -553,13 +553,7 @@ if __name__ == "__main__":
     source = "asf"
     localize_url = None
     if source.lower() == "asf":
-        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
-        r = requests.head(vertex_url, allow_redirects=True)
-        logging.info("Status Code from ASF : %s" %r.status_code)
-        if r.status_code in (200, 403):
-            localize_url = r.url
-        else:
-            raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
+        localize_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
     else:
         localize_url = download_url
         
