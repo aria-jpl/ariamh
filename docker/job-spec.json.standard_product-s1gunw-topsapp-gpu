@@ -16,6 +16,9 @@
       }
     }
   ],
+  "runtime_options": {
+      "gpus": "all"
+  },
   "recommended-queues" : [
     "standard_product-s1gunw-topsapp-asg-fleet"
   ],
