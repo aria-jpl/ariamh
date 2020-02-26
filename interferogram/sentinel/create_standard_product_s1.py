@@ -113,6 +113,7 @@ def check_ifg_status(ifg_id):
     logger.info("check_slc_status : returning False")
     return False
 
+
 def get_dataset_by_hash(ifg_hash, es_index="grq"):
     """Query for existence of dataset by ID."""
 
@@ -127,6 +128,47 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
                 "must":[
                     { "term":{"metadata.full_id_hash.raw": ifg_hash} },
                     { "term":{"dataset.raw": "S1-GUNW"} }
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} },
+                    { "term":{"version.raw": version} }
                 ]
             }
         }
@@ -207,6 +249,18 @@ def check_ifg_status_by_hash(new_ifg_hash):
     logger.info("check_slc_status : returning False")
     return False
 
+def check_ifg_status_by_hash_version(new_ifg_hash, version):
+    es_index="grq_*_s1-gunw"
+    result = get_dataset_by_hash_version(new_ifg_hash, version, es_index)
+    total = result['hits']['total']
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
+        found_id = result['hits']['hits'][0]["_id"]
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
+
+    logger.info("check_slc_status : returning False")
+    return False
 
 def update_met(md):
 
@@ -610,6 +664,22 @@ def get_polarization2(id):
     elif pp == "SH": return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
+def get_pol_data_from_slcs(slcs):
+    pol_data = []
+    for slc in slcs:
+        pol = get_polarization(slc).strip().lower()
+        logger.info("get_pol_data_from_slcs: pol data of SLC : {} is {}".format(slc, pol))
+        if pol not in pol_data:
+            pol_data.append(pol)
+
+    if len(pol_data)==0 or len(pol_data)>1:
+        err_msg = "get_pol_data_from_slcs: Found Multiple Polarization or No Polarization for slcs {} : {}".format(slcs, pol_data)
+        print(err_msg)
+        raise RuntimeError(err_msg)
+
+    return pol_data[0]
+
+
 def get_polarization(id):
     """Return polarization."""
 
@@ -912,7 +982,7 @@ def main():
         raise RuntimeError(err)
     '''
 
-    if check_ifg_status_by_hash(new_ifg_hash):
+    if check_ifg_status_by_hash_version(new_ifg_hash, get_version()):
         err = "S1-GUNW IFG Found : %s" %temp_ifg_id
         logger.info(err)
         raise RuntimeError(err)
@@ -941,8 +1011,8 @@ def main():
         slave_safe_dirs.append(i.replace(".zip", ".SAFE"))
 
     # get polarization values
-    master_pol = get_polarization(master_safe_dirs[0])
-    slave_pol = get_polarization(slave_safe_dirs[0])
+    master_pol = get_pol_data_from_slcs(master_safe_dirs)
+    slave_pol = get_pol_data_from_slcs(slave_safe_dirs)
     if master_pol == slave_pol:
         match_pol = master_pol
     else:
@@ -1020,6 +1090,7 @@ def main():
     ned13_dem_url = uu.ned13_dem_url
     dem_user = uu.dem_u
     dem_pass = uu.dem_p
+   
 
     preprocess_dem_dir="preprocess_dem"
     geocode_dem_dir="geocode_dem"
@@ -1041,13 +1112,12 @@ def main():
         dem_E = int(math.ceil(dem_E))
        
         logger.info("DEM TYPE : %s" %dem_type) 
-
         if dem_type.startswith("SRTM"):
             dem_type_simple = "SRTM"
             if dem_type.startswith("SRTM3"):
                 dem_url = srtm3_dem_url
                 dem_type_simple = "SRTM3"
-  
+
             dem_cmd = [
                 "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
@@ -1070,7 +1140,6 @@ def main():
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
  
-           
             dem_S = dem_S - 1 if dem_S > -89 else dem_S
             dem_N = dem_N + 1 if dem_N < 89 else dem_N
             dem_W = dem_W - 1 if dem_W > -179 else dem_W
@@ -1324,13 +1393,13 @@ def main():
     logger.info("ifg_id_merged : %s" %ifg_id_merged)
 
     prod_dir = id
-    prod_dir_merged = ifg_id_merged
+    #prod_dir_merged = ifg_id_merged
 
     logger.info("prod_dir : %s" %prod_dir)
-    logger.info("prod_dir_merged : %s" %prod_dir_merged)
+    #logger.info("prod_dir_merged : %s" %prod_dir_merged)
 
     os.makedirs(prod_dir, 0o755)
-    os.makedirs(prod_dir_merged, 0o755)
+    #os.makedirs(prod_dir_merged, 0o755)
 
     # make metadata geocube
     os.chdir("merged")
@@ -1392,7 +1461,7 @@ def main():
 
     # save other files to product directory
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
-    shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
+    #shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
 
     fine_int_xmls = []
     for swathnum in swath_list:
@@ -1672,7 +1741,7 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
-    md['polarization']= match_pol
+    md['polarization']= match_pol.upper()
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
@@ -1709,7 +1778,7 @@ def main():
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
     fine_interferogram_xml = "fine_interferogram/IW1.xml"
-  
+    '''
     met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
     ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
     shutil.copy(ds_file, ds_file_merged)
@@ -1729,6 +1798,7 @@ def main():
                 shutil.copy(src, dest)
             except Exception as err:
                 logger.info(str(err))
+    '''
     '''
     for f in os.listdir("merged"):
         if f.endswith(".vrt"):
