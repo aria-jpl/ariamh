@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topsApp>
+ <!--<component name="bbox">-->
+ <!--<property name="snwe"></property>-->
+ <!--<property name="projection code">EPSG:3031</property>-->
+ <!--</component>-->
+ <component name="topsinsar">
+  <component name="master">
+   <property name="orbit file">S1A_OPER_AUX_POEORB_OPOD_20190920T120632_V20190830T225942_20190901T005942.EOF</property>
+   <property name="auxiliary data directory">aux_cal</property>
+   <property name="output directory">master</property>
+   <property name="safe">['S1A_IW_SLC__1SDV_20190831T140728_20190831T140755_028814_0343AF_CD2F.SAFE']</property>
+  </component>
+  <component name="slave">
+   <property name="orbit file">S1A_OPER_AUX_POEORB_OPOD_20180913T120757_V20180823T225942_20180825T005942.EOF</property>
+   <property name="auxiliary data directory">aux_cal</property>
+   <property name="output directory">slave</property>
+   <property name="safe">['S1A_IW_SLC__1SDV_20180824T140746_20180824T140813_023389_028B77_6514.SAFE', 'S1A_IW_SLC__1SDV_20180824T140721_20180824T140748_023389_028B77_63F7.SAFE', 'S1A_IW_SLC__1SDV_20180824T140656_20180824T140723_023389_028B77_D00C.SAFE']</property>
+  </component>
+  <property name="use GPU">True</property>
+  <property name="swaths">[1, 2, 3]</property>
+  <property name="range looks">19</property>
+  <property name="azimuth looks">7</property>
+  <property name="filter strength">0.5</property>
+  <!--<property name="region of interest">[36.64, 41.58, -122.66, -118.74]</property>-->
+  <property name="demFilename">NED1_preprocess_dem/stitched.dem</property>
+  <property name="geocodeDemFilename">NED1_preprocess_dem/Coarse_NED1_preprocess_dem/stitched.dem</property>
+  <property name="do unwrap">True</property>
+  <property name="unwrapper name">snaphu_mcf</property>
+  <!--<property name="geocode bounding box">[36.64, 41.58, -122.66, -118.74]</property>-->
+  <property name="do ESD">True</property>
+  <property name="ESD coherence threshold">0.85</property>
+  <property name="use virtual files">True</property>
+  <property name="geocode list">['merged/phsig.cor', 'merged/filt_topophase.unw', 'merged/los.rdr', 'merged/topophase.flat', 'merged/filt_topophase.flat', 'merged/filt_topophase_2stage.unw', 'merged/topophase.cor', 'merged/filt_topophase.unw.conncomp']</property>
+ </component>
+</topsApp>
