@@ -15,8 +15,7 @@ RUN yum -y install gcc \
 USER ops
 
 # copying spyddderman, slcp2cor and slcp2pm repos
-RUN git clone https://github.com/hysds/spyddder-man.git $HOME/verdi/ops/spyddder-man \
-    && git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
+RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
     && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
     && sudo chown -R ops:ops $HOME/verdi/ops
 
