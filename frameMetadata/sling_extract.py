@@ -520,7 +520,7 @@ if __name__ == "__main__":
         r = requests.head(vertex_url, allow_redirects=True)
         logging.info("Status Code from ASF : %s" %r.status_code)
         if r.status_code in (200, 403):
-            localize_url = r.url
+            localize_url = vertex_url
         else:
             raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
     else:
