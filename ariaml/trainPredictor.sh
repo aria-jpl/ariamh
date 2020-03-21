@@ -19,7 +19,7 @@ WORK_DIR=`pwd`
 echo "##########################################" 1>&2
 echo -n "Preparing inputs: " 1>&2
 date 1>&2
-/usr/bin/python3 $ML_HOME/trainPredictor_inputPrep.py $ML_HOME _context.json input.json > trainPredictor_inputPrep.log 2>&1
+python $ML_HOME/trainPredictor_inputPrep.py $ML_HOME _context.json input.json > trainPredictor_inputPrep.log 2>&1
 STATUS=$?
 echo -n "Finished preparing inputs: " 1>&2
 date 1>&2
@@ -46,7 +46,7 @@ cd $PROD
 echo "##########################################" 1>&2
 echo -n "Training predictor: " 1>&2
 date 1>&2
-/usr/bin/python3 $ML_HOME/trainPredictor.py input.json > trainPredictor.log 2>&1
+python $ML_HOME/trainPredictor.py input.json > trainPredictor.log 2>&1
 STATUS=$?
 echo -n "Finished training predictor: " 1>&2
 date 1>&2
@@ -70,7 +70,7 @@ cd $WORK_DIR
 echo "##########################################" 1>&2
 echo -n "Create metadata JSON: " 1>&2
 date 1>&2
-/usr/bin/python3 $ML_HOME/trainPredictor_met_json.py "$PROD" _context.json "${PROD}/${PROD}.met.json" "${PROD}/${PROD}.dataset.json" > trainPredictor_met_json.log 2>&1
+python $ML_HOME/trainPredictor_met_json.py "$PROD" _context.json "${PROD}/${PROD}.met.json" "${PROD}/${PROD}.dataset.json" > trainPredictor_met_json.log 2>&1
 STATUS=$?
 echo -n "Finished creating metadata JSON: " 1>&2
 date 1>&2

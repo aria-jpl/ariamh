@@ -14,4 +14,4 @@ export SENTINEL_HOME=$FRAMEMETA_HOME/sentinel
 export PYTHONPATH=/usr/local/isce:$ISCE_HOME/applications:$ISCE_HOME/components:$ARIAMH_HOME:$FRAMEMETA_HOME:$PYTHONPATH
 
 # create input xml
-/usr/bin/python3 $BASE_PATH/extractMetadata_standard_product.py $*
+python $BASE_PATH/extractMetadata_standard_product.py $*
