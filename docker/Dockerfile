@@ -23,6 +23,7 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 COPY . /home/ops/ariamh
 
 RUN set -ex \
+    && $HOME/conda/condabin/conda install gdal --yes \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     && sudo rm -rf /root/.cache \
     && sudo chown -R ops:ops /home/ops/ariamh \
