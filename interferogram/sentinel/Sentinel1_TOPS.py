@@ -445,12 +445,13 @@ class Sentinel1_TOPS(Component):
 #            print(vec)
 
 
-        orbExt = OrbitExtender(planet=Planet(pname='Earth'))
-        orbExt.configure()
-        newOrb = orbExt.extendOrbit(frameOrbit)
+        #orbExt = OrbitExtender(planet=Planet(pname='Earth'))
+        #orbExt.configure()
+        #newOrb = orbExt.extendOrbit(frameOrbit)
 
 
-        return newOrb
+        #return newOrb
+        return frameOrbit
             
     def extractPreciseOrbit(self):
         '''
