@@ -1,4 +1,6 @@
 #!/usr/bin/env python3 
+from __future__ import absolute_import
+from builtins import str
 import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from itertools import chain
 from subprocess import check_call, CalledProcessError
@@ -10,7 +12,7 @@ from osgeo import ogr, osr
 
 from utils.UrlUtils import UrlUtils
 from utils.createImage import createImage
-from sentinel.check_interferogram import check_int
+from .sentinel.check_interferogram import check_int
 
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"

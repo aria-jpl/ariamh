@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 from utils import queryBuilder as qb 
-from UrlUtils import UrlUtils as UU
+from .UrlUtils import UrlUtils as UU
 import sys
 import os
 import json

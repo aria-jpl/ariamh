@@ -1,6 +1,9 @@
 from __future__ import absolute_import, print_function, division
 
-import cPickle as pickle
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+import pickle as pickle
 import numpy as np
 from os.path import dirname
 import sys, glob
@@ -48,7 +51,7 @@ def runcmd(cmd):
     cmdout = PIPE
     for rstr in ['>&','>']:
         if rstr in cmdstr:
-            cmdstr,cmdout = map(lambda s:s.strip(),cmdstr.split(rstr))
+            cmdstr,cmdout = [s.strip() for s in cmdstr.split(rstr)]
             cmdout = open(cmdout,'w')
             
     p = Popen(cmdstr.split(), stdout=cmdout, stderr=cmdout)
@@ -76,7 +79,7 @@ def query_tags(tags,sensor=sensor,dataset=dataset,
     ]
 
     query['filter'] = {'and': [{'term':t} for t in filt_terms]}
-    query_string = ' OR '.join(map(lambda s:'(user_tag:*%s*)'%s,tags))
+    query_string = ' OR '.join(['(user_tag:*%s*)'%s for s in tags])
     if exclude:
         query_string = 'NOT (%s)'%query_string
     query_dict = {'query_string':{'query':query_string,'default_operator':'OR'}}
@@ -100,8 +103,8 @@ def query_tags(tags,sensor=sensor,dataset=dataset,
     querydict = {product.pop('url'):product for product in qlist}
     with open(queryf,'w') as fid:
         print('saving query urls to',queryf)
-        pickle.dump({'query':query,'urls':querydict.keys()},fid)
-    return querydict.keys()
+        pickle.dump({'query':query,'urls':list(querydict.keys())},fid)
+    return list(querydict.keys())
 
 def retrieve_ifg(ifg_urls,outdir,system_version=system_version,verbose=False):
     #curlauthf = expanduser('~/.netrc')
@@ -206,7 +209,7 @@ def load_ifg_rgba(ifg,scalef,doplot=False,flip=False,verbose=False):
         print('unwrgba shape (orig):',unwrgba.shape)
         print('unw20rgba shape (orig):',unw20rgba.shape)
         print('cohrgba shape (orig):',cohrgba.shape)
-    r,c = map(lambda x: int(x*scalef),cohrgba.shape[:2])
+    r,c = [int(x*scalef) for x in cohrgba.shape[:2]]
     
     coh2unw20dims,coh2unwdims = [],[]
     for i in [0,1]:

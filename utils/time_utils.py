@@ -1,3 +1,4 @@
+from builtins import map
 from datetime import tzinfo, timedelta, datetime
 import re, time
 
@@ -189,13 +190,13 @@ def getTimeElementsFromString(dtStr):
     """Return tuple of (year,month,day,hour,minute,second) from date time string."""
 
     match = re.match(r'^(\d{4})[/-](\d{2})[/-](\d{2})[\s*T](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?Z?$',dtStr)
-    if match: (year,month,day,hour,minute,second) = map(int,match.groups())
+    if match: (year,month,day,hour,minute,second) = list(map(int,match.groups()))
     else:
         match = re.match(r'^(\d{4})[/-](\d{2})[/-](\d{2})$',dtStr)
         if match:
-            (year,month,day) = map(int,match.groups())
+            (year,month,day) = list(map(int,match.groups()))
             (hour,minute,second) = (0,0,0)
-        else: raise(RuntimeError("Failed to recognize date format: %s" % dtStr))
+        else: raise RuntimeError
     return (year,month,day,hour,minute,second)
 
 def getDatetimeFromString(dtStr, dayOnly=False):

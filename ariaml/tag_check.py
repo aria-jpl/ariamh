@@ -1,4 +1,6 @@
 #/usr/bin/env python3
+from builtins import str
+from builtins import object
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RadioButtons
@@ -8,7 +10,7 @@ import os
 import binascii
 import matplotlib.image as mpimg
 import sys
-class TagCheck:
+class TagCheck(object):
     def __init__(self,filename):
         urls = json.load(open(filename))
         self._urls = []

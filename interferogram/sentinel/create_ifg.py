@@ -1,4 +1,5 @@
 #!/usr/bin/env python3 
+from builtins import str
 import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from itertools import chain
 from zipfile import ZipFile

@@ -5,6 +5,9 @@
 # Copyright 2015, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged.
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+from __future__ import division
+from builtins import str
+from past.utils import old_div
 import os
 import math
 import matplotlib.image as mpimg
@@ -37,13 +40,13 @@ def createImage(command,item):
     length = im.shape[0]
     width = im.shape[1]
     #reduce the width to max 512 for normal size and 128 for small size
-    resamp = 1 if width < max_width else int(width/max_width)
+    resamp = 1 if width < max_width else int(old_div(width,max_width))
     if(resamp == 1):
         call_noerr('cp ' + name1 + ' ' + final)
     else:
         mpimg.imsave(final,im[::resamp,::resamp,:])
    
-    resamp = 1 if width < max_width_small else int(width/max_width_small)
+    resamp = 1 if width < max_width_small else int(old_div(width,max_width_small))
     if(resamp == 1):
         call_noerr('cp ' + name1 + ' ' + finalSmall)
     else:

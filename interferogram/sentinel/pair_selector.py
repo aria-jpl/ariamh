@@ -3,7 +3,9 @@
 Determine last matching temporal S1 pair using parameters
 from an S1 swath metadata.  
 """
+from __future__ import division
 
+from past.utils import old_div
 import os, sys, re, requests, json, traceback, argparse
 from datetime import datetime, timedelta
 import numpy as np
@@ -58,9 +60,9 @@ def get_overlap(loc1, loc2):
     intersection_area = intersection.GetArea() # in square meters
     print("area (m^2) for intersection: %s" % intersection_area)
     if area1 > area2:
-        return intersection_area/area1
+        return old_div(intersection_area,area1)
     else:
-        return intersection_area/area2
+        return old_div(intersection_area,area2)
     
 
 def pair_selector(id, margin=0.2, overlap_min=.5, frame_id_margin=3):

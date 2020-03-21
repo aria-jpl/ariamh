@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from builtins import str
 from utils.queryBuilder import buildQuery, postQuery
 from utils.UrlUtils import UrlUtils
 import os

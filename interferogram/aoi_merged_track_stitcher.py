@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import absolute_import
 import sys
 import os
 import glob
@@ -10,7 +11,7 @@ import re
 import hashlib
 from datetime import datetime
 
-from ifg_stitcher import IfgStitcher
+from .ifg_stitcher import IfgStitcher
 from utils.create_datasets import create_dataset_json
 from utils.createImage import createImage
 

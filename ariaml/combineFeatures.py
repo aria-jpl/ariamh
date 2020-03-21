@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from builtins import str
+from builtins import range
 import os
 from matplotlib import pyplot as plt
 import numpy as np

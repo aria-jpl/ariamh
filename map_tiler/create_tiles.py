@@ -3,11 +3,13 @@
 Map tiler PGE wrapper to generate map tiles following the 
 OSGeo Tile Map Service Specification.
 """
+from __future__ import absolute_import
 
+from builtins import str
 import os, sys, traceback, logging, argparse
 from subprocess import check_call
 
-from get_clims import get_clims
+from .get_clims import get_clims
 
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -34,9 +36,9 @@ def create_tiles(raster, output_dir, band=1, cmap='jet', clim_min=None,
 
     # check mutually exclusive args
     if clim_min is not None and clim_min_pct is not None:
-        raise(RuntimeError("Cannot specify both clim_min and clim_min_pct."))
+        raise RuntimeError
     if clim_max is not None and clim_max_pct is not None:
-        raise(RuntimeError("Cannot specify both clim_max and clim_max_pct."))
+        raise RuntimeError
 
     # get clim
     min, max, min_pct, max_pct = get_clims(raster, band,

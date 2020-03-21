@@ -1,3 +1,4 @@
+from __future__ import division
  #! /usr/bin/env python3
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
@@ -7,6 +8,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import sys
 
 import pdb
@@ -27,7 +31,7 @@ Compatibility.checkPythonVersion()
 fmt = '%Y-%m-%dT%H:%M:%S.%f'
 
 
-class PegRegionChecker:
+class PegRegionChecker(object):
     globalMock = 0
     STATUS_QUERY_OK = '200'
     def initPegList(self,filename = None):
@@ -103,8 +107,8 @@ class PegRegionChecker:
         pegLen = pegEnd - pegStart
         pegLon = peg.peg.getLongitude()
         #the orbit might be ascending or descending. to discriminate check the vicinity of the peg lon and the frame lon
-        numDiv = int(math.fabs((max(pegLen/frameLen,1))*10))
-        delta = pegLen/numDiv
+        numDiv = int(math.fabs((max(old_div(pegLen,frameLen),1))*10))
+        delta = old_div(pegLen,numDiv)
         start = pegStart
         pointList = [start + i*delta for i in range(numDiv+1)] # this should have enough sampling of the region including the edges of the peg region
         # now check that all the point are covered
@@ -204,8 +208,8 @@ class PegRegionChecker:
             'dataset_type':self._frame.dataset_type,
             'beamID':beamID,
             'system_version':uu.version,
-            'latitudeIndexMin': int(math.floor((lat_min)/FrameInfoExtractor._latitudeResolution)),
-            'latitudeIndexMax': int(math.floor((lat_max)/FrameInfoExtractor._latitudeResolution)),
+            'latitudeIndexMin': int(math.floor(old_div((lat_min),FrameInfoExtractor._latitudeResolution))),
+            'latitudeIndexMax': int(math.floor(old_div((lat_max),FrameInfoExtractor._latitudeResolution))),
             'direction': direction
             }
 
@@ -230,8 +234,8 @@ class PegRegionChecker:
             'dataset_type':self._frame.dataset_type,
             'beamID':beamID,
             'system_version':uu.version,
-            'latitudeIndexMin': int(math.floor((lat_min)/FrameInfoExtractor._latitudeResolution)),
-            'latitudeIndexMax': int(math.floor((lat_max)/FrameInfoExtractor._latitudeResolution)),
+            'latitudeIndexMin': int(math.floor(old_div((lat_min),FrameInfoExtractor._latitudeResolution))),
+            'latitudeIndexMax': int(math.floor(old_div((lat_max),FrameInfoExtractor._latitudeResolution))),
             'direction': direction
             }
 
@@ -264,7 +268,7 @@ class PegRegionChecker:
             if len(metList) == 0:
                 break
         ret = []
-        for v in metDict.values():
+        for v in list(metDict.values()):
             ret.append(v)
         return ret
          
@@ -282,8 +286,8 @@ class PegRegionChecker:
             #'orbitNumber':orbit,
             'beamID':beamID,
             'system_version':uu.version,
-            'latitudeIndexMin': int(math.floor((lat_min)/FrameInfoExtractor._latitudeResolution)),
-            'latitudeIndexMax': int(math.floor((lat_max)/FrameInfoExtractor._latitudeResolution)),
+            'latitudeIndexMin': int(math.floor(old_div((lat_min),FrameInfoExtractor._latitudeResolution))),
+            'latitudeIndexMax': int(math.floor(old_div((lat_max),FrameInfoExtractor._latitudeResolution))),
             'direction': direction
             }
 
@@ -463,12 +467,12 @@ class PegRegionChecker:
             deta = self.computeDet(mata)
             detb = self.computeDet(matb)
             detc = self.computeDet(matc)
-            retVal = [deta/det,detb/det,detc/det]
+            retVal = [old_div(deta,det),old_div(detb,det),old_div(detc,det)]
         
         return retVal 
        
     def findLine(self,xy):#
-        a = (xy[1][1] - xy[1][0])/(xy[0][1] - xy[0][0])
+        a = old_div((xy[1][1] - xy[1][0]),(xy[0][1] - xy[0][0]))
         b = xy[1][0] - a*xy[0][0]
         return [a,b]
     def coverSameRegion(self,l1,l2):
@@ -478,7 +482,7 @@ class PegRegionChecker:
         max2 = -1000
         bb = l1[0].refbbox
         frameSize = math.fabs(bb[0][0] - bb[2][0])
-        delta = frameSize/5
+        delta = old_div(frameSize,5)
         for el in l1:
             bb = el.refbbox[0][0] #just taking the first lat of the bbox
             if(bb < min1):

@@ -7,6 +7,10 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import os
 from mroipac.geolocate.Geolocate import Geolocate
 import logging
@@ -29,7 +33,7 @@ import math
 
 # at the moment there is no localized config with the grq server. get it from the PegRegionChecker
 # to avoid having it in too many places
-class FrameInfoExtractor():
+class FrameInfoExtractor(object):
 
     STATUS_QUERY_OK = '200'
     _latitudeResolution = .1
@@ -207,14 +211,14 @@ class FrameInfoExtractor():
             raise Exception
       
     def computeFrameID(self,fm):
-        fm.frameID = int(round((fm.latitudeIndexMin + fm.latitudeIndexMax)/2))
+        fm.frameID = int(round(old_div((fm.latitudeIndexMin + fm.latitudeIndexMax),2)))
            
     def computeLatitudeIndeces(self, fm):
         extremes = self.getExtremes(fm.refbbox)
         latMin = extremes[0]
         latMax = extremes[1]
-        fm.latitudeIndexMin = int(math.floor(latMin / self._latitudeResolution))
-        fm.latitudeIndexMax = int(math.ceil(latMax / self._latitudeResolution))
+        fm.latitudeIndexMin = int(math.floor(old_div(latMin, self._latitudeResolution)))
+        fm.latitudeIndexMax = int(math.ceil(old_div(latMax, self._latitudeResolution)))
 
 
     # given a bbox return the list [latMin,latMax,lonMin,lonMax]
@@ -261,8 +265,8 @@ class FrameInfoExtractor():
             'sensor': fm.platform,
             'trackNumber':fm.trackNumber,
             'dataset_type':fm.dataset_type,
-            'latitudeIndexMin': int(math.floor((latMin - latDelta)/latitudeResolution)),
-            'latitudeIndexMax': int(math.ceil((latMax + latDelta)/latitudeResolution)),
+            'latitudeIndexMin': int(math.floor(old_div((latMin - latDelta),latitudeResolution))),
+            'latitudeIndexMax': int(math.ceil(old_div((latMax + latDelta),latitudeResolution))),
             'direction':fm.direction,
             'system_version':uu.version,
             'lookDirection':fm.lookDirection,
@@ -388,8 +392,8 @@ class FrameInfoExtractor():
         params = {
             'sensor': fm.platform,
             'trackNumber':fm.trackNumber,
-            'latitudeIndexMin': int(math.floor((latMin - latDelta)/latitudeResolution)),
-            'latitudeIndexMax': int(math.ceil((latMax + latDelta)/latitudeResolution)),
+            'latitudeIndexMin': int(math.floor(old_div((latMin - latDelta),latitudeResolution))),
+            'latitudeIndexMax': int(math.ceil(old_div((latMax + latDelta),latitudeResolution))),
             'dataset_type':fm.dataset_type,
             'system_version':uu.version,
             'direction':fm.direction,

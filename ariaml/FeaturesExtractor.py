@@ -1,4 +1,9 @@
+from __future__ import division
  #!/usr/bin/env python3
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from utils.queryBuilder import buildQuery, postQuery
 from utils.UrlUtils import UrlUtils
 import os
@@ -16,7 +21,7 @@ from skimage.segmentation import find_boundaries
 from scipy.stats import pearsonr
 from scipy import r_, degrees
 import tempfile
-class FeaturesExtractor:
+class FeaturesExtractor(object):
     def __init__(self, url, productName, coThr=None):
         self._eps = 10**-20
         self._url = url
@@ -62,11 +67,11 @@ class FeaturesExtractor:
             #the sum has to be one and small number is good so make it as big as possible
             ret = [.5,.5]
         else:
-            ret =  [np.nonzero(mresid == -1)[0].shape[0]/mresid.shape[0],np.nonzero(mresid == 1)[0].shape[0]/mresid.shape[0]]
+            ret =  [old_div(np.nonzero(mresid == -1)[0].shape[0],mresid.shape[0]),old_div(np.nonzero(mresid == 1)[0].shape[0],mresid.shape[0])]
         
         return ret
     def computeResidues(self,phase):
-        a = phase[:,:]/(2*np.pi)
+        a = old_div(phase[:,:],(2*np.pi))
         resid = np.zeros(a[1:,1:].shape,dtype = np.int8)
         mats = [a[:-1,:-1],a[:-1,1:],a[1:,1:],a[1:,:-1]]
         nmats = len(mats)
@@ -76,10 +81,10 @@ class FeaturesExtractor:
     #bin width = .1 from the min value to 1.
     def coherenceDist(self,coherin,mask):
         coher = coherin[mask]
-        mv = int(np.min(coher[:])*10)/10
+        mv = old_div(int(np.min(coher[:])*10),10)
         nbins = int(round((1-mv)/.1))
         hist =  np.histogram(coher[:],nbins)[0]
-        return hist/np.cumsum(hist)[-1]
+        return old_div(hist,np.cumsum(hist)[-1])
    
     def rms(self,phase,mask):
         return np.std(phase[mask])
@@ -102,12 +107,12 @@ class FeaturesExtractor:
     
     #compute distribution of gradient in pi/8 intervals plus whatever left from pi to 2pi
     def gradientDist(self,grd,mask):
-        hist = np.histogram(grd[mask],np.append(np.pi/8*np.arange(9),2*np.pi))[0]
+        hist = np.histogram(grd[mask],np.append(old_div(np.pi,8)*np.arange(9),2*np.pi))[0]
         if np.cumsum(hist)[-1] > 0:
             div = np.cumsum(hist)[-1]
         else:
             div = 1.
-        return hist/div
+        return old_div(hist,div)
     
     ##
     #@param geoname = str name of the reference geocoded image
@@ -170,18 +175,18 @@ class FeaturesExtractor:
         lonstart2 = im2.coord1.coordStart
         lonsize2 = im2.coord1.coordSize
         londelta2 = im2.coord1.coordDelta
-        ilatstart = abs(int(round((latstart2-latstart1)/latdelta2)))
+        ilatstart = abs(int(round(old_div((latstart2-latstart1),latdelta2))))
         ilatend = ilatstart + latsize1
-        ilonstart = abs(int(round((lonstart2-lonstart1)/londelta2)))
+        ilonstart = abs(int(round(old_div((lonstart2-lonstart1),londelta2))))
         ilonend = ilonstart + lonsize1
         imIn = im2.memMap(band=0)
          #if it the resolutions are different the ration will normally  be either twice or half
         #or some integer (or inverse integer ratio)
-        if ((londelta2/londelta1) > 1.5 or (londelta2/londelta1) < .8):
+        if ((old_div(londelta2,londelta1)) > 1.5 or (old_div(londelta2,londelta1)) < .8):
             #make sure that is close to an int
-            if(abs(londelta2/londelta1 - round(londelta2/londelta1)) < .001 
-               or  abs(londelta1/londelta2 - round(londelta1/londelta2)) < .001):
-                imIn = self.resample((londelta2/londelta1),imIn)
+            if(abs(old_div(londelta2,londelta1) - round(old_div(londelta2,londelta1))) < .001 
+               or  abs(old_div(londelta1,londelta2) - round(old_div(londelta1,londelta2))) < .001):
+                imIn = self.resample((old_div(londelta2,londelta1)),imIn)
             else:
                 raise Exception('Cannot resample DEM and water mask to data grid')
                 
@@ -225,7 +230,7 @@ class FeaturesExtractor:
         return img.memMap(band=band)
     
     def loadImages(self):
-        for k,v in self._imgMap.items():
+        for k,v in list(self._imgMap.items()):
             v['img'] = self.loadImage(v['name'],v['band'])
             
     def goodRegion(self,coThr):
@@ -264,7 +269,7 @@ class FeaturesExtractor:
                 feat.append(np.nonzero(cpercent >= th)[0][0] + 1)
         else:
             feat = np.zeros(len(self._coverageThresh))
-        return np.array(feat)/self._maxConnComp
+        return old_div(np.array(feat),self._maxConnComp)
        
     def nodata(self,img,nodata_value=None):
         mask = (np.isnan(img) | np.isinf(img))

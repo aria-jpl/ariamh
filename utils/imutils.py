@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
 import os
 import isce
@@ -40,7 +44,7 @@ def fix_xml(fname):
     fp.close()
 
 def compute_residues(phase):
-    a = phase[:,:]/(2*np.pi)
+    a = old_div(phase[:,:],(2*np.pi))
     resid = np.zeros(a[1:,1:].shape,dtype = np.int8)
     mats = [a[:-1,:-1],a[:-1,1:],a[1:,1:],a[1:,:-1]]
     nmats = len(mats)
@@ -73,9 +77,9 @@ def crop_mask(im1,im2,outname):
     lonstart2 = im2.coord1.coordStart
     lonsize2 = im2.coord1.coordSize
     londelta2 = im2.coord1.coordDelta
-    ilatstart = abs(int(round((latstart2-latstart1)/latdelta2)))
+    ilatstart = abs(int(round(old_div((latstart2-latstart1),latdelta2))))
     ilatend = ilatstart + latsize1
-    ilonstart = abs(int(round((lonstart2-lonstart1)/londelta2)))
+    ilonstart = abs(int(round(old_div((lonstart2-lonstart1),londelta2))))
     ilonend = ilonstart + lonsize1
     imIn = im2.memMap(band=0)
     imCrop = np.memmap(outname,im2.toNumpyDataType(),'w+',shape=(latsize1,lonsize1))    

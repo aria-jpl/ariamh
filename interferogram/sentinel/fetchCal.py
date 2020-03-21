@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 import numpy as np
 import requests
 import os
@@ -9,7 +12,7 @@ import tarfile
 import re
 try: from html.parser import HTMLParser
 except:
-    from HTMLParser import HTMLParser
+    from html.parser import HTMLParser
 
 
 server = 'https://qc.sentinel1.eo.esa.int/'

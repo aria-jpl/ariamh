@@ -35,7 +35,7 @@ def getMetadata(id, output_file):
         raise RuntimeError("Found no product with id %s." % id)
     res = res_json['hits']['hits'][0]
     urls = res['fields']['urls']
-    if not isinstance(urls, types.ListType) or len(urls) == 0:
+    if not isinstance(urls, list) or len(urls) == 0:
         raise RuntimeError("Found no urls for product with id %s." % id)
     prod_url = urls[0]
 
