@@ -1,4 +1,4 @@
-FROM isce/isce2:latest
+FROM hysds/isce2:latest
 
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
