@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from builtins import next
 import os, sys, re, json, requests, datetime, tarfile, argparse
 from pprint import pprint
 import numpy as np
@@ -118,7 +117,7 @@ def get_cal_url(id, es_url):
             raise RuntimeError("Failed to find %s at %s." % (id, search_url))
         urls = result['hits']['hits'][0]['fields']['urls']
         archive_fname = result['hits']['hits'][0]['fields']['metadata.archive_filename'][0]
-        url = next([x for x in urls if x.startswith('http')])
+        url = [x for x in urls if x.startswith('http')][0]
         #print(urls)
         #print(url)
         #print(archive_fname)

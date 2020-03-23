@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from __future__ import division
-from builtins import next
 from past.utils import old_div
 import os, sys, re, json, requests, datetime, tarfile, argparse
 from pprint import pprint, pformat
@@ -161,7 +160,7 @@ def fetch(starttime, endtime, mission='S1A', outdir='.', dry_run=False):
             archive_fname = res['fields']['metadata.archive_filename'][0]
             filtered = [x for x in urls if x.startswith('http')]
             if isinstance(filtered, list): url = filtered[0]
-            else: url = next(filtered)
+            else: url = filtered[0]
             fields = archive_fname.split('_')
             taft = datetime.datetime.strptime(fields[-1][0:15], datefmt)
             tbef = datetime.datetime.strptime(fields[-2][1:16], datefmt)
