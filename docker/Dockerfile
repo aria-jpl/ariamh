@@ -1,4 +1,6 @@
 FROM hysds/isce2:latest
+# to build GPU/CUDA version use this base instead:
+#FROM hysds/isce2:latest-cuda
 
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
