@@ -775,7 +775,7 @@ def get_topsapp_cfgs(context_file, temporalBaseline=72, id_tmpl=IFG_ID_TMPL, min
                                     context['range_looks'],
                                     context['filter_strength'],
                                     context.get('dem_type', 'SRTM+v3'),
-                                ])).hexdigest()
+                                ]).encode()).hexdigest()
                                 ifg_ids.append(id_tmpl.format('M', len(ref_ids), len(matched_ids),
                                                               track, ifg_master_dt,
                                                               ifg_slave_dt, swathnum,
@@ -810,7 +810,7 @@ def get_topsapp_cfgs(context_file, temporalBaseline=72, id_tmpl=IFG_ID_TMPL, min
                                     context['range_looks'],
                                     context['filter_strength'],
                                     context.get('dem_type', 'SRTM+v3'),
-                                ])).hexdigest()
+                                ]).encode()).hexdigest()
                                 ifg_ids.append(id_tmpl.format('S', len(matched_ids), len(ref_ids),
                                                               track, ifg_master_dt,
                                                               ifg_slave_dt, swathnum,
@@ -882,7 +882,7 @@ def get_topsapp_cfgs(context_file, temporalBaseline=72, id_tmpl=IFG_ID_TMPL, min
                                     context['range_looks'],
                                     context['filter_strength'],
                                     context.get('dem_type', 'SRTM+v3'),
-                                ])).hexdigest()
+                                ]).encode()).hexdigest()
                                 ifg_ids.append(id_tmpl.format('S', len(matched_ids), len(ref_ids),
                                                               track, ifg_master_dt,
                                                               ifg_slave_dt, swathnum,
