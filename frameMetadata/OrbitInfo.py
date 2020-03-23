@@ -41,8 +41,8 @@ class OrbitInfo(object):
         self.coherence = None
         self.planet = Planet(pname='Earth')
         self.unpackOrbitVectors(fm.orbit)
-        self.computePeg()
-        self.computeLookAngle()
+        #self.computePeg()
+        #self.computeLookAngle()
 
     
     def getBaseline(self):
