@@ -1,7 +1,6 @@
 {
   "submission_type": "individual",
   "label" : "TopsApp Interferogram",
-  "recommended-queues" : [ "grfn-job_worker-large" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     { 

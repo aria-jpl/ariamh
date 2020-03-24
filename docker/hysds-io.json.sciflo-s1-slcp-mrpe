@@ -1,6 +1,5 @@
 {
   "label" : "Sentinel-1 MRPE Registered SLC Pair",
-  "recommended-queues" : [ "urgent-response-job_worker-large" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     {
@@ -85,17 +84,15 @@
     },
     { 
       "name": "azimuth_looks",
-      "from": "submitter",
+      "from": "value",
       "type": "number",
-      "lambda": "lambda x: int(x)",
-      "default": "3"
+      "value": "1"
     },
     { 
       "name": "range_looks",
-      "from": "submitter",
+      "from": "value",
       "type": "number",
-      "lambda": "lambda x: int(x)",
-      "default": "7"
+      "value": "1"
     },
     { 
       "name": "filter_strength",

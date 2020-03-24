@@ -110,7 +110,7 @@ if [ "$project" == "kilauea" ]; then
   echo "##########################################" 1>&2
   echo -n "Write DEM input to job description JSON: " 1>&2
   date 1>&2
-  /usr/bin/python3 $UTILS_HOME/jobDescriptorWriter.py --file $jobdesc_file \
+  python $UTILS_HOME/jobDescriptorWriter.py --file $jobdesc_file \
     --set demFile "\"dem_kilauea.dem.xml\"" > jobDescriptorWriter.log 2>&1
   STATUS=$?
   echo -n "Finished writing DEM input to job description JSON: " 1>&2
@@ -126,7 +126,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Started interferogram creation: " 1>&2
 date 1>&2
-/usr/bin/python3 $INTERFEROGRAM_HOME/createInterferogram.py $jobdesc_file > createInterferogram.log 2>&1
+python $INTERFEROGRAM_HOME/createInterferogram.py $jobdesc_file > createInterferogram.log 2>&1
 STATUS=$?
 echo -n "Finished interferogram creation: " 1>&2
 date 1>&2

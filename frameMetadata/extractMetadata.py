@@ -7,6 +7,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+from __future__ import absolute_import
+from builtins import str
 from iscesys.Compatibility import Compatibility
 Compatibility.checkPythonVersion()
 
@@ -19,7 +21,7 @@ logging.config.fileConfig(
 )
 logger = logging.getLogger('isce.insar')
 import isce
-from FrameInfoExtractor import FrameInfoExtractor as FIE
+from .FrameInfoExtractor import FrameInfoExtractor as FIE
 from utils.contextUtils import toContext
 
 from iscesys.Component.Application import Application

@@ -2,6 +2,10 @@
 ###This script lists baselines and dopplers for a set of hdf5 files
 
 from __future__ import print_function
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import argparse
 import isce
 import numpy as np
@@ -23,7 +27,7 @@ import matplotlib
 stdWriter = create_writer("log", "", True, filename="prepareStack.log")
 
 
-class orbit_info:
+class orbit_info(object):
     def __init__(self, sar, fname ,fd):
         '''Initialize with a sarProc object and corresponding XML file name'''
         self.planet = sar.frame.getInstrument().getPlatform().planet
@@ -53,7 +57,7 @@ class orbit_info:
 
         shortOrb = Orbit()
         for i in range(-10,10):
-            time = self.dt + datetime.timedelta(seconds=(i/self.prf))
+            time = self.dt + datetime.timedelta(seconds=(old_div(i,self.prf)))
             sv = self.orbit.interpolateOrbit(time, method='hermite')
             shortOrb.addStateVector(sv)
 
@@ -73,7 +77,7 @@ class orbit_info:
 
 
     def computeLookAngle(self):
-        self.clook = (2*self.hgt*self.rds+self.hgt**2+self.rng**2)/(2*self.rng*(self.rds+self.hgt))
+        self.clook = old_div((2*self.hgt*self.rds+self.hgt**2+self.rng**2),(2*self.rng*(self.rds+self.hgt)))
         self.slook = np.sqrt(1-self.clook**2)
 #        print('Estimated Look Angle: %3.2f degrees'%(np.arccos(self.clook)*180.0/np.pi))
 
@@ -84,9 +88,9 @@ class orbit_info:
         mvel = np.array(self.vel)
 
         #######From the ROI-PAC scripts
-        rvec = mpos/np.linalg.norm(mpos)
-        crp = np.cross(rvec, mvel)/np.linalg.norm(mvel)
-        crp = crp/np.linalg.norm(crp)
+        rvec = old_div(mpos,np.linalg.norm(mpos))
+        crp = old_div(np.cross(rvec, mvel),np.linalg.norm(mvel))
+        crp = old_div(crp,np.linalg.norm(crp))
         vvec = np.cross(crp, rvec)
         mvel = np.linalg.norm(mvel)
 
@@ -95,9 +99,9 @@ class orbit_info:
         svel = np.linalg.norm(svel)
 
         dx = spos - mpos;
-        z_offset = slave.prf*np.dot(dx, vvec)/mvel
+        z_offset = old_div(slave.prf*np.dot(dx, vvec),mvel)
 
-        slave_dt = slave.dt - datetime.timedelta(seconds=z_offset/slave.prf)
+        slave_dt = slave.dt - datetime.timedelta(seconds=old_div(z_offset,slave.prf))
         try:
             svector = orbit_info.getStateVector(slave.orbit, slave_dt)
         except:
@@ -170,7 +174,7 @@ def process(inps):
 
     Orbits = []
     print('Reading in all the raw files and metadata.')
-    for k in xrange(nSar):
+    for k in range(nSar):
         if inps.raw:
             sar = createSensor('COSMO_SKYMED')
         else:
@@ -190,7 +194,7 @@ def process(inps):
 
     Dopplers[0] = master.fd
     Days[0] = master.dt.toordinal()
-    for k in xrange(1,nSar):
+    for k in range(1,nSar):
         slave = Orbits[k]
         Bperp[k] = master.getBaseline(slave)
         Dopplers[k] = slave.fd
@@ -208,7 +212,7 @@ def process(inps):
             f.write("Index     Date       Bperp   Doppler \n")
     
     
-    for k in xrange(nSar):
+    for k in range(nSar):
         print('{0:>3}    {1:>10} {2:4.2f}  {3:4.2f}'.format(k+1, Orbits[k].dt.strftime('%Y-%m-%d'), Bperp[k],Dopplers[k]))
 	
         ### Plot
@@ -230,16 +234,16 @@ def process(inps):
         os.system('mv baseline.txt bplot.txt baselineInfos')
     	
 	
-    geomRho = (1-np.clip(np.abs(Bperp[:,None]-Bperp[None,:])/inps.Bcrit, 0., 1.))
-    tempRho = np.exp(-1.0*np.abs(Days[:,None]-Days[None,:])/inps.Tau)
-    dopRho  = (np.abs(Dopplers[:,None] - Dopplers[None,:])/ master.prf) < inps.dop
+    geomRho = (1-np.clip(old_div(np.abs(Bperp[:,None]-Bperp[None,:]),inps.Bcrit), 0., 1.))
+    tempRho = np.exp(old_div(-1.0*np.abs(Days[:,None]-Days[None,:]),inps.Tau))
+    dopRho  = (old_div(np.abs(Dopplers[:,None] - Dopplers[None,:]), master.prf)) < inps.dop
 
     Rho = geomRho * tempRho * dopRho
-    for kk in xrange(nSar):
+    for kk in range(nSar):
         Rho[kk,kk] = 0.
 
     
-    avgRho = np.mean(Rho, axis=1)*nSar/(nSar-1)
+    avgRho = old_div(np.mean(Rho, axis=1)*nSar,(nSar-1))
     numViable = np.sum((Rho> inps.cThresh), axis=1)
 
     ####Currently sorting on average coherence.
@@ -253,7 +257,7 @@ def process(inps):
     print('Ranking for Master Scene Selection: ')
     print('**************************************')
     print('Rank  Index      Date    nViable   Avg. Coh.' )
-    for kk in xrange(nSar):
+    for kk in range(nSar):
         ind = masterChoice[kk]
         print('%03d   %03d   %10s  %03d  %02.3f'%(kk+1, ind+1, Orbits[ind].dt.strftime('%Y-%m-%d'), numViable[ind], avgRho[ind]))
 
@@ -276,7 +280,7 @@ def process(inps):
         g=open("baselineInfos/InSAR_plot.txt",'w')
         g.close()
 
-    for mind, sind in itertools.izip(ii,jj):
+    for mind, sind in zip(ii,jj):
         master = Orbits[mind]
         slave = Orbits[sind]
 	
@@ -320,7 +324,7 @@ def process(inps):
     commonDop = np.median(Dopplers)
     maxDop   = np.max(Dopplers)
     minDop = np.min(Dopplers)
-    varDop = np.max(np.abs(Dopplers-commonDop))/masterOrbit.prf
+    varDop = old_div(np.max(np.abs(Dopplers-commonDop)),masterOrbit.prf)
 
     print('Common Doppler: ', commonDop)
     print('Doppler Range:  [%f, %f]'%(minDop, maxDop))

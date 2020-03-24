@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import absolute_import, print_function, division
+from builtins import str
 import pylab as pl
 import sys
 from imtiler import *

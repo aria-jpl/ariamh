@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-import createInterferogram as CI
+from __future__ import absolute_import
+#!/usr/bin/env python
+from . import createInterferogram as CI
 import os
 import shutil
 import json

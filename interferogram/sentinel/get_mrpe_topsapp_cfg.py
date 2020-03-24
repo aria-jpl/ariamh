@@ -3,6 +3,7 @@
 Determine all combinations of topsApp configurations for most recent pre-event scene"
 """
 
+from builtins import range
 import os, sys, re, requests, json, logging, traceback, argparse
 from copy import deepcopy
 from datetime import datetime

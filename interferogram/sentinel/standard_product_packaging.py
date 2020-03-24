@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # By David Bekaert - Jet Propulsion Laboratory
 
+from builtins import map
+from builtins import str
+from builtins import range
+from builtins import object
 import sys
 import json
 import logging
@@ -23,7 +27,7 @@ logger = logging.getLogger('standard_product_packaging')
 BASE_PATH = os.path.dirname(__file__)
 
 
-class content_properties:
+class content_properties(object):
     names = ('type','src_file','nodata','chunks','band','description',
              'dims','python_action','python_action_args','attribute',
              'description','name','crs_name','crs_attribute','data_type','global_attribute')
@@ -126,10 +130,10 @@ def write_dataset(fid,data,properties_data):
     # this is either string or dataset option
     else:
        
-        if isinstance(data,(str,)):
+        if isinstance(data,str):
             dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
             dset[0]=data
-        elif isinstance(data,(np.ndarray,)):
+        elif isinstance(data,np.ndarray):
             # make sure the _fillvalue is formatted the same as the data_type
             if properties_data.type is None:
                 properties_data.type = data.dtype.name
@@ -149,7 +153,7 @@ def write_dataset(fid,data,properties_data):
                 dset = fid.createVariable(properties_data.name, properties_data.type)
             dset[:] = data
         elif isinstance(data, collections.Iterable):
-            if isinstance(data[0],(str,)):
+            if isinstance(data[0],str):
                 dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
                 count = 0
                 for data_line in data:
@@ -383,7 +387,7 @@ def create_dataset(fid,dataset,fid_parent=None):
                 crs_attribute_name = extract_key(crs_attribute,"name")
                 crs_attribute_value = extract_key(crs_attribute,"value")
                 if crs_attribute_name.lower() == "spatial_ref":
-                    if isinstance(crs_attribute_value,(int,)):
+                    if isinstance(crs_attribute_value,int):
                         ref = osr.SpatialReference()
                         ref.ImportFromEPSG(crs_attribute_value)
                         projectionRef = ref.ExportToWkt()

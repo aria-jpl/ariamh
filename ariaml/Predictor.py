@@ -1,3 +1,5 @@
+from builtins import str
+from builtins import object
 import os
 import sys
 import json
@@ -9,7 +11,7 @@ import pickle
 #from sklearn.externals.joblib import load as jlload
 
 
-class Predictor:
+class Predictor(object):
     def __init__(self, clf_json):
         """
         Parses a classifier specification .json which provides the path to a

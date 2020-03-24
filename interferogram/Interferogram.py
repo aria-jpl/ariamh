@@ -5,6 +5,11 @@
 # Copyright 2012, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged.
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import sys
 
 from isceobj.Util import key_of_same_content
@@ -249,11 +254,11 @@ class Interferogram(object):
         for i in range(len(slave)):
             sum1 +=  slave[i][1].doppler
 
-        fm.doppler =  [sum/len(master),sum1/len(slave)]
+        fm.doppler =  [old_div(sum,len(master)),old_div(sum1,len(slave))]
         fm.url = ''
         minLat,maxLat,minLon,maxLon = self.getGeoLocation()
-        fm.latitudeIndexMin = int(math.floor(minLat/fie._latitudeResolution))
-        fm.latitudeIndexMax = int(math.ceil(maxLat/fie._latitudeResolution))
+        fm.latitudeIndexMin = int(math.floor(old_div(minLat,fie._latitudeResolution)))
+        fm.latitudeIndexMax = int(math.ceil(old_div(maxLat,fie._latitudeResolution)))
 
         return fm
 
@@ -283,8 +288,8 @@ class Interferogram(object):
         fie = FrameInfoExtractor()
         dic = fm.toDict() 
         minLat,maxLat,minLon,maxLon = self.getGeoLocation()
-        latitudeIndexMin = int(math.floor(minLat/fie._latitudeResolution))
-        latitudeIndexMax = int(math.ceil(maxLat/fie._latitudeResolution))
+        latitudeIndexMin = int(math.floor(old_div(minLat,fie._latitudeResolution)))
+        latitudeIndexMax = int(math.ceil(old_div(maxLat,fie._latitudeResolution)))
         #insar.main()
         jsonD = {"inputFile":self._inputFile,"product_type":self._productName,"imageCorners":{"minLat":minLat,"maxLat":maxLat,
                   "minLon":minLon,"maxLon":maxLon}}

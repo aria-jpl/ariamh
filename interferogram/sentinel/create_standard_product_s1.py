@@ -1,4 +1,8 @@
 #!/usr/bin/env python3 
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from itertools import chain
 from zipfile import ZipFile
@@ -337,7 +341,7 @@ def get_date(t):
 def get_center_time(t1, t2):
     a = get_date(t1)
     b = get_date(t2)
-    t = a + (b - a)/2
+    t = a + old_div((b - a),2)
     return t.strftime("%H%M%S")
 
 '''
@@ -509,7 +513,7 @@ def get_area(coords):
         area += coords[i][1] * coords[j][0]
         area -= coords[j][1] * coords[i][0]
     #area = abs(area) / 2.0
-    return area / 2
+    return old_div(area, 2)
 
 
 def create_dataset_json(id, version, met_file, ds_file):
@@ -860,8 +864,8 @@ def main():
         #raise RuntimeError("Precise orbit required.")
 
 
-    for k in input_metadata.keys():
-        if k not in ctx.keys():
+    for k in list(input_metadata.keys()):
+        if k not in list(ctx.keys()):
             ctx[k] = input_metadata[k]
             logger.info("Added %s key to ctx" %k)
         else:
@@ -993,22 +997,26 @@ def main():
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
-        logger.info("Unzipping {}.".format(i))
-        with ZipFile(i, 'r') as zf:
-            zf.extractall()
-        logger.info("Removing {}.".format(i))
-        try: os.unlink(i)
-        except: pass
-        master_safe_dirs.append(i.replace(".zip", ".SAFE"))
+        master_safe_dir = i.replace(".zip", ".SAFE")
+        if not os.path.exists(master_safe_dir):
+            logger.info("Unzipping {}.".format(i))
+            with ZipFile(i, 'r') as zf:
+                zf.extractall()
+            logger.info("Removing {}.".format(i))
+            try: os.unlink(i)
+            except: pass
+        master_safe_dirs.append(master_safe_dir)
     slave_safe_dirs = []
     for i in ctx['slave_zip_file']:
-        logger.info("Unzipping {}.".format(i))
-        with ZipFile(i, 'r') as zf:
-            zf.extractall()
-        logger.info("Removing {}.".format(i))
-        try: os.unlink(i)
-        except: pass
-        slave_safe_dirs.append(i.replace(".zip", ".SAFE"))
+        slave_safe_dir = i.replace(".zip", ".SAFE")
+        if not os.path.exists(slave_safe_dir):
+            logger.info("Unzipping {}.".format(i))
+            with ZipFile(i, 'r') as zf:
+                zf.extractall()
+            logger.info("Removing {}.".format(i))
+            try: os.unlink(i)
+            except: pass
+        slave_safe_dirs.append(slave_safe_dir)
 
     # get polarization values
     master_pol = get_pol_data_from_slcs(master_safe_dirs)
@@ -1540,8 +1548,8 @@ def main():
     wmask_size = get_size(wmask)
 
     # determine downsample ratio and dowsample water mask
-    lon_rat = 1./(vrt_prod_size['lon']['delta']/wmask_size['lon']['delta'])*100
-    lat_rat = 1./(vrt_prod_size['lat']['delta']/wmask_size['lat']['delta'])*100
+    lon_rat = 1./(old_div(vrt_prod_size['lon']['delta'],wmask_size['lon']['delta']))*100
+    lat_rat = 1./(old_div(vrt_prod_size['lat']['delta'],wmask_size['lat']['delta']))*100
     logger.info("lon_rat/lat_rat: {} {}".format(lon_rat, lat_rat))
     wbd_ds_file = "wbdmask_ds.wbd"
     wbd_ds_vrt = "wbdmask_ds.vrt"

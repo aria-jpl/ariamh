@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from builtins import str
 import os, sys
 from utils.UrlUtils import UrlUtils
 

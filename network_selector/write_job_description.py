@@ -16,7 +16,7 @@ def write_job_desc(json_file, context_file):
     if os.path.exists(context_file):
         with open(context_file) as f: c = json.load(f)
     else:
-        raise(RuntimeError("Context file %s doesn't exist." % context_file))
+        raise RuntimeError
 
     # fields
     fields = ['project', 'mode', 'workflow', 'unwrapper', 'unwrap',

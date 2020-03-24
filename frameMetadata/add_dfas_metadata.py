@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-import re, sys, json, urllib2
+from future import standard_library
+standard_library.install_aliases()
+import re, sys, json, urllib.request, urllib.error, urllib.parse
 from lxml import etree
 
 

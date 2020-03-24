@@ -5,6 +5,7 @@ existing interferograms to ensure that they exist
 
 @author mstarch
 '''
+from builtins import range
 import sys
 import json
 import logging
@@ -65,7 +66,7 @@ def audit(configs, es_url, es_index, version):
         '''
         chunks = [[] for i in items]
         while len(items[0]) > 0:
-            for i in xrange(0, len(chunks)):
+            for i in range(0, len(chunks)):
                 chunks[i] = items[i][0: size]
                 del items[i][0: size]
             yield tuple(chunks)

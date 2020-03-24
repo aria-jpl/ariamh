@@ -1,5 +1,10 @@
 from __future__ import print_function
+from __future__ import division
 
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import sys, glob
 import numpy as np
 from os.path import dirname
@@ -108,7 +113,7 @@ def load_ifg(ifg,ifg_dir=ifg_dir):
         meta = json.load(fid)
     return dict(unwv=unwv,unw20v=unw20v,coh=coh,meta=meta)
 
-class IFGTagger():
+class IFGTagger(object):
     def __init__(self,ifg_urls=[]):
         self.ifg_urls = ifg_urls
 
@@ -210,7 +215,7 @@ class IFGTagger():
 
         print('plotw,ploth=%d,%d'%(self.plotw,self.ploth))
 
-        self.dx,self.dy = (figw-plotw)/2,max(0,figh-ploth)/2
+        self.dx,self.dy = old_div((figw-plotw),2),old_div(max(0,figh-ploth),2)
         self.dw,self.dh = plotw,ploth 
         imgkw = dict(image=[unwv],x=[self.dx],y=[self.dy],dw=[self.dw],dh=[self.dh])
         img20kw = dict(image=[unw20v],x=[self.dx],y=[self.dy],dw=[self.dw],dh=[self.dh])

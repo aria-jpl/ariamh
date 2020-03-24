@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import division
+from past.utils import old_div
 import os, sys, json, requests, copy, math
 from pprint import pprint, pformat
 
@@ -42,8 +44,8 @@ def check_reference(dataset, md):
         'sensor': fm.platform,
         'dataset_type':dataset,
         'trackNumber':fm.trackNumber,
-        'latitudeIndexMin': int(math.floor((latMin - latDelta)/latitudeResolution)),
-        'latitudeIndexMax': int(math.ceil((latMax + latDelta)/latitudeResolution)),
+        'latitudeIndexMin': int(math.floor(old_div((latMin - latDelta),latitudeResolution))),
+        'latitudeIndexMax': int(math.ceil(old_div((latMax + latDelta),latitudeResolution))),
         'system_version':uu.version,
         'direction':fm.direction,
         'lookDirection':fm.lookDirection,

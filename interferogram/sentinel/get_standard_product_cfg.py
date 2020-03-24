@@ -1,3 +1,4 @@
+from builtins import str
 import os, sys, re, requests, json, logging, traceback, argparse, copy, bisect
 import hashlib
 from itertools import product, chain

@@ -13,13 +13,17 @@ export GIANT_HOME=/usr/local/giant/GIAnT
 export PYTHONPATH=$ISCE_HOME/applications:$ISCE_HOME/components:$BASE_PATH:$ARIAMH_HOME:$TROPMAP_HOME:$GIANT_HOME:$PYTHONPATH
 export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 
+#which python
+#echo $PATH
+#python $BASE_PATH/test.py > test.log 2>&1
+
 # source environment
 source $HOME/verdi/bin/activate
 
 echo "##########################################" 1>&2
 echo -n "Running S1 create MRPE slc_pair product sciflo: " 1>&2
 date 1>&2
-/usr/bin/python $BASE_PATH/sciflo_create_rsp_mrpe.py > sciflo_create_rsp_mrpe.log 2>&1
+/opt/conda/bin/python $BASE_PATH/sciflo_create_rsp_mrpe.py > sciflo_create_rsp_mrpe.log 2>&1
 STATUS=$?
 echo -n "Finished running S1 create MRPE slc_pair product sciflo: " 1>&2
 date 1>&2

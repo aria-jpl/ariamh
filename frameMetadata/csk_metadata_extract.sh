@@ -48,7 +48,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Started  extracting metadata: " 1>&2
 date 1>&2
-/usr/bin/python3 $FRAMEMETA_HOME/extractMetadata.py extractorInput.xml > extractMetadata.log 2>&1
+python $FRAMEMETA_HOME/extractMetadata.py extractorInput.xml > extractMetadata.log 2>&1
 STATUS=$?
 echo -n "Finished extracting metadata: " 1>&2
 date 1>&2

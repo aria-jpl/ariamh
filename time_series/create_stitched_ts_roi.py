@@ -2,7 +2,10 @@
 """
 Stitched time-series PGE wrapper.
 """
+from __future__ import division
 
+from builtins import str
+from past.utils import old_div
 import os, sys, re, requests, json, shutil, traceback, logging, pickle
 import argparse, multiprocessing, hashlib, h5py
 from datetime import datetime, timedelta
@@ -181,8 +184,8 @@ def main(input_json_file):
 
     # get reference point in radar coordinates and length/width for box
     ref_lat, ref_lon = input_json['ref_point']
-    ref_width = int((input_json['ref_box_num_pixels'][0]-1)/2)
-    ref_height = int((input_json['ref_box_num_pixels'][1]-1)/2)
+    ref_width = int(old_div((input_json['ref_box_num_pixels'][0]-1),2))
+    ref_height = int(old_div((input_json['ref_box_num_pixels'][1]-1),2))
 
     # align images
     center_lines_utc = []
@@ -250,8 +253,8 @@ def main(input_json_file):
         gt = ds.GetGeoTransform()
         width = ds.RasterXSize
         length = ds.RasterYSize
-        ref_line  = int((ref_lat - gt[3]) / gt[5])
-        ref_pixel = int((ref_lon - gt[0]) / gt[1])
+        ref_line  = int(old_div((ref_lat - gt[3]), gt[5]))
+        ref_pixel = int(old_div((ref_lon - gt[0]), gt[1]))
         xlim = [0, width]
         ylim = [0, length]
         rxlim = [ref_pixel - ref_width, ref_pixel + ref_width]
@@ -299,7 +302,7 @@ def main(input_json_file):
         #    continue
 
         # filter out product with ROI latitude coverage of valid data less than threshold
-        cov = np.sum(~np.isnan(mask), axis=0).max()/(mask.shape[0]*1.)
+        cov = old_div(np.sum(~np.isnan(mask), axis=0).max(),(mask.shape[0]*1.))
         logger.info('coverage: {}'.format(cov))
         if cov < covth:
             logger.info('Filtered out {}: ROI latitude coverage of valid data was below threshold ({} vs. {})'.format(

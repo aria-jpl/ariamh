@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import ast, os, sys, json, re, math, logging, traceback, pickle, hashlib
 from lxml.etree import parse
 from osgeo import gdal, ogr, osr
@@ -103,7 +106,7 @@ def get_area(coords):
         area += coords[i][1] * coords[j][0]
         area -= coords[j][1] * coords[i][0]
     #area = abs(area) / 2.0
-    return area / 2
+    return old_div(area, 2)
 
 def change_direction(coords):
     cord_area= get_area(coords)
@@ -251,7 +254,7 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
         metadata = json.load(f)
 
     #update direction to ascending/descending
-    if 'direction' in metadata.keys():
+    if 'direction' in list(metadata.keys()):
         direct = metadata['direction']
         if direct == 'asc':
             direct = 'ascending'

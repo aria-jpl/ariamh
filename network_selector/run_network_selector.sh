@@ -16,7 +16,7 @@ jd_json_file=$4
 echo "##########################################" 1>&2
 echo -n "Write inputs to job description JSON: " 1>&2
 date 1>&2
-/usr/bin/python3 $UTILS_HOME/jobDescriptorWriter.py --file $jd_json_file \
+python $UTILS_HOME/jobDescriptorWriter.py --file $jd_json_file \
   --set networkSelector "{\"inputFile\":\"$metadata_file\",\"outputFile\":\"$output_file\"}" \
   --set project "\"$project\"" > jobDescriptorWriter.log 2>&1
 STATUS=$?
@@ -32,7 +32,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Started network selector: " 1>&2
 date 1>&2
-/usr/bin/python3 $NETWORK_SELECTOR_HOME/networkSelector.py $jd_json_file > networkSelector.log 2>&1
+python $NETWORK_SELECTOR_HOME/networkSelector.py $jd_json_file > networkSelector.log 2>&1
 STATUS=$?
 echo -n "Finished network selector: " 1>&2
 date 1>&2
@@ -50,7 +50,7 @@ for i in ${output_file}_*; do
   if [ -e "$i" ]; then
     new_jd_json_file=${jd_json_file}_${i##*_}
     cp -f $jd_json_file $new_jd_json_file
-    /usr/bin/python3 $UTILS_HOME/jobDescriptorWriter.py --file $new_jd_json_file \
+    python $UTILS_HOME/jobDescriptorWriter.py --file $new_jd_json_file \
       --update networkSelector "{\"outputFile\":\"$i\"}" \
       --update createInterferogram "{\"inputFile\":\"$i\"}" >> jobDescriptorWriter.log 2>&1
   fi
