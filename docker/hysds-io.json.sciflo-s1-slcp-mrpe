@@ -84,17 +84,15 @@
     },
     { 
       "name": "azimuth_looks",
-      "from": "submitter",
+      "from": "value",
       "type": "number",
-      "lambda": "lambda x: int(x)",
-      "default": "1"
+      "value": "1"
     },
     { 
       "name": "range_looks",
-      "from": "submitter",
+      "from": "value",
       "type": "number",
-      "lambda": "lambda x: int(x)",
-      "default": "1"
+      "value": "1"
     },
     { 
       "name": "filter_strength",
