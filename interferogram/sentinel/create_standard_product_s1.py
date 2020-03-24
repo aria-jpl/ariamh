@@ -40,7 +40,7 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 RESORB_RE = re.compile(r'_RESORB_')
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
-IFG_ID_SP_TMPL = "S1-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
+IFG_ID_SP_TMPL = "S1-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}_GPU"
 
 def update_met_key(met_md, old_key, new_key):
     try:
@@ -202,7 +202,8 @@ def check_ifg_status_by_hash(new_ifg_hash):
     if total>0:
         found_id = result['hits']['hits'][0]["_id"]
         logger.info("Duplicate dataset found: %s" %found_id)
-        sys.exit(0)
+        # sys.exit(0)
+	return False
 
     logger.info("check_slc_status : returning False")
     return False
@@ -1329,7 +1330,7 @@ def main():
 
     ifg_hash = ifg_hash[0:4]
     logger.info("slc_master_dt : %s,slc_slave_dt : %s" %(slc_master_dt,slc_slave_dt))
-    id_tmpl_merged = "S1-GUNW-MERGED_R{}_M{:d}S{:d}_TN{:03d}_{}-{}_s123-{}-{}"
+    id_tmpl_merged = "S1-GUNW-MERGED_R{}_M{:d}S{:d}_TN{:03d}_{}-{}_s123-{}-{}_GPU"
     ifg_id_merged = id_tmpl_merged.format('M', len(master_ids), len(slave_ids), track,  master_ifg_dt, slave_ifg_dt, orbit_type, ifg_hash)
     logger.info("ifg_id_merged : %s" %ifg_id_merged)
 
