@@ -9,7 +9,7 @@ from builtins import str
 import os, sys, traceback, logging, argparse
 from subprocess import check_call
 
-from .get_clims import get_clims
+from get_clims import get_clims
 
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
