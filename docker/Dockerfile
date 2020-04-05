@@ -20,7 +20,7 @@ RUN set -ex \
  && sudo chown -R ops:ops /home/ops/ariamh \
  && mv /home/ops/ariamh/insarzd /home/ops/verdi/ops/ \
  && cd /home/ops/verdi/ops/insarzd/src \
- && ./install.sh \
+ && ./install.sh 
 
 # set entrypoint
 WORKDIR /home/ops
