@@ -1,0 +1,61 @@
+{
+  "command": "/home/ops/insarzd/create_alos2_ifg.sh",
+  "imported_worker_files": {
+    "/home/ops/.netrc": ["/home/ops/.netrc"],
+    "/home/ops/.aws": ["/home/ops/.aws", "ro"],
+    "/home/ops/verdi/etc/settings.conf": "/home/ops/insarzd/settings.conf"
+  },
+  "disk_usage":"200GB",
+   "dependency_images": [
+    {
+      "container_image_name": "aria/isce_giant:latest",
+      "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-latest.tar.gz",
+      "container_mappings": {
+        "/home/ops/.netrc": ["/root/.netrc"],
+        "/home/ops/.aws": ["/root/.aws", "ro"]
+      }
+    }
+  ],
+  "recommended-queues" : [
+    "standard_product-s1gunw-topsapp-asg-fleet"
+  ],
+  "soft_time_limit": 7200,
+  "time_limit": 7500,
+  "post": [ "hysds.utils.triage" ],
+  "params" : [
+    { 
+      "name": "reference_product",
+      "destination": "context"
+    },
+    {
+      "name": "secondary_product",
+      "destination": "context"
+    },
+    {
+      "name": "dem_type",
+      "destination": "context"
+    },
+    {
+      "name": "ifg_type",
+      "destination": "context"
+    },
+    { 
+      "name": "azimuth_looks",
+      "destination": "context"
+    },
+    { 
+      "name": "range_looks",
+      "destination": "context"
+    },
+    { 
+      "name": "burst_overlap",
+      "destination": "context"
+    },
+    { 
+      "name": "filter_strength",
+      "destination": "context"
+    },
+    {
+    { "name": "localize_url", "destination": "localize" }
+  ]
+}

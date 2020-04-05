@@ -1,0 +1,61 @@
+{
+  "submission_type": "iteration",
+  "label" : "ALOS2 IFG Generation",
+  "allowed_accounts": [ "ops" ],
+  "enable_dedup": false,
+  "params" : [
+    { 
+      "name": "reference_product",
+      "from": "submitter",
+      "type": "text"
+    },
+    {
+      "name": "secondary_product",
+      "from": "submitter",
+      "type": "text"
+    },
+    {
+      "name": "dem_type",
+      "from": "submitter",
+      "default": "SRTM+v3",
+      "enumerables": ["SRTM+v3", "NED1", "NED13", "NED13-downsampled"]
+    },
+    {
+      "name": "ifg_type",
+      "from": "submitter",
+      "type": "enum",
+      "default": "scansar",
+      "enumerables": ["scansar", "stripmap", "scansar-stripmap"]
+    },
+    { 
+      "name": "azimuth_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "12"
+    },
+    { 
+      "name": "range_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "30"
+    },
+    { 
+      "name": "burst_overlap",
+      "from": "submitter",
+      "type": "number",
+      "default": "85.0"
+    },
+    { 
+      "name": "filter_strength",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.6"
+    },
+    {
+      "name": "localize_url",
+      "from": "submitter"
+    }
+  ]
+}
