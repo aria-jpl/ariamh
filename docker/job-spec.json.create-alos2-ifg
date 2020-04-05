@@ -55,7 +55,9 @@
       "name": "filter_strength",
       "destination": "context"
     },
-    {
-    { "name": "localize_url", "destination": "localize" }
+    { 
+      "name": "localize_url", 
+      "destination": "localize" 
+    }
   ]
 }
