@@ -1,9 +1,9 @@
 {
-  "command": "/home/ops/insarzd/create_alos2_ifg.sh",
+  "command": "/home/ops/ariamh/interferogram/sentinel/create_alos2_ifg.sh",
   "imported_worker_files": {
     "/home/ops/.netrc": ["/home/ops/.netrc"],
     "/home/ops/.aws": ["/home/ops/.aws", "ro"],
-    "/home/ops/verdi/etc/settings.conf": "/home/ops/insarzd/settings.conf"
+    "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/settings.conf"
   },
   "disk_usage":"200GB",
    "dependency_images": [
@@ -17,7 +17,7 @@
     }
   ],
   "recommended-queues" : [
-    "standard_product-s1gunw-topsapp-asg-fleet"
+    "standard_product-s1gunw-topsapp"
   ],
   "soft_time_limit": 7200,
   "time_limit": 7500,

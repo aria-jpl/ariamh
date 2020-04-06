@@ -18,6 +18,7 @@ RUN set -ex \
  && sudo /usr/bin/pip3 install joblib netcdf4 \
  && sudo rm -rf /root/.cache \
  && sudo chown -R ops:ops /home/ops/ariamh \
+ && mv /home/ops/ariamh/alos2-ingest /home/ops/verdi/ops/ \
  && mv /home/ops/ariamh/insarzd /home/ops/verdi/ops/ \
  && cd /home/ops/verdi/ops/insarzd/src \
  && ./install.sh 
