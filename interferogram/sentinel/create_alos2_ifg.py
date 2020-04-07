@@ -20,7 +20,7 @@ logger = logging.getLogger('create_alos2_ifg.log')
 BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
-IFG_ID_ALOS2_TMPL = "ALOS2-IFG-{}-{}-{}-{}"
+IFG_ID_ALOS2_TMPL = "IFG-ALOS2-{}-{}-{}-{}"
 
 def create_product(id, wd):
     insar_dir = os.path.json(wd, "insar")
