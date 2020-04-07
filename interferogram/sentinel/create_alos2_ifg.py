@@ -22,11 +22,18 @@ BASE_PATH = os.path.dirname(__file__)
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
 
 
+def create_product(id, wd):
+    insar_dir = os.path.json(wd, "insar")
+    product_dir = os.path.join(wd, id)
+
+    
+
 def main():
 
 
     ''' Run the install '''
     wd = os.getcwd()
+    ifg_md = {}    
     
     
     ''' Get the informations from _context file '''
@@ -50,11 +57,28 @@ def main():
     burst_overlap = ctx["burst_overlap"]
     filter_strength = ctx["filter_strength"]
 
+
+    ifg_md['dem_type'] = dem_type
+    ifg_md['reference_slc'] = reference_slc
+    ifg_md['secondary_slc'] = secondary_slc
+    ifg_md["interferogram_type"] = ifg_type
+    ifg_md["azimuth_looks"] = azimuth_looks
+    ifg_md["range_looks"] = range_looks
+    ifg_md["burst_overlap"] = burst_overlap
+    ifg_md["filter_strength"] = filter_strength
+
+    version = ifg_utils.get_version("ALOS2_IFG")
+    if not version:
+        version = "v1.0"
+    
     xml_file = "alos2app_{}.xml".format(ifg_type)
     tmpl_file = "{}.tmpl".format(xml_file)
 
     start_subswath = 1
     end_subswath = 5
+
+    ifg_md["start_subswath"] = start_subswath
+    ifg_md["end_subswath"] = end_subswath
     
     ref_data_dir = os.path.join(wd, "reference")
     sec_data_dir = os.path.join(wd, "secondary")
@@ -80,8 +104,18 @@ def main():
     with open("sec_alos2_md.json") as f:
         sec_md = json.load(f)
 
-    ref_bbox = ref_md['geometry']['coordinates'][0]
-    SNWE, snwe_arr = ifg_utils.get_SNWE_bbox(ref_bbox)
+    ref_md['location'] = ref_md.pop('geometry')
+    sec_md['location'] = sec_md.pop('geometry')
+
+    ref_bbox = ref_md['location']['coordinates'][0]
+    sec_bbox = sec_md['location']['coordinates'][0]
+    #union_geojson = ifg_utils.get_union_geometry([ref_md, sec_md])
+    union_geojson = ifg_utils.get_union_polygon(["ref_alos2_md.json", "sec_alos2_md.json"])
+    ifg_md["union_geojson"] = union_geojson
+    print(union_geojson)
+
+    SNWE, snwe_arr = ifg_utils.get_SNWE_complete_bbox(ref_bbox, sec_bbox)
+    ifg_md["SNWE"] = SNWE
     logging.info("snwe_arr : {}".format(snwe_arr))
     logging.info("SNWE : {}".format(SNWE))
     
@@ -102,8 +136,12 @@ def main():
     Logic for Fram datas
     '''
 
-    
+    ifg_md["polarization"] = ref_pol
 
+
+    ''' Some Fake Data'''
+    ifg_md['sensing_start'] = datetime.now().strftime("%d%m%YT%H%M%S")
+    
 
     tmpl_file = os.path.join(BASE_PATH, tmpl_file)
     print(tmpl_file)
@@ -126,11 +164,37 @@ def main():
     ifg_utils.run_command(cmd)
 
     dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
-    id = "ALOS2_{}_{}".format(dem_type, dt_string)
 
-    create_product(id)
+    ifg_md['sensing_stop'] = dt_string
+
+    id = "ALOS2_{}_{}".format(dem_type, dt_string)
+    prod_dir = id
+    logger.info("prod_dir : %s" %prod_dir)
     
-    alos2_packaging(id)
+    insar_dir = os.path.join(wd, "insar")
+
+    os.chdir(wd)
+    os.makedirs(prod_dir, 0o755)
+
+    #Copy the product
+    for name in glob.glob("{}/filt_diff_*".format(insar_dir)):
+        shutil.copy(os.path.join(insar_dir, name),  os.path.join(prod_dir,name))    
+
+    for name in glob.glob("{}/*.slc.par.xml".format(insar_dir)):
+        shutil.copy(os.path.join(insar_dir, name),  os.path.join(prod_dir,name))
+
+    shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
+
+    # generate met file
+    met_file = os.path.join(prod_dir, "{}.met.json".format(id))
+    with open(met_file, 'w') as f: json.dump(ifg_md, f, indent=2)
+
+    # generate dataset JSON
+    ds_file = os.path.join(prod_dir, "{}.dataset.json".format(id))
+    logger.info("creating dataset file : %s" %ds_file)
+    ifg_utils.create_dataset_json(id, version, met_file, ds_file)
+ 
+    #alos2_packagina(id)
 
 
 if __name__ == '__main__':

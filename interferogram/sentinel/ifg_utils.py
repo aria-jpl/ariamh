@@ -9,6 +9,7 @@ import xml.etree.cElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
 from zipfile import ZipFile
 from create_input_xml import create_input_xml
+from osgeo import ogr, osr
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -45,6 +46,8 @@ def get_pol_frame_info(slc_dir):
     return pol_arr[0], list(set(frame_arr))     
 
 def fileContainsMsg(file_name, msg):
+    return False, None
+
     with open(file_name, 'r') as f:
         datafile = f.readlines()
     for line in datafile:
@@ -53,10 +56,10 @@ def fileContainsMsg(file_name, msg):
             return True, line
     return False, None
 
-def checkBurstError():
+def checkBurstError(file_name):
     msg = "cannot continue for interferometry applications"
 
-    found, line = fileContainsMsg("alos2app.log", msg)
+    found, line = fileContainsMsg(file_name, msg)
     if found:
         logger.info("checkBurstError : %s" %line.strip())
         raise RuntimeError(line.strip())
@@ -88,7 +91,7 @@ def updateXml(xml_file):
     tree = ET.ElementTree(root)
     tree.write(xml_file) 
 
-def get_SNWE_bbox(bbox):
+def get_min_mx_lon_lat(bbox):
     lons = []
     lats = []
 
@@ -96,7 +99,159 @@ def get_SNWE_bbox(bbox):
         lons.append(pp[0])
         lats.append(pp[1])
 
-    return get_SNWE(min(lons), max(lons), min(lats), max(lats))
+    return min(lons), max(lons), min(lats), max(lats)
+
+def get_SNWE_bbox(bbox):
+
+    return get_SNWE(get_min_mx_lon_lat(bbox))
+
+def get_SNWE_complete_bbox(ref_bbox, sec_bbox):
+
+    ref_min_lon, ref_max_lon, ref_min_lat, ref_max_lat = get_min_mx_lon_lat(ref_bbox)
+    sec_min_lon, sec_max_lon, sec_min_lat, sec_max_lat = get_min_mx_lon_lat(sec_bbox)
+
+    return get_SNWE(min(ref_min_lon, sec_min_lon), max(ref_max_lon, sec_max_lon), min(ref_min_lat, sec_min_lat), max(ref_max_lat, sec_max_lat))
+
+def get_union_geometry(geojsons):
+    """Return polygon of union of acquisition footprints."""
+
+    # geometries are in lat/lon projection
+    #src_srs = osr.SpatialReference()
+    #src_srs.SetWellKnownGeogCS("WGS84")
+    #src_srs.ImportFromEPSG(4326)
+
+    # get union geometry of all scenes
+    geoms = list()
+    union = None
+    for geojson in geojsons:
+        geom = ogr.CreateGeometryFromJson(json.dumps(geojson))
+        geoms.append(geom)
+        union = geom if union is None else union.Union(geom)
+    union_geojson =  json.loads(union.ExportToJson())
+    return union_geojson
+
+def get_version(dataset_type):
+    """Get dataset version."""
+    """ dataset_type example : 'S1-GUNW', 'ALOS2' """
+    
+    ds_ver = None
+
+    DS_VERS_CFG = os.path.normpath(
+                      os.path.join(
+                          os.path.dirname(os.path.abspath(__file__)),
+                          '..', '..', 'conf', 'dataset_versions.json'))
+   
+    with open(DS_VERS_CFG) as f:
+        ds_vers = json.load(f)
+
+    if dataset_type in ds_vers:
+        ds_ver = ds_vers[dataset_type]
+
+    return ds_ver
+
+def get_area(coords):
+    '''get area of enclosed coordinates- determines clockwise or counterclockwise order'''
+    n = len(coords) # of corners
+    area = 0.0
+    for i in range(n):
+        j = (i + 1) % n
+        area += coords[i][1] * coords[j][0]
+        area -= coords[j][1] * coords[i][0]
+    #area = abs(area) / 2.0
+    return area / 2
+
+
+def create_dataset_json(id, version, met_file, ds_file):
+    """Write dataset json."""
+
+
+    # get metadata
+    with open(met_file) as f:
+        md = json.load(f)
+
+    # build dataset
+    ds = {
+        'creation_timestamp': "%sZ" % datetime.utcnow().isoformat(),
+        'version': version,
+        'label': id
+    }
+
+    try:
+        '''
+        logger.info("create_dataset_json : met['bbox']: %s" %md['bbox'])
+        coordinates = [
+                    [
+                      [ md['bbox'][0][1], md['bbox'][0][0] ],
+                      [ md['bbox'][3][1], md['bbox'][3][0] ],
+                      [ md['bbox'][2][1], md['bbox'][2][0] ],
+                      [ md['bbox'][1][1], md['bbox'][1][0] ],
+                      [ md['bbox'][0][1], md['bbox'][0][0] ]
+                    ] 
+                  ]
+        '''
+
+        coordinates = md['union_geojson']['coordinates']
+    
+        cord_area = get_area(coordinates[0])
+        if not cord_area>0:
+            logger.info("creating dataset json. coordinates are not clockwise, reversing it")
+            coordinates = [coordinates[0][::-1]]
+            logger.info(coordinates)
+            cord_area = get_area(coordinates[0])
+            if not cord_area>0:
+                logger.info("creating dataset json. coordinates are STILL NOT  clockwise")
+        else:
+            logger.info("creating dataset json. coordinates are already clockwise")
+
+        ds['location'] =  {'type': 'Polygon', 'coordinates': coordinates}
+        logger.info("create_dataset_json location : %s" %ds['location'])
+
+    except Exception as err:
+        logger.info("create_dataset_json: Exception : ")
+        logger.warn(str(err))
+        logger.warn("Traceback: {}".format(traceback.format_exc()))
+
+
+    # set earliest sensing start to starttime and latest sensing stop to endtime
+    if isinstance(md['sensing_start'], str):
+        ds['starttime'] = md['sensing_start']
+    else:
+        md['sensing_start'].sort()
+        ds['starttime'] = md['sensing_start'][0]
+
+    if isinstance(md['sensing_stop'], str):
+        ds['endtime'] = md['sensing_stop']
+    else:
+        md['sensing_stop'].sort()
+        ds['endtime'] = md['sensing_stop'][-1]
+
+    # write out dataset json
+    with open(ds_file, 'w') as f:
+        json.dump(ds, f, indent=2)
+
+def get_union_polygon(ds_files):
+    """Get GeoJSON polygon of union of IFGs."""
+
+    geom_union = None
+    for ds_file in ds_files:
+         with open(ds_file) as f:
+             ds = json.load(f)
+             if 'location' not in ds:
+                 if 'geometry' in ds:
+                     ds['location'] = ds['geometry']
+                 else:
+                     raise Exception("Location or Geometry NOT found in : {}".format(ds_file))
+
+         geom = ogr.CreateGeometryFromJson(json.dumps(ds['location'], indent=2, sort_keys=True))
+         if geom_union is None: geom_union = geom
+         else: geom_union = geom_union.Union(geom)
+    return json.loads(geom_union.ExportToJson()), geom_union.GetEnvelope()
+
+def get_bool_param(ctx, param):
+    """Return bool param from context."""
+
+    if param in ctx and isinstance(ctx[param], bool): return ctx[param]
+    return True if ctx.get(param, 'true').strip().lower() == 'true' else False
 
 def get_SNWE(min_lon, max_lon, min_lat, max_lat):
     snwe_arr = []
@@ -276,7 +431,7 @@ def download_dem(SNWE):
         geocode_dem_file = os.path.join(geocode_dem_dir, "stitched.dem")
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
 
-    checkBurstError()
+    checkBurstError("isce.log")
 
     # fix file path in Geocoding DEM xml
     fix_cmd = [

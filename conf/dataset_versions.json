@@ -10,5 +10,6 @@
   "S1-VALIDATED_TS_STACK": "v1.0",
   "S1-SLCP": "v1.2",
   "TS": "v1.1",
-  "features": "v1.1"
+  "features": "v1.1",
+  "ALOS2_IFG": "v1.0"
 }
