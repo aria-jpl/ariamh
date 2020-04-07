@@ -20,7 +20,7 @@ logger = logging.getLogger('create_alos2_ifg.log')
 BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
-
+IFG_ID_ALOS2_TMPL = "ALOS2-IFG-{}-{}-{}-{}"
 
 def create_product(id, wd):
     insar_dir = os.path.json(wd, "insar")
@@ -57,7 +57,9 @@ def main():
     burst_overlap = ctx["burst_overlap"]
     filter_strength = ctx["filter_strength"]
 
+    ifg_hash = ifg_utils.get_ifg_hash([reference_slc], [secondary_slc])
 
+    ifg_md['full_idc_hash'] = ifg_hash
     ifg_md['dem_type'] = dem_type
     ifg_md['reference_slc'] = reference_slc
     ifg_md['secondary_slc'] = secondary_slc
@@ -106,11 +108,29 @@ def main():
 
     ref_md['location'] = ref_md.pop('geometry')
     sec_md['location'] = sec_md.pop('geometry')
+    
+    sat_direction = "D"
+    direction = ref_md["flight_direction"]
+    if direction.lower() == 'asc':
+        sat_direction = "A"
+    
+    ifg_md['satelite_direction'] = direction
+    ref_orbit = ref_md["absolute_orbit"]
+    sec_orbit = sec_md["absolute_orbit"]
+    ifg_md["orbit"] = list(set([ref_orbit, sec_orbit]))
 
+    ref_frame = int(ref_md["frame"])
+    sec_frame = int(sec_md["frame"])
+
+    if ref_frame != sec_frame:
+        print("Reference Frame : {} is NOT same as Secondery Frame : {}".format(ref_frame, sec_frame))
+        #raise Exception("Reference Frame : {} is NOT same as Secondery Frame : {}".format(ref_frame, sec_frame))
+
+    ifg_md["frame"] = "{}".format(ref_frame)
+    
     ref_bbox = ref_md['location']['coordinates'][0]
     sec_bbox = sec_md['location']['coordinates'][0]
-    #union_geojson = ifg_utils.get_union_geometry([ref_md, sec_md])
-    union_geojson = ifg_utils.get_union_polygon(["ref_alos2_md.json", "sec_alos2_md.json"])
+    union_geojson = ifg_utils.get_union_geometry([ref_md['location'], sec_md['location']])
     ifg_md["union_geojson"] = union_geojson
     print(union_geojson)
 
@@ -166,8 +186,11 @@ def main():
     dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
 
     ifg_md['sensing_stop'] = dt_string
-
-    id = "ALOS2_{}_{}".format(dem_type, dt_string)
+    ifg_hash = ifg_hash[0:4]
+     
+    #IFG_ID_ALOS2_TMPL = "ALOS2-IFG-{}-{}-{}-{}"
+    
+    id = IFG_ID_ALOS2_TMPL.format(sat_direction, dt_string, ifg_hash, version.replace('.', '_') )
     prod_dir = id
     logger.info("prod_dir : %s" %prod_dir)
     
@@ -177,11 +200,11 @@ def main():
     os.makedirs(prod_dir, 0o755)
 
     #Copy the product
-    for name in glob.glob("{}/filt_diff_*".format(insar_dir)):
-        shutil.copy(os.path.join(insar_dir, name),  os.path.join(prod_dir,name))    
+    for name in glob("{}/filt_diff_*".format(insar_dir)):
+        shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
 
-    for name in glob.glob("{}/*.slc.par.xml".format(insar_dir)):
-        shutil.copy(os.path.join(insar_dir, name),  os.path.join(prod_dir,name))
+    for name in glob("{}/*.slc.par.xml".format(insar_dir)):
+        shutil.copy(os.path.join(insar_dir, name),  prod_dir)
 
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
 

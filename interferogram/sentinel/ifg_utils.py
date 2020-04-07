@@ -20,6 +20,180 @@ BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
 
+def get_md5_from_file(file_name):
+    '''
+    :param file_name: file path to the local SLC file after download
+    :return: string, ex. 8e15beebbbb3de0a7dbed50a39b6e41b ALL LOWER CASE
+    '''
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+def check_ifg_status_by_hash(new_ifg_hash):
+    es_index="grq_*_s1-gunw"
+    result = get_dataset_by_hash(new_ifg_hash, es_index)
+    total = result['hits']['total']
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
+        found_id = result['hits']['hits'][0]["_id"]
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
+
+    logger.info("check_slc_status : returning False")
+    return False
+
+def check_ifg_status_by_hash_version(new_ifg_hash, version):
+    es_index="grq_*_s1-gunw"
+    result = get_dataset_by_hash_version(new_ifg_hash, version, es_index)
+    total = result['hits']['total']
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
+        found_id = result['hits']['hits'][0]["_id"]
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
+
+    logger.info("check_slc_status : returning False")
+    return False
+
+def get_ifg_hash(master_slcs,  slave_slcs):
+
+    master_ids_str=""
+    slave_ids_str=""
+
+    for slc in sorted(master_slcs):
+        print("get_ifg_hash : master slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if master_ids_str=="":
+            master_ids_str= slc
+        else:
+            master_ids_str += " "+slc
+
+    for slc in sorted(slave_slcs):
+        print("get_ifg_hash: slave slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if slave_ids_str=="":
+            slave_ids_str= slc
+        else:
+            slave_ids_str += " "+slc
+
+    id_hash = hashlib.md5(json.dumps([
+            master_ids_str,
+            slave_ids_str
+            ]).encode("utf8")).hexdigest()
+    return id_hash
+
+def get_date(t):
+    try:
+        return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except:
+        try:
+            return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S")
+        except:
+            return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
+
+def get_center_time(t1, t2):
+    a = get_date(t1)
+    b = get_date(t2)
+    t = a + (b - a)/2
+    return t.strftime("%H%M%S")
+
+'''
+def get_time(t):
+
+    if '.' in t:
+        t = t.split('.')[0].strip()
+    t1 = datetime.strptime(t, '%Y%m%dT%H%M%S')
+    t1 = t1.strftime("%Y-%m-%dT%H:%M:%S")
+    logger.info(t1)
+    return t1
+'''
+
+def get_time(t):
+
+    logger.info("get_time(t) : %s" %t)
+    t = parser.parse(t).strftime('%Y-%m-%dT%H:%M:%S')
+    t1 = datetime.strptime(t, '%Y-%m-%dT%H:%M:%S')
+    logger.info("returning : %s" %t1)
+    return t1
+
+def get_time_str(t):
+
+    logger.info("get_time(t) : %s" %t)
+    t = parser.parse(t).strftime('%Y-%m-%dT%H:%M:%S')
+    return t
+
+def get_date_str(t):
+
+    logger.info("get_time(t) : %s" %t)
+    t = parser.parse(t).strftime('%Y-%m-%d')
+    return t
+def convert_number(x):
+
+    x = float(x)
+    data = ''
+    y = abs(x)
+    pre_y = str(y).split('.')[0]
+    if int(pre_y)>99:
+        pre_y = pre_y[:2]
+    else:
+        pre_y = pre_y.rjust(2, '0')
+
+    post_y = '000'
+    post_y = str(y).split('.')[1]
+        
+    if int(post_y)>999:
+        post_y = post_y[:3]
+    else:
+        print("post_y[0:3] : {}".format(post_y[0:3]))
+        if post_y[0:3] == '000':
+            post_y = '000'
+        else:
+            post_y =post_y.ljust(3, '0')
+        
+    print("post_y : %s " %post_y)
+
+    if x<0:
+        data = "{}{}S".format(pre_y, post_y)
+    else:
+        data = "{}{}N".format(pre_y, post_y)
+
+    return data
+
+
+def get_minmax(geojson):
+    '''returns the minmax tuple of a geojson'''
+    lats = [x[1] for x in geojson['coordinates'][0]]
+    return min(lats), max(lats)
+
+def get_geocoded_lats(vrt_file):
+
+    ''' return latitudes'''
+    import gdal
+    import numpy as np
+
+    # extract geo-coded corner coordinates
+    ds = gdal.Open(vrt_file)
+    gt = ds.GetGeoTransform()
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    
+    # getting the gdal transform and projection
+    geoTrans = str(ds.GetGeoTransform())
+    projectionRef = str(ds.GetProjection())
+    
+    lat_arr = list(range(0, rows))
+    lats = np.empty((rows,),dtype='float64')
+    for py in lat_arr:
+        lats[py] = gt[3] + (py * gt[5])
+
+    return lats
+
 def get_pol_value(pp):
     if pp in ("SV", "DV", "VV"): return "VV"
     elif pp in ("DH", "SH", "HH", "HV"): return "HH"
@@ -61,13 +235,13 @@ def checkBurstError(file_name):
 
     found, line = fileContainsMsg(file_name, msg)
     if found:
-        logger.info("checkBurstError : %s" %line.strip())
+        print("checkBurstError : %s" %line.strip())
         raise RuntimeError(line.strip())
     if not found:
         msg = "Exception: Could not determine a suitable burst offset"
         found, line = fileContainsMsg("alos2app.log", msg)
         if found:
-            logger.info("Found Error : %s" %line)
+            print("Found Error : %s" %line)
             raise RuntimeError(line.strip())
 
 def updateXml(xml_file):
@@ -178,7 +352,7 @@ def create_dataset_json(id, version, met_file, ds_file):
 
     try:
         '''
-        logger.info("create_dataset_json : met['bbox']: %s" %md['bbox'])
+        print("create_dataset_json : met['bbox']: %s" %md['bbox'])
         coordinates = [
                     [
                       [ md['bbox'][0][1], md['bbox'][0][0] ],
@@ -191,25 +365,27 @@ def create_dataset_json(id, version, met_file, ds_file):
         '''
 
         coordinates = md['union_geojson']['coordinates']
-    
+        print("coordinates : {}".format(coordinates))
+        
+        ds['location'] =  {'type': 'Polygon', 'coordinates': coordinates}
         cord_area = get_area(coordinates[0])
+        print("cord_area : {}".format(cord_area))
         if not cord_area>0:
-            logger.info("creating dataset json. coordinates are not clockwise, reversing it")
+            print("creating dataset json. coordinates are not clockwise, reversing it")
             coordinates = [coordinates[0][::-1]]
-            logger.info(coordinates)
+            print(coordinates)
             cord_area = get_area(coordinates[0])
             if not cord_area>0:
-                logger.info("creating dataset json. coordinates are STILL NOT  clockwise")
+                print("creating dataset json. coordinates are STILL NOT  clockwise")
         else:
-            logger.info("creating dataset json. coordinates are already clockwise")
+            print("creating dataset json. coordinates are already clockwise")
 
         ds['location'] =  {'type': 'Polygon', 'coordinates': coordinates}
-        logger.info("create_dataset_json location : %s" %ds['location'])
+        print("create_dataset_json location : %s" %ds['location'])
 
     except Exception as err:
-        logger.info("create_dataset_json: Exception : ")
-        logger.warn(str(err))
-        logger.warn("Traceback: {}".format(traceback.format_exc()))
+        print("create_dataset_json: Exception : {}".format(str(err)))
+        print("Traceback: {}".format(traceback.format_exc()))
 
 
     # set earliest sensing start to starttime and latest sensing stop to endtime
@@ -283,25 +459,25 @@ def move_dem_separate_dir(dir_name):
     move_dem_separate_dir_NED(dir_name)
 
 def move_dem_separate_dir_SRTM(dir_name):
-    logger.info("move_dem_separate_dir_SRTM : %s" %dir_name)
+    print("move_dem_separate_dir_SRTM : %s" %dir_name)
     create_dir(dir_name)
 
     move_cmd=["mv", "demLat*", dir_name]
     move_cmd_line=" ".join(move_cmd)
-    logger.info("Calling {}".format(move_cmd_line))
+    print("Calling {}".format(move_cmd_line))
     call_noerr(move_cmd_line)
 
 def move_dem_separate_dir_NED(dir_name):
-    logger.info("move_dem_separate_dir_NED : %s" %dir_name)
+    print("move_dem_separate_dir_NED : %s" %dir_name)
     create_dir(dir_name)
     move_cmd=["mv", "stitched.*", dir_name]
     move_cmd_line=" ".join(move_cmd)
-    logger.info("Calling {}".format(move_cmd_line))
+    print("Calling {}".format(move_cmd_line))
     call_noerr(move_cmd_line)
 
     move_cmd=["mv", "*DEM.vrt", dir_name]
     move_cmd_line=" ".join(move_cmd)
-    logger.info("Calling {}".format(move_cmd_line))
+    print("Calling {}".format(move_cmd_line))
     call_noerr(move_cmd_line)
 
 def create_dir(dir_name):
@@ -309,13 +485,13 @@ def create_dir(dir_name):
     if os.path.isdir(dir_name):
         rmdir_cmd=["rm", "-rf", dir_name]
         rmdir_cmd_line=" ".join(rmdir_cmd)
-        logger.info("Calling {}".format(rmdir_cmd_line))
+        print("Calling {}".format(rmdir_cmd_line))
         call_noerr(rmdir_cmd_line)
     '''
     if not os.path.isdir(dir_name):
         mkdir_cmd=["mkdir", dir_name]
         mkdir_cmd_line=" ".join(mkdir_cmd)
-        logger.info("create_dir : Calling {}".format(mkdir_cmd_line))
+        print("create_dir : Calling {}".format(mkdir_cmd_line))
         call_noerr(mkdir_cmd_line)
 
 def call_noerr(cmd):
@@ -323,8 +499,8 @@ def call_noerr(cmd):
 
     try: check_call(cmd, shell=True)
     except Exception as e:
-        logger.warn("Got exception running {}: {}".format(cmd, str(e)))
-        logger.warn("Traceback: {}".format(traceback.format_exc()))
+        print("Got exception running {}: {}".format(cmd, str(e)))
+        print("Traceback: {}".format(traceback.format_exc()))
 
 def download_dem(SNWE):
     uu = UrlUtils()
@@ -359,7 +535,7 @@ def download_dem(SNWE):
     preprocess_dem_dir = "{}_{}".format(dem_type_simple, preprocess_dem_dir)
 
 
-    logger.info("dem_type : %s preprocess_dem_dir : %s" %(dem_type, preprocess_dem_dir))
+    print("dem_type : %s preprocess_dem_dir : %s" %(dem_type, preprocess_dem_dir))
     if dem_type.startswith("NED"):
         move_dem_separate_dir_NED(preprocess_dem_dir)
     elif dem_type.startswith("SRTM"):
@@ -368,7 +544,7 @@ def download_dem(SNWE):
         move_dem_separate_dir(preprocess_dem_dir)
 
     preprocess_dem_file = os.path.join(preprocess_dem_dir, preprocess_dem_file)
-    logger.info("Using Preprocess DEM file: {}".format(preprocess_dem_file))
+    print("Using Preprocess DEM file: {}".format(preprocess_dem_file))
 
     #preprocess_dem_file = os.path.join(wd, glob("*.dem.wgs84")[0])
     #logging.info("preprocess_dem_file : {}".format(preprocess_dem_file))
@@ -379,7 +555,7 @@ def download_dem(SNWE):
         "-i", preprocess_dem_file, "--full"
     ]
     fix_cmd_line = " ".join(fix_cmd)
-    logger.info("Calling fixImageXml.py: {}".format(fix_cmd_line))
+    print("Calling fixImageXml.py: {}".format(fix_cmd_line))
     check_call(fix_cmd_line, shell=True)
 
     preprocess_vrt_file=""
@@ -387,11 +563,11 @@ def download_dem(SNWE):
         preprocess_vrt_file = glob(os.path.join(preprocess_dem_dir, "*.dem.wgs84.vrt"))[0]
     elif dem_type.startswith("NED1"):
         preprocess_vrt_file = os.path.join(preprocess_dem_dir, "stitched.dem.vrt")
-        logger.info("preprocess_vrt_file : %s"%preprocess_vrt_file)
+        print("preprocess_vrt_file : %s"%preprocess_vrt_file)
     else: raise RuntimeError("Unknown dem type %s." % dem_type)
 
     if not os.path.isfile(preprocess_vrt_file):
-        logger.info("%s does not exists. Exiting")
+        print("%s does not exists. Exiting")
     
     preprocess_dem_xml = glob(os.path.join(preprocess_dem_dir, "*.dem.wgs84.xml"))[0]
     logging.info("preprocess_dem_xml : {}".format(preprocess_dem_xml))
@@ -419,17 +595,17 @@ def download_dem(SNWE):
         "{}".format(preprocess_vrt_file), "-rsec", "3"
     ]
     dem_cmd_line = " ".join(dem_cmd)
-    logger.info("Calling downsampleDEM.py: {}".format(dem_cmd_line))
+    print("Calling downsampleDEM.py: {}".format(dem_cmd_line))
     check_call(dem_cmd_line, shell=True)
     geocode_dem_file = ""
     
 
-    logger.info("geocode_dem_dir : {}".format(geocode_dem_dir))
+    print("geocode_dem_dir : {}".format(geocode_dem_dir))
     if dem_type.startswith("SRTM"):
         geocode_dem_file = glob(os.path.join(geocode_dem_dir, "*.dem.wgs84"))[0]
     elif dem_type.startswith("NED1"):
         geocode_dem_file = os.path.join(geocode_dem_dir, "stitched.dem")
-    logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
+    print("Using Geocode DEM file: {}".format(geocode_dem_file))
 
     checkBurstError("isce.log")
 
@@ -439,7 +615,7 @@ def download_dem(SNWE):
         "-i", geocode_dem_file, "--full"
     ]
     fix_cmd_line = " ".join(fix_cmd)
-    logger.info("Calling fixImageXml.py: {}".format(fix_cmd_line))
+    print("Calling fixImageXml.py: {}".format(fix_cmd_line))
     check_call(fix_cmd_line, shell=True)
 
 
