@@ -160,7 +160,7 @@ def main():
 
 
     ''' Some Fake Data'''
-    ifg_md['sensing_start'] = datetime.now().strftime("%d%m%YT%H%M%S")
+    ifg_md['sensing_start'] = datetime.now().isoformat()
     
 
     tmpl_file = os.path.join(BASE_PATH, tmpl_file)
@@ -185,7 +185,7 @@ def main():
 
     dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
 
-    ifg_md['sensing_stop'] = dt_string
+    ifg_md['sensing_stop'] = datetime.now().isoformat()
     ifg_hash = ifg_hash[0:4]
      
     #IFG_ID_ALOS2_TMPL = "ALOS2-IFG-{}-{}-{}-{}"
