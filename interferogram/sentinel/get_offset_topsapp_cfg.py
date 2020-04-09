@@ -3,6 +3,7 @@
 Determine all combinations of topsApp configurations for dense offsets.
 """
 
+from builtins import range
 import os, sys, re, requests, json, logging, traceback, argparse
 
 from enumerate_topsapp_cfgs import get_topsapp_cfgs as gtc

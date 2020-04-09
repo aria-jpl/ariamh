@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import requests
 import os
@@ -8,7 +13,7 @@ import datetime
 import re
 try: from html.parser import HTMLParser
 except:
-    from HTMLParser import HTMLParser
+    from html.parser import HTMLParser
 
 
 server = 'https://qc.sentinel1.eo.esa.int/'
@@ -120,7 +125,7 @@ def fetch(starttime, endtime, mission='S1A', outdir='.', dry_run=False):
     tfmt = "%Y-%m-%dT%H:%M:%S.%f"
     tstart = datetime.datetime.strptime(starttime, tfmt)
     tstop = datetime.datetime.strptime(endtime, tfmt)
-    timeStamp = tstart + (tstop - tstart)/2
+    timeStamp = tstart + old_div((tstop - tstart),2)
 
     match = []
     bestmatch = None
@@ -169,7 +174,7 @@ def fetch(starttime, endtime, mission='S1A', outdir='.', dry_run=False):
 
             # get all files that span the acquisition
             if (tbef <= tstart) and (taft >= tstop):
-                tmid = tbef + (taft - tbef)/2
+                tmid = tbef + old_div((taft - tbef),2)
                 match.append((os.path.join(url, result),
                               abs((timeStamp-tmid).total_seconds())))
 

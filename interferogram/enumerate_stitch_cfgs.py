@@ -3,6 +3,8 @@
 Determine all combinations of stitch interferogram configurations"
 """
 
+from builtins import str
+from builtins import range
 import os, sys, re, requests, json, logging, traceback, argparse, copy, bisect, shutil
 from subprocess import check_call, CalledProcessError
 import hashlib

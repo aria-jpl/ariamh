@@ -6,11 +6,12 @@ BASE_PATH=$(cd "${BASE_PATH}"; pwd)
 source $HOME/verdi/bin/activate
 
 # source ISCE env
-source /etc/profile.d/isce.sh
-export ISCE_HOME=/usr/local/isce/isce
+source $HOME/ariamh/isce.sh
+export ISCE_HOME=/opt/isce2/isce
 export ARIAMH_HOME=$HOME/ariamh
 export FRAMEMETA_HOME=$ARIAMH_HOME/frameMetadata
-export PYTHONPATH=/usr/local/isce:$ISCE_HOME/applications:$ISCE_HOME/components:$ARIAMH_HOME:$FRAMEMETA_HOME:$FRAMEMETA_HOME/sentinel:$PYTHONPATH
+export SENTINEL_HOME=$FRAMEMETA_HOME/sentinel
+export PYTHONPATH=/opt/isce2:$ISCE_HOME/applications:$ISCE_HOME/components:$ARIAMH_HOME:$FRAMEMETA_HOME:$SENTINEL_HOME:$PYTHONPATH
 
 # get union bbox
-/usr/bin/python3 $BASE_PATH/get_union_bbox.py $*
+python $BASE_PATH/get_union_bbox.py $*

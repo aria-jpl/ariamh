@@ -5,6 +5,8 @@ ned_dem.py -a download -b 36 42 -123 -120 -n <user> -w <password> -u \
 http://grfn-v2-ops-product-bucket.s3-website-us-west-2.amazonaws.com/datasets/dem/ned1/
 """
 
+from builtins import str
+from builtins import range
 import os, sys, math, json, logging, argparse, zipfile
 from subprocess import check_call, CalledProcessError
 from itertools import chain
@@ -164,7 +166,7 @@ def get_name_list(lats, lons, url_base):
     else:
         e = "Error. The crossing of E180 and W180 is not handled."
         logger.error(e)
-        raise(RuntimeError(e))
+        raise RuntimeError
     latLonList = []
     for lat in latList:
         for lon in lonList:

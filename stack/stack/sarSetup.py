@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+from __future__ import absolute_import
+from builtins import str
 import os
 import h5py
-import xmlSetup as XS
+from . import xmlSetup as XS
 import numpy
 
 def isRaw(fname):

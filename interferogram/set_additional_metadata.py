@@ -27,9 +27,9 @@ def add_metadata(metadata_file, hash_id, context_file):
     for proc_name in ctx_procs:
         if proc_name != 'pyAPSCorrect': continue
         ctx_proc = ctx_procs[proc_name]
-        if isinstance(ctx_proc, types.DictType) and 'returnStatus' in ctx_proc:
+        if isinstance(ctx_proc, dict) and 'returnStatus' in ctx_proc:
             ctx_status = ctx_proc['returnStatus']
-            if isinstance(ctx_status, types.DictType):
+            if isinstance(ctx_status, dict):
                 proc_val = ctx_proc.get('value', None)
                 proc_desc = ctx_proc.get('description', "no description specified")
                 if proc_val == 0:

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
+from __future__ import division
+from __future__ import absolute_import
+from builtins import str
+from past.utils import old_div
 import os 
 import sys
 import numpy as np
 import lxml.objectify as OB
-import stackSetup as SS
-import templateSetup as temp
+from . import stackSetup as SS
+from . import templateSetup as temp
 import json
 
 def Seconds(instr):
@@ -20,7 +24,7 @@ def getIncAngle(rng, ht, re):
     '''
     sat = (re+ht)
 
-    cosang = ((rng*rng) + (re*re) - (sat*sat))/(2.0*rng*re)
+    cosang = old_div(((rng*rng) + (re*re) - (sat*sat)),(2.0*rng*re))
     return np.degrees(np.arccos(cosang)) - 90.0
 
 def parse():

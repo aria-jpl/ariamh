@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import isce
 from isceobj.Scene.Frame import Frame
 from isceobj.Planet.AstronomicalHandbook import Const
@@ -47,7 +52,7 @@ def get_area(coords):
         area += coords[i][1] * coords[j][0]
         area -= coords[j][1] * coords[i][0]
     #area = abs(area) / 2.0
-    return area / 2
+    return old_div(area, 2)
 
 def change_direction(coords):
     cord_area= get_area(coords)
@@ -68,11 +73,11 @@ def getGeometry(obj):
 
     ys = sorted(list(set([x[0] for x in pts])))
     dy = ys[1] - ys[0]
-    ny= int((ys[-1] - ys[0])/dy + 1)
+    ny= int(old_div((ys[-1] - ys[0]),dy) + 1)
 
     xs = sorted(list(set([x[1] for x in pts])))
     dx = xs[1] - xs[0]
-    nx = int((xs[-1] - xs[0])/dx + 1)
+    nx = int(old_div((xs[-1] - xs[0]),dx) + 1)
 
     lat = np.array([x[2] for x in pts]).reshape((ny,nx))
     lon = np.array([x[3] for x in pts]).reshape((ny,nx))
@@ -129,7 +134,7 @@ class S1toFrame(object):
         slope = str(self.obj.generalAnnotation.replicaInformationList.replicaInformation.referenceReplica.phaseCoefficients).split()[2]
         ins.setChirpSlope(float(slope))
         
-        fsamp = Const.c / (2.0 * b0.rangePixelSize)
+        fsamp = old_div(Const.c, (2.0 * b0.rangePixelSize))
         ins.setRangeSamplingRate(fsamp)
 
         ins.setInPhaseValue(127.5)

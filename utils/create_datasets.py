@@ -21,7 +21,7 @@ def create_dataset_json(dataset_id, version, start_time,
         'creation_timestamp': datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
     }
 
-    for key, value in kwargs.items():  # adding additional metadata specified in kwargs
+    for key, value in list(kwargs.items()):  # adding additional metadata specified in kwargs
         metadata[key] = value
 
     file_name = '{}.dataset.json'.format(dataset_id)

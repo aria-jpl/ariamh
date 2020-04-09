@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from builtins import zip
 import json
 import sys
 import os

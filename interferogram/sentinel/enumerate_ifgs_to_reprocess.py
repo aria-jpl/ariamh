@@ -2,7 +2,10 @@
 """
 Determine all topsApp configurations that can be reprocessed with a specific precise orbit"
 """
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 import os, sys, re, requests, json, logging, traceback, argparse
 import hashlib
 from itertools import product, chain
@@ -48,7 +51,7 @@ def get_orbit_datetimes(orbit_file):
     create_dt = datetime(*[int(info[i]) for i in ['cr_yr', 'cr_mo', 'cr_dy', 'cr_hh', 'cr_mm', 'cr_ss']])
     valid_start = datetime(*[int(info[i]) for i in ['vs_yr', 'vs_mo', 'vs_dy', 'vs_hh', 'vs_mm', 'vs_ss']])
     valid_end = datetime(*[int(info[i]) for i in ['ve_yr', 've_mo', 've_dy', 've_hh', 've_mm', 've_ss']])
-    valid_mid = valid_start + (valid_end - valid_start)/2
+    valid_mid = valid_start + old_div((valid_end - valid_start),2)
     #logger.info("create date:         %s" % create_dt)
     #logger.info("validity start date: %s" % valid_start)
     #logger.info("validity mid date:   %s" % valid_mid)

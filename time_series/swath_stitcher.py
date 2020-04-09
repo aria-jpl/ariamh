@@ -1,10 +1,14 @@
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from matplotlib import pyplot as plt
 import h5py
 import numpy as np
 from scipy.ndimage.morphology import binary_dilation
 from scipy.ndimage import generate_binary_structure
 
-class SwathStitcher:
+class SwathStitcher(object):
     def __init__(self):
         #list of file pointers to h5. when loading in load_ts the names need to be in order 
         #west to east
@@ -79,8 +83,8 @@ class SwathStitcher:
     
     def set_coords(self):
         minlat,maxlat,dlat,minlon,maxlon,dlon = self.get_common_bbox()
-        lat = maxlat - np.arange(int(round((maxlat-minlat)/abs(dlat))) + 1)*abs(dlat)
-        lon = minlon + np.arange(int(round((maxlon-minlon)/dlon)) + 1)*dlon
+        lat = maxlat - np.arange(int(round(old_div((maxlat-minlat),abs(dlat)))) + 1)*abs(dlat)
+        lon = minlon + np.arange(int(round(old_div((maxlon-minlon),dlon))) + 1)*dlon
         self._fpo.create_dataset('lat',data = lat)
         self._fpo.create_dataset('lon',data = lon)
         
@@ -320,7 +324,7 @@ class SwathStitcher:
     def size(self):
         if not self._size:
             minlat,maxlat,dlat,minlon,maxlon,dlon = self.get_common_bbox()
-            self._size = [int(round((maxlat-minlat)/abs(dlat))) + 1,int(round((maxlon-minlon)/abs(dlon))) + 1]
+            self._size = [int(round(old_div((maxlat-minlat),abs(dlat)))) + 1,int(round(old_div((maxlon-minlon),abs(dlon)))) + 1]
         return self._size
     
     @property
@@ -330,8 +334,8 @@ class SwathStitcher:
             for f in self._fps:
                 lat = f['lat']
                 lon = f['lon']
-                ilat = int(round((maxlat - np.max(lat))/abs(dlat)))
-                ilon = int(abs(round((minlon - np.min(lon))/dlon)))
+                ilat = int(round(old_div((maxlat - np.max(lat)),abs(dlat))))
+                ilon = int(abs(round(old_div((minlon - np.min(lon)),dlon))))
                 self._offsets.append([ilat,ilon])
         return self._offsets
         

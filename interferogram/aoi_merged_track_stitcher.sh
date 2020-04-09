@@ -19,7 +19,7 @@ source $HOME/verdi/bin/activate
 echo "##########################################" 1>&2
 echo -n "Running AOI merged track stitcher sciflo: " 1>&2
 date 1>&2
-/usr/bin/python3 $BASE_PATH/aoi_merged_track_stitcher.py > aoi_merged_track_stitcher.log 2>&1
+/usr/bin/python $BASE_PATH/aoi_merged_track_stitcher.py > aoi_merged_track_stitcher.log 2>&1
 STATUS=$?
 echo -n "Finished running aoi merged track stitcher sciflo: " 1>&2
 date 1>&2

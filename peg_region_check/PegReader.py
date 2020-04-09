@@ -7,6 +7,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import sys
 from isceobj.Location.Peg import PegFactory
@@ -18,7 +21,7 @@ logging.config.fileConfig(
     os.path.join(os.environ['ISCE_HOME'], 'defaults', 'logging',
         'logging.conf')
 )
-class PegReader:
+class PegReader(object):
 
 
     # if the file has a different structure from the following, then set a list that does the mapping of the positions.
@@ -71,7 +74,7 @@ class PegReader:
         self._pegList = None
         self._listIndex = [i for i in range(8)]
 
-class PegInfo:
+class PegInfo(object):
 
     def __init__(self):
 
@@ -116,7 +119,7 @@ class PegInfo:
     latEnd = property(getLatEnd,setLatEnd)
     peg = property(getPeg,setPeg)
 
-class PegInfoFactory:
+class PegInfoFactory(object):
     @staticmethod
     def createPegInfo(band,track,dire,latS,latE,pegLat,pegLon,hdg):
         PI = PegInfo()

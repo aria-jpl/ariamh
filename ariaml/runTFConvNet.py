@@ -5,10 +5,16 @@ Created on Mon Feb 15 16:07:23 2016
 @author: giangi
 """
 from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import tensorflow as tf
 import argparse
 from ariaml.TFConvNet import TFConvNet as RN, Data
-import cPickle as cp
+import pickle as cp
 import numpy as np
 import time
 import json
@@ -107,22 +113,22 @@ def print_results(results,save=0,output='output'):#0 print, 1  save, 2 print and
     max_acc = 0
     for i,res in enumerate(results):
         print(res)
-        pre = np.sum(res[0])/np.sum(res[0:2]).astype(np.float)
-        rec = np.sum(res[0])/np.sum(res[[0,3]]).astype(np.float)
-        acc = np.sum(res[[0,2]])/np.sum(res).astype(np.float)
+        pre = old_div(np.sum(res[0]),np.sum(res[0:2]).astype(np.float))
+        rec = old_div(np.sum(res[0]),np.sum(res[[0,3]]).astype(np.float))
+        acc = old_div(np.sum(res[[0,2]]),np.sum(res).astype(np.float))
         if save == 0 or save == 2:            
             print('Label ' + str(i),':')
             print('Accuracy:',str(acc))
             print('Precision:',str(pre))
             print('Recall:',str(rec))
-            print('F1:',str(2*(pre*rec)/(pre + rec)))
+            print('F1:',str(old_div(2*(pre*rec),(pre + rec))))
         if save == 1 or save == 2:
             with open(output,'a') as fp:
                 fp.write('Label ' + str(i) + ' :\n')
                 fp.write('Accuracy: ' + str(acc) + '\n')
                 fp.write('Precision: ' + str(pre) + '\n')
                 fp.write('Recall: ' + str(rec) + '\n')
-                fp.write('F1: ' + str(2*(pre*rec)/(pre + rec)) + '\n')
+                fp.write('F1: ' + str(old_div(2*(pre*rec),(pre + rec))) + '\n')
         if acc > max_acc:
             max_acc = acc
     return max_acc
@@ -205,7 +211,7 @@ def read(filename,input_dir,relabel,determ=True,args=None):
     labels = labels[tr]
     data = data[tr,:,:,:]
     if to_remove:
-        indx = range(data.shape[-1])
+        indx = list(range(data.shape[-1]))
         s_remove = sorted(to_remove)
         for i in s_remove[::-1]:
             indx.pop(i)
@@ -227,12 +233,12 @@ def read(filename,input_dir,relabel,determ=True,args=None):
 def inputs(_self,filename,relabel,determ=True,leavei=None,args=None):
     to_remove = args.remove
     inps = json.load(open(os.path.join(_self._input_dir,filename)))
-    for k,v in inps.items():
+    for k,v in list(inps.items()):
         if k not in ['train','test','valid']:
             continue
         data = read(v,_self._input_dir,relabel,determ,args)
         _self._data[k] = Data(data,_self._nlabs,_self._batch_size)
-    if 'leave_k' in inps.keys():       
+    if 'leave_k' in list(inps.keys()):       
         data = _self._data['train']._data[-inps['leave_k']:,:],\
         _self._data['train']._labels[-inps['leave_k']:],\
         _self._data['train']._indx_orig[-inps['leave_k']:]
@@ -241,7 +247,7 @@ def inputs(_self,filename,relabel,determ=True,leavei=None,args=None):
         _self._data['train']._data = _self._data['train']._data[:-inps['leave_k'],:]
         _self._data['train']._labels = _self._data['train']._labels[:-inps['leave_k']]
         _self._data['train']._indx_orig = _self._data['train']._indx_orig[:-inps['leave_k']]
-    elif 'leave_one_out' in inps.keys():
+    elif 'leave_one_out' in list(inps.keys()):
         #in this case only read the last and replicate batch size
         rep = [_self._batch_size]
         rep.extend(np.ones(len(_self._data['train']._data[leavei,:].shape),np.int32))
@@ -406,7 +412,7 @@ def main(inps):
                 summary_writer = tf.train.SummaryWriter(args.train_dir,
                                                         graph_def=sess.graph_def)
                 acc_count = 0
-                for step in xrange(args.max_steps):
+                for step in range(args.max_steps):
                     start_time = time.time()
                     # Fill a feed dictionary with the actual set of images and labels
                     # for this particular training step.
@@ -424,7 +430,7 @@ def main(inps):
                     print_res = False 
                     if step % args.print_rate == 0:
                         num_examples_per_step = args.batch_size
-                        examples_per_sec = num_examples_per_step / duration
+                        examples_per_sec = old_div(num_examples_per_step, duration)
                         sec_per_batch = float(duration)
                         
                         format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
@@ -453,12 +459,12 @@ def main(inps):
                             acc_count += 1
                             save = 2
                         
-                        if 'test' in rn._data.keys():
+                        if 'test' in list(rn._data.keys()):
                             print('Test Data Eval:')
                             results,corrects = evaluate(rn,sess,eval_correct,images,labels,keep_prob,'test')
                             print_results(results,save,os.path.join(args.train_dir,args.output))
                             ret = results, rn._data['test']._indx_orig[corrects == 0], rn._data['test']._indx_orig
-                        if 'valid' in rn._data.keys():
+                        if 'valid' in list(rn._data.keys()):
                             print('Validation Data Eval:')
                             results,_ = evaluate(rn,sess,eval_correct,images,labels,keep_prob,'valid')
                             print_results(results)

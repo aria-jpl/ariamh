@@ -1,4 +1,5 @@
 #!/usr/bin/env python3 
+from builtins import str
 import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from itertools import chain
 from zipfile import ZipFile
@@ -170,22 +171,26 @@ def main():
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
-        logger.info("Unzipping {}.".format(i))
-        with ZipFile(i, 'r') as zf:
-            zf.extractall()
-        logger.info("Removing {}.".format(i))
-        try: os.unlink(i)
-        except: pass
-        master_safe_dirs.append(i.replace(".zip", ".SAFE"))
+        master_safe_dir = i.replace(".zip", ".SAFE")
+        if not os.path.exists(master_safe_dir):
+            logger.info("Unzipping {}.".format(i))
+            with ZipFile(i, 'r') as zf:
+                zf.extractall()
+            logger.info("Removing {}.".format(i))
+            try: os.unlink(i)
+            except: pass
+        master_safe_dirs.append(master_safe_dir)
     slave_safe_dirs = []
     for i in ctx['slave_zip_file']:
-        logger.info("Unzipping {}.".format(i))
-        with ZipFile(i, 'r') as zf:
-            zf.extractall()
-        logger.info("Removing {}.".format(i))
-        try: os.unlink(i)
-        except: pass
-        slave_safe_dirs.append(i.replace(".zip", ".SAFE"))
+        slave_safe_dir = i.replace(".zip", ".SAFE")
+        if not os.path.exists(slave_safe_dir):
+            logger.info("Unzipping {}.".format(i))
+            with ZipFile(i, 'r') as zf:
+                zf.extractall()
+            logger.info("Removing {}.".format(i))
+            try: os.unlink(i)
+            except: pass
+        slave_safe_dirs.append(slave_safe_dir)
 
     # get polarization values
     master_pol = get_polarization(master_safe_dirs[0])

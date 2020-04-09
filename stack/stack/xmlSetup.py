@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from builtins import str
+from builtins import range
 import xml.etree.ElementTree as ET
 
 def indentXML(elem, depth = None,last = None):
@@ -36,7 +38,7 @@ def XMLFromDict(ddict, name=None):
         name = ''
     root = ET.Element('component')
     root.attrib['name'] = name
-    for key, val in ddict.items():
+    for key, val in list(ddict.items()):
         if key.endswith('.catalog'):
             compSubEl = ET.SubElement(root, 'component')
             compSubEl.attrib['name'] = key[0:-8]

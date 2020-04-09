@@ -1,8 +1,8 @@
 {
-  "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_topsapp_ifg.sh",
+  "command": "/home/ops/ariamh/interferogram/sentinel/sciflo_create_rsp_mrpe.sh",
   "imported_worker_files": {
-    "$HOME/.netrc": ["/home/ops/.netrc"],
-    "$HOME/.aws": ["/home/ops/.aws", "ro"],
+    "$HOME/.netrc": "/home/ops/.netrc",
+    "$HOME/.aws": "/home/ops/.aws",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
@@ -14,10 +14,19 @@
     "floodmap-job_worker-small",
     "urgent-response-job_worker-small"
   ],
-  "disk_usage":"50GB",
-  "soft_time_limit": 8000,
-  "time_limit": 8400,
   "params" : [
+    {
+      "name": "event_time",
+      "destination": "context"
+    },
+    { 
+      "name": "start_time",
+      "destination": "context"
+    },
+    { 
+      "name": "end_time",
+      "destination": "context"
+    },
     {
       "name": "dataset_tag",
       "destination": "context"
@@ -27,15 +36,27 @@
       "destination": "context"
     },
     {
-      "name": "master_ids",
+      "name": "singlesceneOnly",
       "destination": "context"
     },
     {
-      "name": "slave_ids",
+      "name": "preReferencePairDirection",
       "destination": "context"
     },
     {
-      "name": "subswaths",
+      "name": "postReferencePairDirection",
+      "destination": "context"
+    },
+    {
+      "name": "temporalBaseline",
+      "destination": "context"
+    },
+    {
+      "name": "minMatch",
+      "destination": "context"
+    },
+    { 
+      "name": "covth",
       "destination": "context"
     },
     {
@@ -56,6 +77,10 @@
     },
     { 
       "name": "filter_strength",
+      "destination": "context"
+    },
+    {
+      "name": "dem_type",
       "destination": "context"
     },
     {

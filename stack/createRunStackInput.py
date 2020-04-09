@@ -8,7 +8,7 @@ def main(context_file, meta_file, input_file):
 
     # read in context.json
     if not os.path.exists(context_file):
-        raise(RuntimeError("Context file doesn't exist."))
+        raise RuntimeError
     with open('context.json') as f:
         context = json.load(f)
 
