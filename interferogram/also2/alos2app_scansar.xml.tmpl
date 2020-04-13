@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alos2App>
+  <component name="alos2insar">
+    <property name="master directory">$REFERENCE_DATA_DIR</property>
+    <property name="slave directory">$SECONDARY_DATA_DIR</property>
+    <property name="master frames">$REF_FRAME</property>
+    <property name="slave frames">$SEC_FRAME</property>
+    <property name="starting swath">$START_SUBSWATH</property>
+    <property name="ending swath">$END_SUBSWATH</property>
+    <property name="master polarization">$REF_POL</property>
+    <property name="slave polarization">$SEC_POL</property>
+    <property name="dem for coregistration">$DEM_FILE</property>
+    <property name="dem for geocoding">$GEOCODED_DEM_FILE</property>
+    <property name="use GPU">False</property>
+    <property name="number of range looks 1">1</property>
+    <property name="number of azimuth looks 1">14</property>
+    <property name="number of range looks 2">30</property>
+    <property name="number of azimuth looks 2">12</property>
+    <property name="geocode bounding box"><value>$BBOX</value></property>
+    <property name="number of range looks ion">40</property>
+    <property name="number of azimuth looks ion">16</property>
+    </component>
+</alos2App>
