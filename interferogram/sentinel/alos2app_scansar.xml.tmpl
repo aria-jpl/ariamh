@@ -1,78 +1,23 @@
-<insarzd>
-<component name="master">
-    <property name="data directory">
-        <value>$REFERENCE_DATA_DIR</value>
-    </property>
-    <property name="polarization">
-        <value>$REF_POL</value>
-    </property>
-    <property name="frames">
-        <value>$REF_FRAME</value>
-    </property>
-</component>
-<component name="slave">
-    <property name="data directory">
-        <value>$SECONDARY_DATA_DIR</value>
-    </property>
-    <property name="polarization">
-        <value>$SEC_POL</value>
-    </property>
-    <property name="frames">
-        <value>$SEC_FRAME</value>
-    </property>
-</component>
-<component name="dem">
-    <property name="geometrical coregistration">
-        <value>$DEM_FILE</value>
-    </property>
-    <property name="geocoding">
-        <value>$GEOCODED_DEM_FILE</value>
-    </property>
-</component>
-<component name="scansar">
-    <property name="starting subswath">
-        <value>$START_SUBSWATH</value>
-    </property>
-    <property name="ending subswath">
-        <value>$END_SUBSWATH</value>
-    </property>
-    <property name="burst overlap threshhold for mbf filtering (%)">
-        <value>$BURST_OVERLAP</value>
-    </property>
-</component>
-<component name="insar">
-    <property name="number of range looks when forming interferogram">
-        <value>1</value>
-    </property>
-    <property name="number of azimuth looks when forming interferogram">
-        <value>14</value>
-    </property>
-    <property name="number of range looks">
-        <value>30</value>
-    </property>
-    <property name="number of azimuth looks">
-        <value>12</value>
-    </property>
-    <property name="number of range looks for matching between radar and simulated amplitudes">
-        <value>5</value>
-    </property>
-    <property name="number of azimuth looks for matching between radar and simulated amplitudes">
-        <value>2</value>
-    </property>
-    <property name="number of range looks for ionospheric correction">
-        <value>40</value>
-    </property>
-    <property name="number of azimuth looks for ionospheric correction">
-        <value>16</value>
-    </property>
-    <property name="filter strength">
-        <value>0.6</value>
-    </property>
-    <property name="whether delete unnecessary large files">
-        <value>False</value>
-    </property>
-    <property name="geocode bounding box">
-        <value>$BBOX</value>
-    </property>
-</component>
-</insarzd>
+<?xml version="1.0" encoding="UTF-8"?>
+<alos2App>
+  <component name="alos2insar">
+    <property name="master directory">$REFERENCE_DATA_DIR</property>
+    <property name="slave directory">$SECONDARY_DATA_DIR</property>
+    <property name="master frames">$REF_FRAME</property>
+    <property name="slave frames">$SEC_FRAME</property>
+    <property name="starting swath">$START_SUBSWATH</property>
+    <property name="ending swath">$END_SUBSWATH</property>
+    <property name="master polarization">$REF_POL</property>
+    <property name="slave polarization">$SEC_POL</property>
+    <property name="dem for coregistration">$DEM_FILE</property>
+    <property name="dem for geocoding">$GEOCODED_DEM_FILE</property>
+    <property name="use GPU">False</property>
+    <property name="number of range looks 1">1</property>
+    <property name="number of azimuth looks 1">14</property>
+    <property name="number of range looks 2">30</property>
+    <property name="number of azimuth looks 2">12</property>
+    <property name="geocode bounding box"><value>$BBOX</value></property>
+    <property name="number of range looks ion">40</property>
+    <property name="number of azimuth looks ion">16</property>
+    </component>
+</alos2App>

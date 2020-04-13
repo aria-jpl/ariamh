@@ -10,17 +10,15 @@ source $ARIAMH_HOME/giant.sh
 export TROPMAP_HOME=$HOME/tropmap
 export UTILS_HOME=$ARIAMH_HOME/utils
 export GIANT_HOME=/usr/local/giant/GIAnT
-
+export WORK_DIR=$PWD
+echo $WORK_DIR
 export ALOS2_INGEST_HOME=$HOME/verdi/ops/alos2-ingest
-export INSARZD_HOME=$HOME/verdi/ops/insarzd
-export INSAR_ZERODOP_SCR=$INSARZD_HOME/scripts
-export INSAR_ZERODOP_BIN=$INSARZD_HOME/bin
 
-export LD_LIBRARY_PATH=/usr/local/gdal/lib:$LD_LIBRARY_PATH
-export GDAL_DATA=/usr/local/gdal/share/gdal
+#export LD_LIBRARY_PATH=/usr/local/gdal/lib:$LD_LIBRARY_PATH
+#export GDAL_DATA=/usr/local/gdal/share/gdal
 
-export PYTHONPATH=.:$ALOS2_INGEST_HOME/scripts:$INSAR_ZERODOP_SCR:$INSAR_ZERODOP_SCR/pac:$ISCE_HOME/applications:$ISCE_HOME/components:$BASE_PATH:$ARIAMH_HOME:$TROPMAP_HOME:$GIANT_HOME:$UTILS_HOME:$PYTHONPATH
-export PATH=$ISCE_HOME/applications:$ISCE_HOME/bin:/usr/local/gdal/bin:$INSAR_ZERODOP_SCR:$INSAR_ZERODOP_BIN:$PATH
+export PYTHONPATH=.:$ALOS2_INGEST_HOME/scripts:$ISCE_HOME/applications:$ISCE_HOME/components:$BASE_PATH:$ARIAMH_HOME:$TROPMAP_HOME:$GIANT_HOME:$UTILS_HOME:$PYTHONPATH
+export PATH=$ISCE_HOME/applications:$ISCE_HOME/bin:/usr/local/gdal/bin:$ISCE_HOME/bin:/opt/conda/bin/:/opt/conda/pkgs/libgdal-2.3.2-h9d4a965_0/bin:$PATH
 export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 echo $PYTHONPATH
 # source environment

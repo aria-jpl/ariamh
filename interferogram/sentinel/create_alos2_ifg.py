@@ -8,7 +8,7 @@ from datetime import datetime
 import xml.etree.cElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
 from zipfile import ZipFile
-import extract_alos2_md
+#import extract_alos2_md
 import ifg_utils
 from create_input_xml_alos2 import create_input_xml
 
@@ -20,7 +20,7 @@ logger = logging.getLogger('create_alos2_ifg.log')
 BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
-IFG_ID_ALOS2_TMPL = "IFG-ALOS2-{}-{}-{}-{}"
+IFG_ID_ALOS2_TMPL = "ALOS2-INSARZD-{}-{}-{}-{}"
 
 def create_product(id, wd):
     insar_dir = os.path.json(wd, "insar")
@@ -85,20 +85,21 @@ def main():
     ref_data_dir = os.path.join(wd, "reference")
     sec_data_dir = os.path.join(wd, "secondary")
 
-    alos2_script_path = os.environ['INSAR_ZERODOP_SCR']
+    alos2_script_path = os.environ['ISCE_HOME']
     print("alos2_script_path : {}".format(alos2_script_path))
 
     os.chdir(wd)
 
-    ''' Extrach Reference SLC Metadata'''
+    ''' Extrach Reference SLC Metadata
     ref_insar_obj = extract_alos2_md.get_alos2_obj(ref_data_dir)
     extract_alos2_md.create_alos2_md_isce(ref_insar_obj, "ref_alos2_md.json")
     #extract_alos2_md.create_alos2_md_bos(ref_data_dir, "ref_alos2_md2.json")
 
-    ''' Extrach Reference SLC Metadata'''
+     Extrach Reference SLC Metadata'
     sec_insar_obj = extract_alos2_md.get_alos2_obj(sec_data_dir)
     extract_alos2_md.create_alos2_md_isce(sec_insar_obj, "sec_alos2_md.json")
     #extract_alos2_md.create_alos2_md_bos(sec_data_dir, "sec_alos2_md2.json")
+    '''
 
     with open("ref_alos2_md.json") as f:
         ref_md = json.load(f)
@@ -174,14 +175,15 @@ def main():
     alos2_start_time=datetime.now()
     logger.info("ALOS2 Start Time : {}".format(alos2_start_time)) 
 
-    cmd = ["python3", "{}/alos2app.py".format(os.environ['INSAR_ZERODOP_SCR']), "-i", "{}".format(xml_file), "-e", "coherence"]
+    cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file)]
+    ifg_utils.run_command(cmd)
+    '''
+    cmd = ["python3", "{}/applications/ion.py".format(os.environ['ISCE_HOME']),  "{}".format(xml_file)]
     ifg_utils.run_command(cmd)
 
-    cmd = ["python3", "{}/ion.py".format(os.environ['INSAR_ZERODOP_SCR']), "-i", "{}".format(xml_file)]
+    cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "-i", "{}".format(xml_file), "-s", "filter"]
     ifg_utils.run_command(cmd)
-
-    cmd = ["python3", "{}/alos2app.py".format(os.environ['INSAR_ZERODOP_SCR']), "-i", "{}".format(xml_file), "-s", "filter"]
-    ifg_utils.run_command(cmd)
+    '''
 
     dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
 

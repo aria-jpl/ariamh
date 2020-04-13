@@ -451,6 +451,7 @@ def get_SNWE(min_lon, max_lon, min_lat, max_lat):
 def run_command(cmd):
     cmd_line = " ".join(cmd)
     logging.info("calling : {}".format(cmd_line))
+    print("{} : Command : {}".format(os.getcwd(), cmd_line))
     check_call(cmd_line, shell=True)
 
 
