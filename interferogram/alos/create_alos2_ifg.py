@@ -90,16 +90,16 @@ def main():
 
     os.chdir(wd)
 
-    ''' Extrach Reference SLC Metadata
+    ''' Extrach Reference SLC Metadata '''
     ref_insar_obj = extract_alos2_md.get_alos2_obj(ref_data_dir)
     extract_alos2_md.create_alos2_md_isce(ref_insar_obj, "ref_alos2_md.json")
     #extract_alos2_md.create_alos2_md_bos(ref_data_dir, "ref_alos2_md2.json")
 
-     Extrach Reference SLC Metadata'
+    ''' Extrach Reference SLC Metadata '''
     sec_insar_obj = extract_alos2_md.get_alos2_obj(sec_data_dir)
     extract_alos2_md.create_alos2_md_isce(sec_insar_obj, "sec_alos2_md.json")
     #extract_alos2_md.create_alos2_md_bos(sec_data_dir, "sec_alos2_md2.json")
-    '''
+    
 
     with open("ref_alos2_md.json") as f:
         ref_md = json.load(f)
@@ -142,10 +142,10 @@ def main():
     
     preprocess_dem_file, geocode_dem_file, preprocess_dem_xml, geocode_dem_xml = ifg_utils.download_dem(SNWE)
    
-    ''' This is already done, so commenting it for now 
+    ''' This is already done, so commenting it for now '''
     slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
     ifg_utils.unzip_slcs(slcs)
-    '''
+    
 
     ref_pol, ref_frame_arr = ifg_utils.get_pol_frame_info(ref_data_dir)
     sec_pol, sec_frame_arr = ifg_utils.get_pol_frame_info(sec_data_dir)
@@ -206,7 +206,20 @@ def main():
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
 
+    for name in glob("{}/filt_*".format(insar_dir)):
+        logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
+        shutil.copy(os.path.join(insar_dir, name),  prod_dir)
+
+    for name in glob("{}/diff_*".format(insar_dir)):
+        logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
+        shutil.copy(os.path.join(insar_dir, name),  prod_dir)
+
+
     for name in glob("{}/*.slc.par.xml".format(insar_dir)):
+        logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
+        shutil.copy(os.path.join(insar_dir, name),  prod_dir)
+
+    for name in glob("{}/*.xml".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
 
