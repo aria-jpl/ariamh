@@ -8,7 +8,7 @@ from datetime import datetime
 import xml.etree.cElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
 from zipfile import ZipFile
-#import extract_alos2_md
+import extract_alos2_md
 import ifg_utils
 from create_input_xml_alos2 import create_input_xml
 
@@ -91,13 +91,13 @@ def main():
     os.chdir(wd)
 
     ''' Extrach Reference SLC Metadata '''
-    ref_insar_obj = extract_alos2_md.get_alos2_obj(ref_data_dir)
-    extract_alos2_md.create_alos2_md_isce(ref_insar_obj, "ref_alos2_md.json")
+    #ref_insar_obj = extract_alos2_md.get_alos2_obj(ref_data_dir)
+    extract_alos2_md.create_alos2_md_isce(ref_data_dir, "ref_alos2_md.json")
     #extract_alos2_md.create_alos2_md_bos(ref_data_dir, "ref_alos2_md2.json")
 
     ''' Extrach Reference SLC Metadata '''
-    sec_insar_obj = extract_alos2_md.get_alos2_obj(sec_data_dir)
-    extract_alos2_md.create_alos2_md_isce(sec_insar_obj, "sec_alos2_md.json")
+    #sec_insar_obj = extract_alos2_md.get_alos2_obj(sec_data_dir)
+    extract_alos2_md.create_alos2_md_isce(sec_data_dir, "sec_alos2_md.json")
     #extract_alos2_md.create_alos2_md_bos(sec_data_dir, "sec_alos2_md2.json")
     
 
@@ -144,7 +144,7 @@ def main():
    
     ''' This is already done, so commenting it for now '''
     slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
-    ifg_utils.unzip_slcs(slcs)
+    #ifg_utils.unzip_slcs(slcs)
     
 
     ref_pol, ref_frame_arr = ifg_utils.get_pol_frame_info(ref_data_dir)
