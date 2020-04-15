@@ -18,10 +18,7 @@ RUN set -ex \
  && sudo /home/ops/verdi/bin/pip3 install joblib netcdf4 \
  && sudo rm -rf /root/.cache \
  && sudo chown -R ops:ops /home/ops/ariamh \
- && mv /home/ops/ariamh/alos2-ingest /home/ops/verdi/ops/ \
- && mv /home/ops/ariamh/insarzd /home/ops/verdi/ops/ \
- && cd /home/ops/verdi/ops/insarzd/src \
- && ./install.sh 
+ && mv /home/ops/ariamh/alos2-ingest /home/ops/verdi/ops/ 
 
 # set entrypoint
 WORKDIR /home/ops
