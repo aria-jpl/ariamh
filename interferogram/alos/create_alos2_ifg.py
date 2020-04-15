@@ -203,9 +203,11 @@ def main():
 
     #Copy the product
     for name in glob("{}/filt_diff_*".format(insar_dir)):
+        logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
 
     for name in glob("{}/*.slc.par.xml".format(insar_dir)):
+        logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
 
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))

@@ -8,7 +8,6 @@ from datetime import datetime
 import xml.etree.cElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
 from zipfile import ZipFile
-from create_input_xml import create_input_xml
 from osgeo import ogr, osr
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -313,7 +312,7 @@ def get_version(dataset_type):
     DS_VERS_CFG = os.path.normpath(
                       os.path.join(
                           os.path.dirname(os.path.abspath(__file__)),
-                          '..', '..', 'conf', 'dataset_versions.json'))
+                          '..', 'conf', 'dataset_versions.json'))
    
     with open(DS_VERS_CFG) as f:
         ds_vers = json.load(f)
