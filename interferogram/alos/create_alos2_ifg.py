@@ -144,7 +144,7 @@ def main():
    
     ''' This is already done, so commenting it for now '''
     slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
-    #ifg_utils.unzip_slcs(slcs)
+    ifg_utils.unzip_slcs(slcs)
     
 
     ref_pol, ref_frame_arr = ifg_utils.get_pol_frame_info(ref_data_dir)
