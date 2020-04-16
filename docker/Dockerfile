@@ -1,4 +1,4 @@
-FROM hysds/isce_cuda_9_2
+FROM hysds/isce3:develop
 
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
