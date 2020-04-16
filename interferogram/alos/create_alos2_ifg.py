@@ -57,6 +57,10 @@ def main():
     burst_overlap = ctx["burst_overlap"]
     filter_strength = ctx["filter_strength"]
 
+    slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
+    ifg_utils.unzip_slcs(slcs)
+
+
     ifg_hash = ifg_utils.get_ifg_hash([reference_slc], [secondary_slc])
 
     ifg_md['full_idc_hash'] = ifg_hash
@@ -142,10 +146,6 @@ def main():
     
     preprocess_dem_file, geocode_dem_file, preprocess_dem_xml, geocode_dem_xml = ifg_utils.download_dem(SNWE)
    
-    ''' This is already done, so commenting it for now '''
-    slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
-    ifg_utils.unzip_slcs(slcs)
-    
 
     ref_pol, ref_frame_arr = ifg_utils.get_pol_frame_info(ref_data_dir)
     sec_pol, sec_frame_arr = ifg_utils.get_pol_frame_info(sec_data_dir)
