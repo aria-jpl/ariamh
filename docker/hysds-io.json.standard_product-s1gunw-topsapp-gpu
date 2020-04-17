@@ -1,6 +1,7 @@
 {
   "submission_type": "iteration",
   "label" : "Standard Product S1-GUNW - topsApp - GPU",
+  "recommended-queues" : [ "aria-job_worker-gpu" ],
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,
   "params" : [
