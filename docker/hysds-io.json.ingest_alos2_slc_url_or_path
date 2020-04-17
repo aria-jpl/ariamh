@@ -1,0 +1,17 @@
+{
+  "label" : "ALOS2 Ingest from Download URL or absolute path",
+   "recommended-queues" : [
+    "factotum-job_worker-large",
+    "factotum-job_worker-small"
+   ],
+  "allowed_accounts": [ "ops" ],
+  "submission_type":"individual",
+  "params" : [
+
+    {
+      "name": "download_url_or_path",
+      "from": "submitter",
+      "optional": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "command": "/home/ops/ariamh/frameMetadata/also2/ingest_alos2_slc.sh",
+  "imported_worker_files": {
+    "/home/ops/.netrc": "/home/ops/.netrc",
+    "/home/ops/.aws": "/home/ops/.aws"
+  },
+  "recommended-queues" : [
+    "factotum-job_worker-large",
+    "factotum-job_worker-small"
+  ],
+  "disk_usage": "200GB",
+  "soft_time_limit": 36000,
+  "time_limit": 40000,
+  "params" : [
+    {
+      "name": "download_url_or_path",
+      "destination": "context"
+    }
+  ]
+}
