@@ -113,6 +113,7 @@ def check_ifg_status(ifg_id):
     logger.info("check_slc_status : returning False")
     return False
 
+
 def get_dataset_by_hash(ifg_hash, es_index="grq"):
     """Query for existence of dataset by ID."""
 
@@ -127,6 +128,47 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
                 "must":[
                     { "term":{"metadata.full_id_hash.raw": ifg_hash} },
                     { "term":{"dataset.raw": "S1-GUNW"} }
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} },
+                    { "term":{"version.raw": version} }
                 ]
             }
         }
@@ -208,6 +250,18 @@ def check_ifg_status_by_hash(new_ifg_hash):
     logger.info("check_slc_status : returning False")
     return False
 
+def check_ifg_status_by_hash_version(new_ifg_hash, version):
+    es_index="grq_*_s1-gunw"
+    result = get_dataset_by_hash_version(new_ifg_hash, version, es_index)
+    total = result['hits']['total']
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
+        found_id = result['hits']['hits'][0]["_id"]
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
+
+    logger.info("check_slc_status : returning False")
+    return False
 
 def update_met(md):
 
@@ -334,7 +388,11 @@ def convert_number(x):
     if int(post_y)>999:
         post_y = post_y[:3]
     else:
-        post_y = post_y.ljust(3, '0')
+        print("post_y[0:3] : {}".format(post_y[0:3]))
+        if post_y[0:3] == '000':
+            post_y = '000'
+        else:
+            post_y =post_y.ljust(3, '0')
         
     print("post_y : %s " %post_y)
 
@@ -929,7 +987,7 @@ def main():
         raise RuntimeError(err)
     '''
 
-    if check_ifg_status_by_hash(new_ifg_hash):
+    if check_ifg_status_by_hash_version(new_ifg_hash, get_version()):
         err = "S1-GUNW IFG Found : %s" %temp_ifg_id
         logger.info(err)
         raise RuntimeError(err)
@@ -1037,6 +1095,7 @@ def main():
     ned13_dem_url = uu.ned13_dem_url
     dem_user = uu.dem_u
     dem_pass = uu.dem_p
+   
 
     preprocess_dem_dir="preprocess_dem"
     geocode_dem_dir="geocode_dem"
@@ -1058,13 +1117,12 @@ def main():
         dem_E = int(math.ceil(dem_E))
        
         logger.info("DEM TYPE : %s" %dem_type) 
-
         if dem_type.startswith("SRTM"):
             dem_type_simple = "SRTM"
             if dem_type.startswith("SRTM3"):
                 dem_url = srtm3_dem_url
                 dem_type_simple = "SRTM3"
-  
+
             dem_cmd = [
                 "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
@@ -1087,7 +1145,6 @@ def main():
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
  
-           
             dem_S = dem_S - 1 if dem_S > -89 else dem_S
             dem_N = dem_N + 1 if dem_N < 89 else dem_N
             dem_W = dem_W - 1 if dem_W > -179 else dem_W
@@ -1318,9 +1375,15 @@ def main():
 
 
     lats = get_geocoded_lats("merged/filt_topophase.unw.geo.vrt")
-
+    logger.info("lats : {}".format(lats))
+    logger.info("max(lats) : {} : {}".format(max(lats), convert_number(max(lats))))
+    logger.info("min(lats) : {} : {}".format(min(lats), convert_number(min(lats))))
+    logger.info("sorted(lats)[-2] : {} : {}".format(sorted(lats)[-2], convert_number(sorted(lats)[-2])))
+    logger.info("sorted(lats)[1]  {} : {}".format(sorted(lats)[1], convert_number(sorted(lats)[1])))
 
     sat_direction = "D"
+    logger.info("sat_direction : {}".format(sat_direction))
+
     west_lat= "{}_{}".format(convert_number(sorted(lats)[-2]), convert_number(min(lats)))
 
     if direction.lower() == 'asc':
