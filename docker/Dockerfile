@@ -1,21 +1,14 @@
-FROM hysds/isce3:develop
+FROM hysds/isce2:latest-cuda
 
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
 
-
-USER root
-
-RUN /home/ops/verdi/bin/pip3 install 'pyproj==1.9.6'
-RUN /home/ops/verdi/bin/pip install 'pyproj==1.9.6'
-
 USER ops
-
 
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 RUN set -ex \
- && sudo /home/ops/verdi/bin/pip3 install joblib netcdf4 \
+ && pip install joblib netcdf4 \
  && sudo rm -rf /root/.cache \
  && sudo chown -R ops:ops /home/ops/ariamh \
  && cd /home/ops/verdi/ops/ && git clone https://github.com/hysds/slcp2pm.git \
