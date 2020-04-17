@@ -5,8 +5,11 @@
 # Copyright 2012, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged.
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-from __future__ import print_function
+
 import sys
+import os
+import isce
+from isceobj.InsarProc.InsarProc import InsarProc
 #sensor is the sensor name since each input file will be different depending on that
 #listFiles is a list of lists of lists ([0] for master [1] for slave) of files necessary to create the inputFile it's sensor dependent
 #filenOut is the name of the input file created. if not specified defaults to 'extractorInput.xml'
@@ -14,70 +17,95 @@ import sys
 #useHighRes it's a flag to see if one should trying only if high res dem
 class InputFileCreator(object):
     def __init__(self):
-        self._fileOut = ""
+        self._fileOut = 'insar.xml'
         self._unwrap = None
-        self._useHighRes = None
+        self._unwrapper_name = None
+        self._useHighRes = 'True'
+        self._filterStrength = None
+        self._addStitcher = True
+        self._demFile = None
+        self._posting= None
+        self._geoList = None
+        self._insar = InsarProc()
+        self._insar.configure()
     def getFileOut(self):
         return self._fileOut
-
-    def createInputFile(self,sensor,listFiles,fileOut = None,unwrap = None, useHighRes = None):
-        if(fileOut is None):
-            self._fileOut = 'insarMH.xml'
+    def init(self,jobJson):
+        self._unwrap = jobJson['unwrap']
+        self._unwrapper_name = jobJson['unwrapper']
+        self._filterStrength = jobJson['filterStrength']
+        self._posting = jobJson['posting']
+        self._geoList = self.getGeoList(jobJson['createInterferogram']['geolist'])
+        if('demFile' in jobJson):
+            self._addStitcher = False
+            self._demFile = jobJson['demFile']
+    
+    def getGeoList(self,geolist):
+        ret = []
+        for geo in geolist:
+            ret.append(geo)
+        return ret
+        
+    def createInputFile(self,listFiles,jobJson):
+        
+        #project = None,fileOut = None,unwrap = None, useHighRes = None, unwrapper_name=None
+        raise NotImplementedError("Need to implement the createInputFile method")
+    
+    def addCommons(self,fp):
+        fp1 = open(os.path.join(os.path.dirname(__file__),'commonTemplate.xml'))
+        extraLines = fp1.readlines()
+        fp1.close()
+        for line in extraLines:
+            if line.count('unwrapvalue'):
+                fp.write(line.replace('unwrapvalue',str(self._unwrap)))
+            elif line.count('unwrappervalue'):
+                fp.write(line.replace('unwrappervalue',str(self._unwrapper_name)))
+            elif line.count('posting'):
+                fp.write(line.replace('posting',str(self._posting)))     
+            elif line.count('useHighResolutionDemOnlyvalue'):
+                fp.write(line.replace('useHighResolutionDemOnlyvalue',str(self._useHighRes)))
+            elif line.count('filtervalue'):
+                fp.write(line.replace('filtervalue',str(self._filterStrength)))
+            elif line.count('geolistvalue'):
+                fp.write(line.replace('geolistvalue',str(self._geoList)))
+            else:
+                fp.write(line)   
+        fp.write('\n')
+        if(self._addStitcher):          
+            self.addStitcher(fp)
         else:
-            self._fileOut = fileOut
-        if(unwrap is None):
-            self._unwrap = 'True'
-        else:
-            self._unwrap = unwrap
-        if(useHighRes is None):
-            self._useHighRes = 'False'
-        else:
-            self._useHighRes = useHighRes 
-        fp = open(self._fileOut,'w')
-        if(sensor.upper() == 'ALOS'):
-            #for alos listFiles is [0] IMG, [1] LED, [2] output raw filename
-            strToSave = '<?xml version="1.0" encoding="UTF-8"?> \n' + \
-                        '<insarMH>\n' + \
-                        '    <component name="insarMH"> \n' + \
-                        '        <property name="Sensor Name"> \n' + \
-                        '            <value>' + sensor.upper() + '</value> \n' + \
-                        '        </property> \n' + \
-                        '        <property name="unwrap"> \n' + \
-                        '            <value>' + str(self._unwrap) +'</value> \n' + \
-                        '        </property> \n' + \
-                        '        <property name="useHighResolutionDem"> \n' + \
-                        '            <value>' + str(self._useHighRes) +'</value> \n' + \
-                        '        </property> \n' + \
-                        '        <component name="Master"> \n' + \
-                        '            <property name="LEADERFILE"> \n' + \
-                        '                <value>' + str(listFiles[0][1]) +'</value> \n' + \
-                        '            </property> \n' + \
-                        '            <property name="IMAGEFILE"> \n' + \
-                        '                <value>' + str(listFiles[0][0]) +'</value> \n' + \
-                        '            </property> \n' + \
-                        '            <property name="OUTPUT"> \n' + \
-                        '                <value>' + listFiles[0][2] +'</value> \n' + \
-                        '            </property> \n' + \
-                        '        </component> \n' + \
-                        '        <component name="Slave"> \n' + \
-                        '            <property name="LEADERFILE"> \n' + \
-                        '                <value>' + str(listFiles[1][1]) +'</value> \n' + \
-                        '            </property> \n' + \
-                        '            <property name="IMAGEFILE"> \n' + \
-                        '                <value>' + str(listFiles[1][0]) +'</value> \n' + \
-                        '            </property> \n' + \
-                        '            <property name="OUTPUT"> \n' + \
-                        '                <value>' + listFiles[1][2] +'</value> \n' + \
-                        '            </property> \n' + \
-                        '        </component> \n' + \
-                        '    </component> \n' + \
-                        '</insarMH> \n'
-            fp.write(strToSave)
-        fp.close()
+            self.addDem(fp)
+     
+    def addDem(self,fp):
+        towrite = '        <component name=\'Dem\'>\n' +\
+                  '            <catalog>' + self._demFile +'</catalog>\n' + \
+                  '        </component>\n'
+        fp.write(towrite)        
+    def addStitcher(self,fp):
+        from utils.UrlUtils import UrlUtils
+        uu = UrlUtils()
+        fp1 = open(os.path.join(os.path.dirname(__file__),'demstitchertemplate.xml'))
+        extraLines = fp1.readlines()
+        fp1.close()
+        for el in extraLines:
+            if el.count('httpsvalue'):
+                fp.write(el.replace('httpsvalue',str(uu.dem_url)))
+            elif el.count('usernamevalue'):
+                fp.write(el.replace('usernamevalue',str(uu.dem_u)))
+            elif el.count('passwordvalue'):
+                fp.write(el.replace('passwordvalue',str(uu.dem_p))) 
+            else:
+                fp.write(el)
+        fp.write('\n')
+        
 def main():
-    listIn = [[['IMG-HH-ALPSRP225250640-H1.0__A','IMG-HH-ALPSRP225250630-H1.0__A'],['LED-ALPSRP225250640-H1.0__A','LED-ALPSRP225250630-H1.0__A'],'master.raw'],
-              [['IMG-HH-ALPSRP225250620-H1.0__A','IMG-HH-ALPSRP225250610-H1.0__A'],['LED-ALPSRP225250620-H1.0__A','LED-ALPSRP225250610-H1.0__A'],'slave.raw']]
-    sensor = "Alos"
-    createInputFile(sensor,listIn)
+    ifc = InputFileCreator()
+    #listIn = [[['IMG-HH-ALPSRP225250640-H1.0__A','IMG-HH-ALPSRP225250630-H1.0__A'],['LED-HH-ALPSRP225250640-H1.0__A','LED-HH-ALPSRP225250630-H1.0__A'],'master.raw'],
+    #          [['IMG-HH-ALPSRP225250620-H1.0__A','IMG-HH-ALPSRP225250610-H1.0__A'],['LED-HH-ALPSRP225250620-H1.0__A','LED-HH-ALPSRP225250610-H1.0__A'],'slave.raw']]
+    #sensor = "alos"
+    sensor = "cosmo_skymed"
+    listIn = [[['CSKS1_RAW_B_HI_04_HH_RA_SF_20130609132512_20130609132519.h5'],'master.raw'],
+              [['CSKS1_RAW_B_HI_04_HH_RA_SF_20130828132440_20130828132447.h5'],'slave.raw']]
+    ifc.createInputFile(sensor,listIn)
 if __name__ == '__main__':
     sys.exit(main())

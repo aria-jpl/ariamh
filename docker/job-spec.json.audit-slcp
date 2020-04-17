@@ -6,6 +6,9 @@
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [],
+  "disk_usage":"200GB",
+  "soft_time_limit": 7200,
+  "time_limit": 7500,
   "params" : [
     {
       "name": "dataset_tag",
