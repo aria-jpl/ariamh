@@ -1,21 +1,11 @@
 {
   "command": "/home/ops/ariamh/interferogram/alos/create_alos2_ifg.sh",
   "imported_worker_files": {
-    "/home/ops/.netrc": ["/home/ops/.netrc"],
-    "/home/ops/.aws": ["/home/ops/.aws", "ro"],
-    "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/settings.conf"
+    "/home/ops/.netrc": ["$HOME/.netrc"],
+    "/home/ops/.aws": ["$HOME/.aws", "ro"],
+    "/home/ops/verdi/etc/settings.conf": "$HOME/ariamh/settings.conf"
   },
   "disk_usage":"200GB",
-   "dependency_images": [
-    {
-      "container_image_name": "aria/isce_giant:latest",
-      "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-latest.tar.gz",
-      "container_mappings": {
-        "/home/ops/.netrc": ["/root/.netrc"],
-        "/home/ops/.aws": ["/root/.aws", "ro"]
-      }
-    }
-  ],
   "recommended-queues" : [
     "standard_product-s1gunw-topsapp"
   ],
