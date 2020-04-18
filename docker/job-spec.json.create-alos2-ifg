@@ -9,8 +9,8 @@
   "recommended-queues" : [
     "standard_product-s1gunw-topsapp"
   ],
-  "soft_time_limit": 7200,
-  "time_limit": 7500,
+  "soft_time_limit": 21600,
+  "time_limit": 21800,
   "post": [ "hysds.utils.triage" ],
   "params" : [
     { 
