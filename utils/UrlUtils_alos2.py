@@ -17,13 +17,10 @@ class UrlUtils(object):
         except:
             sfx = ''
         
-        '''            
         if conf:
             self._filename = os.path.join(os.environ['ARIAMH_HOME'],'conf',conf)
         else:  
             self._filename = os.path.join(os.environ['ARIAMH_HOME'],'conf/settings.conf'+ sfx)
-        '''
-        self._filename = os.path.join(os.environ['WORK_DIR'],'settings.conf'+ sfx)
         self._rest_url = None
         self._dav_url = None
         self._dav_u = None
