@@ -10,8 +10,8 @@ source $ARIAMH_HOME/giant.sh
 export TROPMAP_HOME=$HOME/tropmap
 export UTILS_HOME=$ARIAMH_HOME/utils
 export GIANT_HOME=/usr/local/giant/GIAnT
-export WORK_DIR=$PWD
-echo $WORK_DIR
+#export WORK_DIR=$PWD
+#echo $WORK_DIR
 export ALOS2_INGEST_HOME=$HOME/verdi/ops/alos2-ingest
 
 #export LD_LIBRARY_PATH=/usr/local/gdal/lib:$LD_LIBRARY_PATH
