@@ -127,7 +127,6 @@ def main():
     else:
         print("NOT FOUND")
 
-    exit(0)
 
     ifg_md['satelite_direction'] = direction
     ref_orbit = ref_md["absolute_orbit"]
