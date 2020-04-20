@@ -329,18 +329,19 @@ def get_pol_value(pp):
     elif pp in ("DH", "SH", "HH", "HV"): return "HH"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
-def get_pol_frame_info(slc_dir):
+def get_pol_frame_info(slc_filelist):
     pol_arr = [] 
     frame_arr = []
     imgRegex = re.compile(IMG_RE)
 
     img_files = glob(os.path.join(slc_dir, "IMG-*"))
 
-    for img_f in img_files:
-        mo = imgRegex.search(img_f)
-        pol_arr.append(get_pol_value(mo.group(1).upper()))
-        frame_arr.append(int(mo.group(3)))
-        print("{} : {} : {}".format(img_f, mo.group(1), mo.group(3)))
+    for fl in slc_filelist:
+        if fl.startswith("IMG-"):
+            mo = imgRegex.search(fl)
+            pol_arr.append(get_pol_value(mo.group(1).upper()))
+            frame_arr.append(int(mo.group(3)))
+            print("{} : {} : {}".format(fl, mo.group(1), mo.group(3)))
 
     pol_arr = list(set(pol_arr))
     if len(pol_arr)>1:
@@ -761,13 +762,33 @@ def download_dem(SNWE):
 
     return preprocess_dem_file, geocode_dem_file, preprocess_dem_xml, geocode_dem_xml
 
-def unzip_slcs(slcs):
+
+def get_zip_contents(file_name):
+    file_list = []
+    my_zip = ZipFile(file_name)
+    for file in my_zip.namelist():
+        file_list.append(my_zip.getinfo(file).filename)
+        print(my_zip.getinfo(file).filename)
+    return file_list
+
+def extract_partial_zip_files(zip_file, target_dir, filters):
+    my_zip = ZipFile(zip_file)
+    for file in my_zip.namelist():
+        file_name = my_zip.getinfo(file).filename
+        if file_name.startswith(tuple(set(filters))):
+            print(file_name)
+
+def unzip_slcs(slcs, filters = []):
     for k, v in slcs.items():
         logging.info("Unzipping {} in {}".format(v, k))
-        with ZipFile(v, 'r') as zf:
-            zf.extractall(k)
+        if len(filters) > 0:
+            extract_partial_zip_files(v, k, filters)
+        else:
+            with ZipFile(v, 'r') as zf:
+                zf.extractall(k)
+
         logging.info("Removing {}.".format(v))
-        #try: os.unlink(v)
-        #except: pass
+        try: os.unlink(v)
+        except: pass
 
 

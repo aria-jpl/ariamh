@@ -21,6 +21,7 @@ BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
 IFG_ID_ALOS2_TMPL = "ALOS2-INSARZD-{}-{}-{}-{}"
+SLC_FILTERS = ['IMG-HH', 'LED', 'TRL']
 
 def create_product(id, wd):
     insar_dir = os.path.json(wd, "insar")
@@ -57,8 +58,12 @@ def main():
     burst_overlap = ctx["burst_overlap"]
     filter_strength = ctx["filter_strength"]
 
+    ref_slc_filelist = ifg_utils.get_zip_contents(reference_slc)
+    sec_slc_filelist = ifg_utils.get_zip_contents(secondary_slc)
+
+    #Unzip the slc files
     slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
-    ifg_utils.unzip_slcs(slcs)
+    #ifg_utils.unzip_slcs(slcs, SLC_FILTERS)
 
 
     ifg_hash = ifg_utils.get_ifg_hash([reference_slc], [secondary_slc])
@@ -156,8 +161,8 @@ def main():
     preprocess_dem_file, geocode_dem_file, preprocess_dem_xml, geocode_dem_xml = ifg_utils.download_dem(SNWE)
    
 
-    ref_pol, ref_frame_arr = ifg_utils.get_pol_frame_info(ref_data_dir)
-    sec_pol, sec_frame_arr = ifg_utils.get_pol_frame_info(sec_data_dir)
+    ref_pol, ref_frame_arr = ifg_utils.get_pol_frame_info(ref_slc_filelist)
+    sec_pol, sec_frame_arr = ifg_utils.get_pol_frame_info(sec_slc_filelist)
 
     if ref_pol != sec_pol:
         raise Exception("REF Pol : {} is different than SEC Pol : {}".format(ref_pol, sec_pol))
