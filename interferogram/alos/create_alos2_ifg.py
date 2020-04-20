@@ -76,10 +76,7 @@ def main():
     version = ifg_utils.get_version("ALOS2_IFG")
     if not version:
         version = "v1.0"
-    
-    xml_file = "alos2app_{}.xml".format(ifg_type)
-    tmpl_file = "{}.tmpl".format(xml_file)
-
+   
     start_subswath = 1
     end_subswath = 5
 
@@ -118,7 +115,20 @@ def main():
     direction = ref_md["flight_direction"]
     if direction.lower() == 'asc':
         sat_direction = "A"
-    
+    dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
+    ifg_hash = ifg_hash[0:4]
+
+    #Check if ifg_already exists
+    id = IFG_ID_ALOS2_TMPL.format(sat_direction, dt_string, ifg_hash, version.replace('.', '_') )
+
+    #id = "ALOS2-INSARZD-D-18042020T154753-4be9-v1_0"
+    if ifg_utils.check_ifg_status(id, "grq"):
+        print("FOUND")
+    else:
+        print("NOT FOUND")
+
+    exit(0)
+
     ifg_md['satelite_direction'] = direction
     ref_orbit = ref_md["absolute_orbit"]
     sec_orbit = sec_md["absolute_orbit"]
@@ -161,8 +171,10 @@ def main():
 
 
     ''' Some Fake Data'''
-    ifg_md['sensing_start'] = datetime.now().isoformat()
+    ifg_md['sensing_start'] = "%sZ" % datetime.utcnow().isoformat('T')
     
+    xml_file = "alos2app_{}.xml".format(ifg_type)
+    tmpl_file = "{}.tmpl".format(xml_file)
 
     tmpl_file = os.path.join(BASE_PATH, tmpl_file)
     print(tmpl_file)
@@ -185,14 +197,8 @@ def main():
     ifg_utils.run_command(cmd)
     '''
 
-    dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
-
-    ifg_md['sensing_stop'] = datetime.now().isoformat()
-    ifg_hash = ifg_hash[0:4]
+    ifg_md['sensing_stop'] = "%sZ" % datetime.utcnow().isoformat('T')
      
-    #IFG_ID_ALOS2_TMPL = "ALOS2-IFG-{}-{}-{}-{}"
-    
-    id = IFG_ID_ALOS2_TMPL.format(sat_direction, dt_string, ifg_hash, version.replace('.', '_') )
     prod_dir = id
     logger.info("prod_dir : %s" %prod_dir)
     
@@ -201,7 +207,7 @@ def main():
     os.chdir(wd)
     os.makedirs(prod_dir, 0o755)
 
-    #Copy the product
+    #Copy the producta
     for name in glob("{}/filt_diff_*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)    

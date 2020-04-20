@@ -19,6 +19,43 @@ BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
 
+def get_dataset(id, es_index="grq"):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+    es_index = "grq"
+
+    # query
+    query = {
+      "query": {
+        "wildcard": {
+          "_id": id
+        }
+      }
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        r.raise_for_status()
+
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
 def get_md5_from_file(file_name):
     '''
     :param file_name: file path to the local SLC file after download
@@ -30,7 +67,101 @@ def get_md5_from_file(file_name):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def check_ifg_status_by_hash(new_ifg_hash):
+def check_ifg_status(ifg_id, es_index="grq"):
+
+    result = get_dataset(ifg_id, es_index)
+    total = result['hits']['total']
+    logger.info("check_slc_status : total : %s" %total)
+    if total> 0:
+        found_id = result['hits']['hits'][0]["_id"]
+        raise RuntimeError("IFG already exists : %s" %found_id)
+
+    logger.info("check_slc_status : returning False")
+    return False
+
+
+def get_dataset_by_hash(ifg_hash, es_index="grq"):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} }
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} },
+                    { "term":{"version.raw": version} }
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
+
+def check_ifg_status_by_hash(new_ifg_hash, es_index="grq"):
     es_index="grq_*_s1-gunw"
     result = get_dataset_by_hash(new_ifg_hash, es_index)
     total = result['hits']['total']
@@ -43,8 +174,8 @@ def check_ifg_status_by_hash(new_ifg_hash):
     logger.info("check_slc_status : returning False")
     return False
 
-def check_ifg_status_by_hash_version(new_ifg_hash, version):
-    es_index="grq_*_s1-gunw"
+def check_ifg_status_by_hash_version(new_ifg_hash, version, es_index="grq"):
+    #ces_index="grq_*_s1-gunw"
     result = get_dataset_by_hash_version(new_ifg_hash, version, es_index)
     total = result['hits']['total']
     logger.info("check_slc_status_by_hash : total : %s" %total)
