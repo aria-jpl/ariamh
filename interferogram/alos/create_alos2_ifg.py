@@ -72,10 +72,10 @@ def main():
     ifg_md['reference_slc'] = reference_slc
     ifg_md['secondary_slc'] = secondary_slc
     ifg_md["interferogram_type"] = ifg_type
-    ifg_md["azimuth_looks"] = azimuth_looks
-    ifg_md["range_looks"] = range_looks
-    ifg_md["burst_overlap"] = burst_overlap
-    ifg_md["filter_strength"] = filter_strength
+    ifg_md["azimuth_looks"] = int(azimuth_looks)
+    ifg_md["range_looks"] = int(range_looks)
+    ifg_md["burst_overlap"] = float(burst_overlap)
+    ifg_md["filter_strength"] = float(filter_strength)
 
     version = ifg_utils.get_version("ALOS2_IFG")
     if not version:
