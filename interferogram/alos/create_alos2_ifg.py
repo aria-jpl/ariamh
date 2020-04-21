@@ -63,7 +63,7 @@ def main():
 
     #Unzip the slc files
     slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
-    #ifg_utils.unzip_slcs(slcs, SLC_FILTERS)
+    ifg_utils.unzip_slcs(slcs, SLC_FILTERS)
 
 
     ifg_hash = ifg_utils.get_ifg_hash([reference_slc], [secondary_slc])
