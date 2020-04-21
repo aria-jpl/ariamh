@@ -12,12 +12,11 @@ export UTILS_HOME=$ARIAMH_HOME/utils
 export GIANT_HOME=/usr/local/giant/GIAnT
 #export WORK_DIR=$PWD
 #echo $WORK_DIR
-export ALOS2_INGEST_HOME=$HOME/verdi/ops/alos2-ingest
 
 #export LD_LIBRARY_PATH=/usr/local/gdal/lib:$LD_LIBRARY_PATH
 #export GDAL_DATA=/usr/local/gdal/share/gdal
 
-export PYTHONPATH=.:$ALOS2_INGEST_HOME/scripts:$ISCE_HOME/applications:$ISCE_HOME/components:$BASE_PATH:$ARIAMH_HOME:$ARIAMH_HOME/interferogram:$TROPMAP_HOME:$GIANT_HOME:$UTILS_HOME:$PYTHONPATH
+export PYTHONPATH=.:$ISCE_HOME/applications:$ISCE_HOME/components:$BASE_PATH:$ARIAMH_HOME:$ARIAMH_HOME/interferogram:$TROPMAP_HOME:$GIANT_HOME:$UTILS_HOME:$PYTHONPATH
 export PATH=$ISCE_HOME/applications:$ISCE_HOME/bin:/usr/local/gdal/bin:$ISCE_HOME/bin:/opt/conda/bin/:/opt/conda/pkgs/libgdal-2.3.2-h9d4a965_0/bin:$PATH
 export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 echo $PYTHONPATH

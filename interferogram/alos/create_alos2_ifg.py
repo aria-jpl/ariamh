@@ -65,7 +65,6 @@ def main():
     slcs = {"reference" : "{}".format(reference_slc), "secondary" : "{}".format(secondary_slc)}
     ifg_utils.unzip_slcs(slcs, SLC_FILTERS)
 
-
     ifg_hash = ifg_utils.get_ifg_hash([reference_slc], [secondary_slc])
 
     ifg_md['full_idc_hash'] = ifg_hash
@@ -96,22 +95,18 @@ def main():
 
     os.chdir(wd)
 
-    ''' Extrach Reference SLC Metadata '''
-    #ref_insar_obj = extract_alos2_md.get_alos2_obj(ref_data_dir)
+    ''' Extrach SLC Metadata '''
+    ref_md = extract_alos2_md.create_alos2_md_json(ref_data_dir)
+    sec_md = extract_alos2_md.create_alos2_md_json(sec_data_dir)
+
+    ''' Extrach Reference SLC Metadata 
     extract_alos2_md.create_alos2_md_isce(ref_data_dir, "ref_alos2_md.json")
-    #extract_alos2_md.create_alos2_md_bos(ref_data_dir, "ref_alos2_md2.json")
-
-    ''' Extrach Reference SLC Metadata '''
-    #sec_insar_obj = extract_alos2_md.get_alos2_obj(sec_data_dir)
     extract_alos2_md.create_alos2_md_isce(sec_data_dir, "sec_alos2_md.json")
-    #extract_alos2_md.create_alos2_md_bos(sec_data_dir, "sec_alos2_md2.json")
-    
-
     with open("ref_alos2_md.json") as f:
         ref_md = json.load(f)
-    
     with open("sec_alos2_md.json") as f:
         sec_md = json.load(f)
+    '''
 
     ref_md['location'] = ref_md.pop('geometry')
     sec_md['location'] = sec_md.pop('geometry')
@@ -128,9 +123,8 @@ def main():
 
     #id = "ALOS2-INSARZD-D-18042020T154753-4be9-v1_0"
     if ifg_utils.check_ifg_status(id, "grq"):
-        print("FOUND")
-    else:
-        print("NOT FOUND")
+        print("{} Already Exists. Exiting ....".format(id))
+        exit(0)
 
 
     ifg_md['satelite_direction'] = direction
