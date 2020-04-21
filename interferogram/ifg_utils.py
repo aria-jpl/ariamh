@@ -772,11 +772,13 @@ def get_zip_contents(file_name):
     return file_list
 
 def extract_partial_zip_files(zip_file, target_dir, filters):
+
+    print("extract_partial_zip_files : {} : {}: {}".format(zip_file, target_dir, filters))
     my_zip = ZipFile(zip_file)
     for file in my_zip.namelist():
         file_name = my_zip.getinfo(file).filename
         if file_name.startswith(tuple(set(filters))):
-            print(file_name)
+            my_zip.extract(file_name, target_dir)
 
 def unzip_slcs(slcs, filters = []):
     for k, v in slcs.items():
@@ -786,9 +788,9 @@ def unzip_slcs(slcs, filters = []):
         else:
             with ZipFile(v, 'r') as zf:
                 zf.extractall(k)
-
+        
         logging.info("Removing {}.".format(v))
         try: os.unlink(v)
         except: pass
-
+        
 
