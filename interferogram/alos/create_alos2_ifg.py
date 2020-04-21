@@ -161,6 +161,8 @@ def main():
     if ref_pol != sec_pol:
         raise Exception("REF Pol : {} is different than SEC Pol : {}".format(ref_pol, sec_pol))
 
+    if set(ref_frame_arr) != set(sec_frame_arr):
+        raise Exception("REF Frame : {} is different than SEC Frame : {}".format(ref_frame_arr, sec_frame_arr))
     '''
     Logic for Fram datas
     '''
