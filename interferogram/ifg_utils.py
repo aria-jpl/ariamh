@@ -334,7 +334,7 @@ def get_pol_frame_info(slc_filelist):
     frame_arr = []
     imgRegex = re.compile(IMG_RE)
 
-    img_files = glob(os.path.join(slc_dir, "IMG-*"))
+    #img_files = glob(os.path.join(slc_dir, "IMG-*"))
 
     for fl in slc_filelist:
         if fl.startswith("IMG-"):
