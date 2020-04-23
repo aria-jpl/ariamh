@@ -113,6 +113,7 @@ def check_ifg_status(ifg_id):
     logger.info("check_slc_status : returning False")
     return False
 
+
 def get_dataset_by_hash(ifg_hash, es_index="grq"):
     """Query for existence of dataset by ID."""
 
@@ -142,13 +143,54 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
     logger.info("search_url : %s" %search_url)
 
     r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
 
     if r.status_code != 200:
         logger.info("Failed to query %s:\n%s" % (es_url, r.text))
         logger.info("query: %s" % json.dumps(query, indent=2))
         logger.info("returned: %s" % r.text)
-        r.raise_for_status()
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
+    result = r.json()
+    logger.info(result['hits']['total'])
+    return result
 
+def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
+    """Query for existence of dataset by ID."""
+
+    uu = UrlUtils()
+    es_url = uu.rest_url
+    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+
+    # query
+    query = {
+        "query":{
+            "bool":{
+                "must":[
+                    { "term":{"metadata.full_id_hash.raw": ifg_hash} },
+                    { "term":{"dataset.raw": "S1-GUNW"} },
+                    { "term":{"version.raw": version} }
+                ]
+            }
+        }
+        
+    }
+
+    logger.info(query)
+
+    if es_url.endswith('/'):
+        search_url = '%s%s/_search' % (es_url, es_index)
+    else:
+        search_url = '%s/%s/_search' % (es_url, es_index)
+    logger.info("search_url : %s" %search_url)
+
+    r = requests.post(search_url, data=json.dumps(query))
+    r.raise_for_status()
+
+    if r.status_code != 200:
+        logger.info("Failed to query %s:\n%s" % (es_url, r.text))
+        logger.info("query: %s" % json.dumps(query, indent=2))
+        logger.info("returned: %s" % r.text)
+        raise RuntimeError("Failed to query %s:\n%s" % (es_url, r.text))
     result = r.json()
     logger.info(result['hits']['total'])
     return result
@@ -207,6 +249,18 @@ def check_ifg_status_by_hash(new_ifg_hash):
     logger.info("check_slc_status : returning False")
     return False
 
+def check_ifg_status_by_hash_version(new_ifg_hash, version):
+    es_index="grq_*_s1-gunw"
+    result = get_dataset_by_hash_version(new_ifg_hash, version, es_index)
+    total = result['hits']['total']
+    logger.info("check_slc_status_by_hash : total : %s" %total)
+    if total>0:
+        found_id = result['hits']['hits'][0]["_id"]
+        logger.info("Duplicate dataset found: %s" %found_id)
+        sys.exit(0)
+
+    logger.info("check_slc_status : returning False")
+    return False
 
 def update_met(md):
 
@@ -333,7 +387,11 @@ def convert_number(x):
     if int(post_y)>999:
         post_y = post_y[:3]
     else:
-        post_y = post_y.ljust(3, '0')
+        print("post_y[0:3] : {}".format(post_y[0:3]))
+        if post_y[0:3] == '000':
+            post_y = '000'
+        else:
+            post_y =post_y.ljust(3, '0')
         
     print("post_y : %s " %post_y)
 
@@ -591,6 +649,41 @@ def get_temp_id(ctx, version):
 
     return ifg_id
 
+def get_polarization2(id):
+    """Return polarization."""
+    """
+    SH (single HH polarisation)
+    SV (single VV polarisation)
+    DH (dual HH+HV polarisation)
+    DV (dual VV+VH polarisation)
+    """
+
+    match = POL_RE.search(id)
+    if not match:
+        raise RuntimeError("Failed to extract polarization from %s" % id)
+    pp = match.group(1)
+    if pp == "DV": return "vv"
+    elif pp == "SV": return "vv"
+    elif pp == "DH": return "hh"
+    elif pp == "SH": return "hh"
+    else: raise RuntimeError("Unrecognized polarization: %s" % pp)
+
+def get_pol_data_from_slcs(slcs):
+    pol_data = []
+    for slc in slcs:
+        pol = get_polarization(slc).strip().lower()
+        logger.info("get_pol_data_from_slcs: pol data of SLC : {} is {}".format(slc, pol))
+        if pol not in pol_data:
+            pol_data.append(pol)
+
+    if len(pol_data)==0 or len(pol_data)>1:
+        err_msg = "get_pol_data_from_slcs: Found Multiple Polarization or No Polarization for slcs {} : {}".format(slcs, pol_data)
+        print(err_msg)
+        raise RuntimeError(err_msg)
+
+    return pol_data[0]
+
+
 def get_polarization(id):
     """Return polarization."""
 
@@ -599,8 +692,7 @@ def get_polarization(id):
         raise RuntimeError("Failed to extract polarization from %s" % id)
     pp = match.group(1)
     if pp in ("SV", "DV"): return "vv"
-    elif pp == "DH": return "hv"
-    elif pp == "SH": return "hh"
+    elif pp in ("DH", "SH"): return "hh"
     else: raise RuntimeError("Unrecognized polarization: %s" % pp)
 
 
@@ -780,12 +872,12 @@ def main():
             logger.info("key %s already in ctx with value %s and input_metadata value is %s" %(k, ctx[k], input_metadata[k]))
     logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
-    azimuth_looks = 19
+    azimuth_looks = 7
     if 'azimuth_looks' in input_metadata:
         azimuth_looks = int(input_metadata['azimuth_looks'])
     ctx['azimuth_looks'] = azimuth_looks
 
-    range_looks = 7
+    range_looks = 19
     if 'range_looks' in input_metadata:
         range_looks = int(input_metadata['range_looks'])
     ctx['range_looks'] = range_looks
@@ -857,8 +949,8 @@ def main():
 
 
     #Pull topsApp configs
-    ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 19)
-    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 7)
+    ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 7)
+    ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 19)
     
     ctx['swathnum'] = None
     # stitch all subswaths?
@@ -894,7 +986,7 @@ def main():
         raise RuntimeError(err)
     '''
 
-    if check_ifg_status_by_hash(new_ifg_hash):
+    if check_ifg_status_by_hash_version(new_ifg_hash, get_version()):
         err = "S1-GUNW IFG Found : %s" %temp_ifg_id
         logger.info(err)
         raise RuntimeError(err)
@@ -923,12 +1015,24 @@ def main():
         slave_safe_dirs.append(i.replace(".zip", ".SAFE"))
 
     # get polarization values
-    master_pol = get_polarization(master_safe_dirs[0])
-    slave_pol = get_polarization(slave_safe_dirs[0])
+    master_pol = get_pol_data_from_slcs(master_safe_dirs)
+    slave_pol = get_pol_data_from_slcs(slave_safe_dirs)
     if master_pol == slave_pol:
         match_pol = master_pol
     else:
-        match_pol = "{{{},{}}}".format(master_pol, slave_pol)
+        err_msg = "Reference and Secondary Polarization are NOT SAME"
+        err_msg += "\nReference Polarization : {} Secondary Polarization : {}".format(master_pol, slave_pol)
+        raise RuntimeError(err_msg)
+        #match_pol = "{{{},{}}}".format(master_pol, slave_pol)
+
+    '''
+    master_pol_met = get_polarization2(master_safe_dirs[0])
+    slave_pol_met = get_polarization2(slave_safe_dirs[0])
+    if master_pol_met == slave_pol_met:
+        match_pol_met = master_pol_met
+    else:
+        match_pol_met = "{{{},{}}}".format(master_pol_met, slave_pol_met)
+    '''
 
     # get union bbox
     logger.info("Determining envelope bbox from SLC swaths.")
@@ -990,6 +1094,7 @@ def main():
     ned13_dem_url = uu.ned13_dem_url
     dem_user = uu.dem_u
     dem_pass = uu.dem_p
+   
 
     preprocess_dem_dir="preprocess_dem"
     geocode_dem_dir="geocode_dem"
@@ -1011,13 +1116,12 @@ def main():
         dem_E = int(math.ceil(dem_E))
        
         logger.info("DEM TYPE : %s" %dem_type) 
-
         if dem_type.startswith("SRTM"):
             dem_type_simple = "SRTM"
             if dem_type.startswith("SRTM3"):
                 dem_url = srtm3_dem_url
                 dem_type_simple = "SRTM3"
-  
+
             dem_cmd = [
                 "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
@@ -1040,7 +1144,6 @@ def main():
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
  
-           
             dem_S = dem_S - 1 if dem_S > -89 else dem_S
             dem_N = dem_N + 1 if dem_N < 89 else dem_N
             dem_W = dem_W - 1 if dem_W > -179 else dem_W
@@ -1163,7 +1266,7 @@ def main():
     create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                      str(master_safe_dirs), str(slave_safe_dirs), 
                      ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                     master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                     preprocess_dem_file, geocode_dem_file,
                      "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                      ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                      "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1204,7 +1307,7 @@ def main():
                 create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                                  str(master_safe_dirs), str(slave_safe_dirs), 
                                  ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                                 master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                                 preprocess_dem_file, geocode_dem_file,
                                  "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                                  ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                                  "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1215,7 +1318,7 @@ def main():
             create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
                              str(master_safe_dirs), str(slave_safe_dirs), 
                              ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                             master_pol, slave_pol, preprocess_dem_file, geocode_dem_file,
+                             preprocess_dem_file, geocode_dem_file,
                              "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
                              ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
                              "{} {} {} {}".format(*bbox), "True", do_esd,
@@ -1271,9 +1374,15 @@ def main():
 
 
     lats = get_geocoded_lats("merged/filt_topophase.unw.geo.vrt")
-
+    logger.info("lats : {}".format(lats))
+    logger.info("max(lats) : {} : {}".format(max(lats), convert_number(max(lats))))
+    logger.info("min(lats) : {} : {}".format(min(lats), convert_number(min(lats))))
+    logger.info("sorted(lats)[-2] : {} : {}".format(sorted(lats)[-2], convert_number(sorted(lats)[-2])))
+    logger.info("sorted(lats)[1]  {} : {}".format(sorted(lats)[1], convert_number(sorted(lats)[1])))
 
     sat_direction = "D"
+    logger.info("sat_direction : {}".format(sat_direction))
+
     west_lat= "{}_{}".format(convert_number(sorted(lats)[-2]), convert_number(min(lats)))
 
     if direction.lower() == 'asc':
@@ -1294,13 +1403,13 @@ def main():
     logger.info("ifg_id_merged : %s" %ifg_id_merged)
 
     prod_dir = id
-    prod_dir_merged = ifg_id_merged
+    #prod_dir_merged = ifg_id_merged
 
     logger.info("prod_dir : %s" %prod_dir)
-    logger.info("prod_dir_merged : %s" %prod_dir_merged)
+    #logger.info("prod_dir_merged : %s" %prod_dir_merged)
 
     os.makedirs(prod_dir, 0o755)
-    os.makedirs(prod_dir_merged, 0o755)
+    #os.makedirs(prod_dir_merged, 0o755)
 
     # make metadata geocube
     os.chdir("merged")
@@ -1362,7 +1471,7 @@ def main():
 
     # save other files to product directory
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
-    shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
+    #shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
 
     fine_int_xmls = []
     for swathnum in swath_list:
@@ -1642,6 +1751,7 @@ def main():
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
     md['tags'] = ['standard_product']
+    md['polarization']= match_pol.upper()
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
     
@@ -1678,7 +1788,7 @@ def main():
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
     fine_interferogram_xml = "fine_interferogram/IW1.xml"
-  
+    '''
     met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
     ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
     shutil.copy(ds_file, ds_file_merged)
@@ -1698,6 +1808,7 @@ def main():
                 shutil.copy(src, dest)
             except Exception as err:
                 logger.info(str(err))
+    '''
     '''
     for f in os.listdir("merged"):
         if f.endswith(".vrt"):
