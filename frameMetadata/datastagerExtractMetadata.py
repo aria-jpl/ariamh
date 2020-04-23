@@ -1,11 +1,12 @@
 #! /usr/bin/env python3
+from __future__ import absolute_import
 import os, sys, json, httplib2, hashlib, time, re
 from urllib.parse import urlparse
 from lxml.etree import parse
 from string import Template
 from pprint import pprint
 
-from extractMetadata import ExtractMetadata
+from .extractMetadata import ExtractMetadata
 
 
 def main():

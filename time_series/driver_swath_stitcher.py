@@ -1,3 +1,4 @@
+from builtins import str
 from time_series.swath_stitcher import SwathStitcher as SS
 import sys
 import argparse

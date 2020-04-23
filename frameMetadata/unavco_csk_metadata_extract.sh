@@ -16,7 +16,7 @@ unavco_tgz=$(ls $prod_dir/*.tgz)
 echo "##########################################" 1>&2
 echo -n "Getting ASI tarball name: " 1>&2
 date 1>&2
-asi_name=$(/usr/bin/python3 $FRAMEMETA_HOME/get_asi_tarball_name.py $unavco_tgz)
+asi_name=$(python $FRAMEMETA_HOME/get_asi_tarball_name.py $unavco_tgz)
 STATUS=$?
 echo -n "Finished getting ASI tarball name: " 1>&2
 date 1>&2
@@ -49,7 +49,7 @@ prod_base=$(basename $prod_dir)
 echo "##########################################" 1>&2
 echo -n "Started  creating input xml file: " 1>&2
 date 1>&2
-/usr/bin/python3 $FRAMEMETA_HOME/inputFileCreator.py CSK $h5 dummy.raw > inputFileCreator.log 2>&1
+python $FRAMEMETA_HOME/inputFileCreator.py CSK $h5 dummy.raw > inputFileCreator.log 2>&1
 STATUS=$?
 echo -n "Finished creating input xml file: " 1>&2
 date 1>&2
@@ -63,7 +63,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Started  extracting metadata: " 1>&2
 date 1>&2
-/usr/bin/python3 $FRAMEMETA_HOME/datastagerExtractMetadata.py extractorInput.xml > extractMetadata.log 2>&1
+python $FRAMEMETA_HOME/datastagerExtractMetadata.py extractorInput.xml > extractMetadata.log 2>&1
 STATUS=$?
 echo -n "Finished extracting metadata: " 1>&2
 date 1>&2

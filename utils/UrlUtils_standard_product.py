@@ -6,6 +6,7 @@
 #
 
 
+from builtins import object
 import sys
 import os
 class UrlUtils(object):

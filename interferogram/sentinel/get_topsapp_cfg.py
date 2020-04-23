@@ -3,6 +3,7 @@
 Generate configuration for a topsApp.py run.
 """
 
+from builtins import range
 import os, sys, re, requests, json, logging, traceback, argparse
 import hashlib
 from itertools import product, chain

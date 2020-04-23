@@ -14,6 +14,9 @@
 #                        (C) 2010  All Rights Reserved
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import isce
 from xml.etree.ElementTree import ElementTree
 import datetime
@@ -143,7 +146,7 @@ class Sentinel1_TOPS(Component):
 
         rangeSampleRate = float(self.getxmlvalue('generalAnnotation/productInformation/rangeSamplingRate'))
 #        rangePixelSize = float(self.getxmlvalue('imageAnnotation/imageInformation/rangePixelSpacing'))
-        rangePixelSize = Const.c/(2.0*rangeSampleRate)
+        rangePixelSize = old_div(Const.c,(2.0*rangeSampleRate))
         azimuthPixelSize = float(self.getxmlvalue('imageAnnotation/imageInformation/azimuthPixelSpacing'))
         azimuthTimeInterval = float(self.getxmlvalue('imageAnnotation/imageInformation/azimuthTimeInterval'))
 
@@ -179,7 +182,7 @@ class Sentinel1_TOPS(Component):
             burst.polarization = polarization
             burst.swath = swath
             burst.passDirection = passDirection
-            burst.radarWavelength = Const.c / frequency
+            burst.radarWavelength = old_div(Const.c, frequency)
             burst.rangePixelSize = rangePixelSize
             burst.azimuthTimeInterval = azimuthTimeInterval
             burst.azimuthSteeringRate = steeringRate
@@ -204,7 +207,7 @@ class Sentinel1_TOPS(Component):
             bb.sensingMid = bb.sensingStart + datetime.timedelta(seconds = 0.5 * deltaT.total_seconds()) 
 
             bb.startUTC = self.convertToDateTime(burst.find('sensingTime').text)
-            deltaT = datetime.timedelta(seconds=(bb.numberOfLines-1)/bb.prf)
+            deltaT = datetime.timedelta(seconds=old_div((bb.numberOfLines-1),bb.prf))
             bb.stopUTC = bb.startUTC + deltaT
             bb.midUTC  = bb.startUTC + datetime.timedelta(seconds = 0.5*deltaT.total_seconds())
 
@@ -309,12 +312,13 @@ class Sentinel1_TOPS(Component):
             print(vec)
 
 
-        orbExt = OrbitExtender(planet=Planet(pname='Earth'))
-        orbExt.configure()
-        newOrb = orbExt.extendOrbit(frameOrbit)
+        #orbExt = OrbitExtender(planet=Planet(pname='Earth'))
+        #orbExt.configure()
+        #newOrb = orbExt.extendOrbit(frameOrbit)
 
 
-        return newOrb
+        #return newOrb
+        return frameOrbit
             
     def extractPreciseOrbit(self):
         '''
@@ -420,7 +424,7 @@ class Sentinel1_TOPS(Component):
         Returns the ramp function as a numpy array.
         '''
         Vs = np.linalg.norm(burst.orbit.interpolateOrbit(burst.sensingMid, method='hermite').getVelocity())
-        Ks =   2 * Vs * burst.azimuthSteeringRate / burst.radarWavelength 
+        Ks =   old_div(2 * Vs * burst.azimuthSteeringRate, burst.radarWavelength) 
         cJ = np.complex64(1.0j)
 
         if position is None:
@@ -432,10 +436,10 @@ class Sentinel1_TOPS(Component):
             f_etac = burst.doppler(rng)
             Ka     = burst.azimuthFMRate(rng)
 
-            eta_ref = (burst.doppler(burst.startingRange) / burst.azimuthFMRate(burst.startingRange) ) - (f_etac / Ka)
+            eta_ref = (old_div(burst.doppler(burst.startingRange), burst.azimuthFMRate(burst.startingRange)) ) - (old_div(f_etac, Ka))
 
 #            eta_ref *= 0.0
-            Kt = Ks / (1.0 - Ks/Ka)
+            Kt = old_div(Ks, (1.0 - old_div(Ks,Ka)))
 
 
             ramp = np.exp(-cJ * np.pi * Kt[None,:] * ((eta[:,None] - eta_ref[None,:])**2))
@@ -449,9 +453,9 @@ class Sentinel1_TOPS(Component):
             f_etac = burst.doppler(rng)
             Ka  = burst.azimuthFMRate(rng)
 
-            eta_ref = (burst.doppler(burst.startingRange) / burst.azimuthFMRate(burst.startingRange)) - (f_etac / Ka)
+            eta_ref = (old_div(burst.doppler(burst.startingRange), burst.azimuthFMRate(burst.startingRange))) - (old_div(f_etac, Ka))
 #            eta_ref *= 0.0
-            Kt = Ks / (1.0 - Ks/Ka)
+            Kt = old_div(Ks, (1.0 - old_div(Ks,Ka)))
 
             ramp = np.exp(-cJ * np.pi * Kt * ((eta - eta_ref)**2))
 
@@ -485,9 +489,9 @@ class Sentinel1_TOPS(Component):
 
                 print('Burst Number: %d'%(index+1))
                 print('Number of Lines: %d'%(burst.numberOfLines))
-                print('Global Offset: %d' %(np.round(-(t0 - burst.sensingStart).total_seconds() / burst.azimuthTimeInterval)))
+                print('Global Offset: %d' %(np.round(old_div(-(t0 - burst.sensingStart).total_seconds(), burst.azimuthTimeInterval))))
                 if index > 0:
-                    boff = (np.round(-(self.bursts[index-1].sensingStart - burst.sensingStart).total_seconds() / burst.azimuthTimeInterval))
+                    boff = (np.round(old_div(-(self.bursts[index-1].sensingStart - burst.sensingStart).total_seconds(), burst.azimuthTimeInterval)))
                     lineOffset += boff
                     print('Burst OFfset: %d'%lineOffset)
 
@@ -527,13 +531,13 @@ class Sentinel1_TOPS(Component):
         tstart = t0 + datetime.timedelta(seconds = (dt*self.bursts[0].firstValidLine))
         tend   = self.bursts[-1].sensingStart + datetime.timedelta(seconds=((self.bursts[-1].firstValidLine + self.bursts[-1].numValidLines-1) * dt))
 
-        nLines = int( np.round((tend - tstart).total_seconds() / dt)) + 1
+        nLines = int( np.round(old_div((tend - tstart).total_seconds(), dt))) + 1
         print('Expected nLines: ', nLines)
 
         azMasterOff = []
         for index, burst in enumerate(self.bursts):
             soff = burst.sensingStart + datetime.timedelta(seconds = (burst.firstValidLine*dt)) 
-            start = int(np.round((soff - tstart).total_seconds() / dt))
+            start = int(np.round(old_div((soff - tstart).total_seconds(), dt)))
             end = start + burst.numValidLines
 
             azMasterOff.append([start,end])

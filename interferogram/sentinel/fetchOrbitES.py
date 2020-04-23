@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import division
+from past.utils import old_div
 import os, sys, re, json, requests, datetime, tarfile, argparse
 from pprint import pprint, pformat
 import numpy as np
@@ -133,7 +135,7 @@ def fetch(starttime, endtime, mission='S1A', outdir='.', dry_run=False):
     tfmt = "%Y-%m-%dT%H:%M:%S.%f"
     tstart = datetime.datetime.strptime(starttime, tfmt)
     tstop = datetime.datetime.strptime(endtime, tfmt)
-    timeStamp = tstart + (tstop - tstart)/2
+    timeStamp = tstart + old_div((tstop - tstart),2)
 
     match = []
     bestmatch = None
@@ -156,16 +158,16 @@ def fetch(starttime, endtime, mission='S1A', outdir='.', dry_run=False):
         for res in results:
             urls = res['fields']['urls']
             archive_fname = res['fields']['metadata.archive_filename'][0]
-            filtered = filter(lambda x: x.startswith('http'), urls)
+            filtered = [x for x in urls if x.startswith('http')]
             if isinstance(filtered, list): url = filtered[0]
-            else: url = next(filtered)
+            else: url = filtered[0]
             fields = archive_fname.split('_')
             taft = datetime.datetime.strptime(fields[-1][0:15], datefmt)
             tbef = datetime.datetime.strptime(fields[-2][1:16], datefmt)
 
             # get all files that span the acquisition
             if (tbef <= tstart) and (taft >= tstop):
-                tmid = tbef + (taft - tbef)/2
+                tmid = tbef + old_div((taft - tbef),2)
                 match.append((os.path.join(url, archive_fname),
                               abs((timeStamp-tmid).total_seconds())))
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from builtins import zip
+from builtins import str
 import argparse
 import os
 def createPegFile(sensor,project,tracks,dire,latStart,latEnd,lon):

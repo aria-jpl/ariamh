@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from builtins import zip
+from builtins import str
+from builtins import range
 import sys
 import os
 import json
@@ -229,7 +232,7 @@ def loadClassmap(cmapjson):
     classmap = initialmap.copy()
     
     # substitute '-' with '_' (for user-tagged typos)
-    tags = initialmap.keys()
+    tags = list(initialmap.keys())
     for tag in tags:
         if '-' in tag:
             classmap[tag.replace('-','_')] = classmap[tag]
@@ -281,7 +284,7 @@ def usertags2label(usertags,classmap):
     labelmap = {}
     for tag in usertags:
         tag = tag.strip()
-        for k,v in classmap.items():
+        for k,v in list(classmap.items()):
             if tag.count(k):
                 labelmap[tag] = v
             
@@ -495,8 +498,8 @@ def crossValidatePredictor(X,y,clfinputs,logfile='cvout.log'):
     """
         
     models,modelcvs,preds,probs = [],[],[],[]
-    scores = dict([(key,[]) for key in scorefn.keys()])
-    errors = dict([(key,[]) for key in errorfn.keys()])
+    scores = dict([(key,[]) for key in list(scorefn.keys())])
+    errors = dict([(key,[]) for key in list(errorfn.keys())])
 
     # validate class labels
     uy = np.unique(y)
@@ -551,19 +554,19 @@ def crossValidatePredictor(X,y,clfinputs,logfile='cvout.log'):
                 y_test_cur = np.atleast_1d(y[cv_test_index])
                 y_pred_cur = np.atleast_1d(y_pred[cv_test_index])
                 
-                for score,score_fn in scorefn.items():
+                for score,score_fn in list(scorefn.items()):
                     scorei = score_fn(y_test_cur,y_pred_cur,uy)
                     scores[score] = [scorei]                
             else:
                 # collect output for all test samples in this fold
-                for score,score_fn in scorefn.items():
+                for score,score_fn in list(scorefn.items()):
                     scorei = score_fn(y_test,clf_pred,uy)
                     scores[score].append(scorei)                
                 preds.append(clf_pred)
                 probs.append(clf_prob)
                 models.append(clf)
                 modelcvs.append(clf_cv)
-                for error,error_fn in errorfn.items():
+                for error,error_fn in list(errorfn.items()):
                     errors[error].append(error_fn(y_test,clf_pred))
 
             if i==0:
@@ -577,9 +580,9 @@ def crossValidatePredictor(X,y,clfinputs,logfile='cvout.log'):
 
     # train full model for loo cv, score on loo preds from above
     if cv_type == 'loo':
-        for score,score_fn in scorefn.items():                
+        for score,score_fn in list(scorefn.items()):                
             scores[score] = [score_fn(y,y_pred,uy)]
-        for error,error_fn in errorfn.items():
+        for error,error_fn in list(errorfn.items()):
             errors[error] = [error_fn(y,y_pred)]
 
         clf,clf_cv = train(X,y,clfinputs)

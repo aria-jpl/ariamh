@@ -4,6 +4,7 @@ Add lat, lon and time variables to GIAnT time-series product to
 enable WMS capability when hosted on TDS (THREDDS Data Server).
 """
 
+from builtins import range
 import os, sys, traceback, logging, argparse, h5py
 import numpy as np
 from datetime import datetime

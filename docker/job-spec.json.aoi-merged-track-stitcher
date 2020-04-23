@@ -14,6 +14,9 @@
     "floodmap-job_worker-small",
     "urgent-response-job_worker-small"
   ],
+  "disk_usage":"50GB",
+  "soft_time_limit": 8000,
+  "time_limit": 8400,
   "params" : [
     {
       "name": "extra_products",

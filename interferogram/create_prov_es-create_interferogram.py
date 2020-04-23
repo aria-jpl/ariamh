@@ -134,10 +134,10 @@ def create_prov_es_json(id, netsel_file, jobdesc_file, project, aria_dem_xml,
     int_collection_loc = "https://aria-dav.jpl.nasa.gov/repository/products/interferogram/%s" % int_version
     doc.collection(int_collection, None, int_collection_shortname,
                    int_collection_label, [int_collection_loc],
-                   instrument_ids.keys(), int_level, int_version,
+                   list(instrument_ids.keys()), int_level, int_version,
                    label=int_collection_label, bundle=bndl)
     output_ds = doc.granule("hysds:%s" % get_uuid(prod_url), None, [prod_url], 
-                            instrument_ids.keys(), int_collection, int_level,
+                            list(instrument_ids.keys()), int_collection, int_level,
                             int_version, label=id, bundle=bndl)
 
     # runtime context
@@ -146,7 +146,7 @@ def create_prov_es_json(id, netsel_file, jobdesc_file, project, aria_dem_xml,
 
     # create process
     doc.processStep("hysds:%s" % get_uuid(job_id), fake_time, fake_time,
-                    [software], None, rt_ctx_id, input_ids.keys(), 
+                    [software], None, rt_ctx_id, list(input_ids.keys()), 
                     [output_ds.identifier], label=job_id, bundle=bndl,
                     prov_type="hysds:create_interferogram")
      

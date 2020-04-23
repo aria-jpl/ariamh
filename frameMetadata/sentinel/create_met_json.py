@@ -1,18 +1,20 @@
 #!/usr/bin/env python
+from builtins import map
 import os, sys, json, re
 from lxml.etree import parse
 
 
 def create_met_json(xml_file, json_file, mis_char):
     """Write product metadata json."""
-
     with open(xml_file) as f:
         doc = parse(f)
+
     coords = doc.xpath("//*[local-name() = 'coordinates']")[0].text        
     bbox = []
     for coord in coords.split():
         lat, lon = coord.split(',')
-        bbox.append(map(float, [lat, lon]))
+        bbox.append(list(map(float, [lat, lon])))
+
     ipf_version = doc.xpath("//*[local-name() = 'software']/@version")[0]
     sensing_start = doc.xpath("//*[local-name() = 'startTime']")[0].text
     sensing_stop = doc.xpath("//*[local-name() = 'stopTime']")[0].text
@@ -28,9 +30,14 @@ def create_met_json(xml_file, json_file, mis_char):
     track = int(doc.xpath("//*[local-name() = 'relativeOrbitNumber']")[0].text)
     cycle = int(doc.xpath("//*[local-name() = 'cycleNumber']")[0].text)
     direction = doc.xpath("//*[local-name() = 'pass']")[0].text
-    if direction == "ASCENDING": direction = "asc"
-    else: direction = "dsc"
+
+    if direction == "ASCENDING":
+        direction = "asc"
+    else:
+        direction = "dsc"
+
     archive_filename = os.path.basename(json_file).replace('.met.json', '.zip')
+
     metadata = {
         "archive_filename": archive_filename,
         "bbox": bbox,
@@ -53,6 +60,7 @@ def create_met_json(xml_file, json_file, mis_char):
         "direction": direction,
         "version": ipf_version,
     }
+
     with open(json_file, 'w') as f:
         json.dump(metadata, f, indent=2)
 
@@ -60,6 +68,7 @@ def create_met_json(xml_file, json_file, mis_char):
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         raise SystemExit("usage: %s <manifest.safe> <output json file> <mis_char>" % sys.argv[0])
+    
     xml_file = sys.argv[1]
     json_file = sys.argv[2]
     mis_char = sys.argv[3]

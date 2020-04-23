@@ -7,6 +7,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 import pdb
 import os
 import sys
@@ -25,7 +27,7 @@ from iscesys.Compatibility import Compatibility
 Compatibility.checkPythonVersion()
 from iscepge.peg_region_check.PegRegionChecker import PegRegionChecker
 from iscepge.frame_util.Mover import Mover
-import cPickle as cP
+import pickle as cP
 
 #this driver generates the oppurtune pickled file containing, possibly, the peg region
 

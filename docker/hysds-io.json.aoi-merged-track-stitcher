@@ -1,7 +1,6 @@
 {
   "label" : "AOI Merged Track Stitcher",
   "submission_type": "iteration",
-  "recommended-queues" : [ "grfn-job_worker-small" ],
   "allowed_accounts": [ "ops" ],
   "params" : [
     {

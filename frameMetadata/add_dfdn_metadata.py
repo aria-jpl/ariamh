@@ -1,7 +1,10 @@
 #!/usr/bin/env python
-import os, sys, json, urllib2, re
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+import os, sys, json, urllib.request, urllib.error, urllib.parse, re
 from lxml import etree
-from urllib import urlencode
+from urllib.parse import urlencode
 
 VERSION_RE = re.compile(r'CSKS\d_.*?_(?P<calibrated>[BU])_.*?_(?P<orbits>[SF]F)_.*?\.h5')
 
@@ -56,11 +59,11 @@ def get_dfdn(dfdn_file):
     dfdn['ProviderId'] = et.xpath('.//ProviderId/text()')[0]
 
     # additional metadata for CSK KML docs
-    dfdn['GeoCoordBottomRight'] = map(float, et.xpath('.//GeoCoordBottomRight/text()')[0].split())
-    dfdn['GeoCoordBottomLeft'] = map(float, et.xpath('.//GeoCoordBottomLeft/text()')[0].split())
-    dfdn['GeoCoordTopRight'] = map(float, et.xpath('.//GeoCoordTopRight/text()')[0].split())
-    dfdn['GeoCoordTopLeft'] = map(float, et.xpath('.//GeoCoordTopLeft/text()')[0].split())
-    dfdn['GeoCoordSceneCentre'] = map(float, et.xpath('.//GeoCoordSceneCentre/text()')[0].split())
+    dfdn['GeoCoordBottomRight'] = list(map(float, et.xpath('.//GeoCoordBottomRight/text()')[0].split()))
+    dfdn['GeoCoordBottomLeft'] = list(map(float, et.xpath('.//GeoCoordBottomLeft/text()')[0].split()))
+    dfdn['GeoCoordTopRight'] = list(map(float, et.xpath('.//GeoCoordTopRight/text()')[0].split()))
+    dfdn['GeoCoordTopLeft'] = list(map(float, et.xpath('.//GeoCoordTopLeft/text()')[0].split()))
+    dfdn['GeoCoordSceneCentre'] = list(map(float, et.xpath('.//GeoCoordSceneCentre/text()')[0].split()))
     dfdn['LookSide'] = et.xpath('.//LookSide/text()')[0]
 
     if dfdn['GeoCoordTopRight'][0] > dfdn['GeoCoordBottomRight'][0]:

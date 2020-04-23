@@ -18,7 +18,7 @@ prod_base=$(basename $prod_dir)
 echo "##########################################" 1>&2
 echo -n "Started  creating input xml file: " 1>&2
 date 1>&2
-/usr/bin/python3 $FRAMEMETA_HOME/inputFileCreator.py CSK $h5 dummy.raw > inputFileCreator.log 2>&1
+python $FRAMEMETA_HOME/inputFileCreator.py CSK $h5 dummy.raw > inputFileCreator.log 2>&1
 STATUS=$?
 echo -n "Finished creating input xml file: " 1>&2
 date 1>&2
@@ -32,7 +32,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Started  extracting metadata: " 1>&2
 date 1>&2
-/usr/bin/python3 $FRAMEMETA_HOME/datastagerExtractMetadata.py extractorInput.xml > extractMetadata.log 2>&1
+python $FRAMEMETA_HOME/datastagerExtractMetadata.py extractorInput.xml > extractMetadata.log 2>&1
 STATUS=$?
 echo -n "Finished extracting metadata: " 1>&2
 date 1>&2

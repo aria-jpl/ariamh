@@ -6,6 +6,8 @@
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 from __future__ import print_function
+from builtins import str
+from builtins import object
 import sys
 #sensor is the sensor name since each input file will be different depending on that
 #listFiles is a list of lists of lists ([0] for master [1] for slave) of files necessary to create the inputFile it's sensor dependent

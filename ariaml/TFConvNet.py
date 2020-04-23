@@ -4,9 +4,13 @@ Created on Mon Feb 15 16:07:23 2016
 
 @author: giangi
 """
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import tensorflow as tf
 import re
-import cPickle as cp
+import pickle as cp
 import numpy as np
 import sys
 import json
@@ -84,7 +88,7 @@ class TFConvNet(object):
         
     def inputs(self,filename):
         inps = json.load(open(os.path.join(self._input_dir,filename)))
-        for k,v in inps.items():
+        for k,v in list(inps.items()):
             self._data[k] = Data(os.path.join(self._input_dir,v),self._nlabs,self._batch_size,self._input_dir)
         
     def _activation_summary(self,x):

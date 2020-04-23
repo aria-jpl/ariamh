@@ -28,7 +28,7 @@ if __name__ == "__main__":
     f.write("%d\n" % os.getpid())
     f.flush()
     try: fcntl.lockf(f, fcntl.LOCK_EX|fcntl.LOCK_NB)
-    except IOError, e:
+    except IOError as e:
         if e.errno == errno.EAGAIN:
             sys.stderr.write("Janitor is already running.\n")
             sys.exit(-1)

@@ -158,7 +158,7 @@ def removeDuplicates(qlist):
         if not i['url'] in res:
             res[i['url']] = j
     retList = []
-    for k,v in res.items():
+    for k,v in list(res.items()):
         retList.append(qlist[v])
     return retList
         

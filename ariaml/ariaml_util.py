@@ -1,4 +1,9 @@
 from __future__ import print_function
+from __future__ import division
+from builtins import map
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys, os
 import numpy as np
 
@@ -77,7 +82,7 @@ def featurenames(featjson):
 def plotfeatvec(featvec,featnames):
     import pylab as pl
     pl.plot(featvec,color='b')
-    pl.xticks(range(feats.size),featnames,rotation=90)
+    pl.xticks(list(range(feats.size)),featnames,rotation=90)
     pl.xlim(-1,feats.size)
     
 def stratifylist(imagelist,imagelabs,outdir='.'):
@@ -128,7 +133,7 @@ def rotatebbox(bboxxy, snap=0.25):
             rotmin,rotdeg = rdiff,ar
             rotmat,rotxy  = rar,rxy
 
-    return rotxy, rotmat, rotdeg/DEG2RAD
+    return rotxy, rotmat, old_div(rotdeg,DEG2RAD)
 
 def rotatexy(x, y, theta, ox, oy):
     """
@@ -222,8 +227,8 @@ def impreprocess(rimg,**kwargs):
     
         outimg = zeros(outdims,dtype=dtype)
         romax,comax = rmax-rmin,cmax-cmin
-        roshift = max(0,int((nrows-romax)/2))
-        coshift = max(0,int((ncols-comax)/2))
+        roshift = max(0,int(old_div((nrows-romax),2)))
+        coshift = max(0,int(old_div((ncols-comax),2)))
         outimg[coshift:coshift+comax,roshift:roshift+romax,:] = rimg
 
     # zero nans, \pm infinity
@@ -248,7 +253,7 @@ def loadenvi(imgf,memmap=False):
             imv = imgmm.swapaxes(0,2) 
     else:
         nbands = int(img.metadata['bands'])
-        imv = np.array(img.read_bands(range(nbands)),dtype=np.float32)        
+        imv = np.array(img.read_bands(list(range(nbands))),dtype=np.float32)        
         imv = imv.transpose((2,0,1))
         
     return imv

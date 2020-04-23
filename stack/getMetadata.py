@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from builtins import str
+from builtins import range
 import os, sys, requests, json
 from pprint import pprint
 from utils.UrlUtils import UrlUtils

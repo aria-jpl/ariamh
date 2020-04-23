@@ -1,4 +1,7 @@
 #!/usr/bin/env python3 
+from __future__ import absolute_import
+from builtins import str
+from builtins import map
 import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from bisect import insort
 from itertools import chain
@@ -11,7 +14,7 @@ from osgeo import ogr, osr
 
 from utils.UrlUtils import UrlUtils
 from utils.createImage import createImage
-from sentinel.check_interferogram import check_int
+from .sentinel.check_interferogram import check_int
 from interferogram.stitcher_utils import main as main_st, get_mets, get_dates
 
 

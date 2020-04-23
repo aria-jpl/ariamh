@@ -3,6 +3,7 @@
 Determine all combinations of stitch interferogram configurations"
 """
 
+from builtins import range
 import os, sys, json, logging, traceback, argparse
 
 
@@ -40,7 +41,7 @@ def main(context_file):
         f.write("{}\n".format(id))
 
     # create dataset dir
-    os.makedirs(id, 0755)
+    os.makedirs(id, 0o755)
 
     # relative paths for filenames
     for i in range(len(filenames)):

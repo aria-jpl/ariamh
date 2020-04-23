@@ -6,6 +6,8 @@ the product and leveraging the configured metadata extractor defined
 for the product in datasets JSON config.
 """
 
+from builtins import str
+from builtins import range
 import os, sys, re, hashlib, json, shutil, requests, logging, traceback, argparse
 from subprocess import check_output, CalledProcessError
 import time
@@ -20,7 +22,8 @@ import hashlib
 from datetime import datetime
 import random
 import time
-#from utils.UrlUtils import UrlUtils
+
+# from utils.UrlUtils import UrlUtils
 
 SCRIPT_RE = re.compile(r'script:(.*)$')
 
@@ -28,28 +31,27 @@ SCRIPT_RE = re.compile(r'script:(.*)$')
 ALL_TYPES = []
 
 # zip types
-ZIP_TYPE = [ "zip" ]
+ZIP_TYPE = ["zip"]
 ALL_TYPES.extend(ZIP_TYPE)
 
 # tar types
-TAR_TYPE = [ "tbz2", "tgz", "bz2", "gz" ]
+TAR_TYPE = ["tbz2", "tgz", "bz2", "gz"]
 ALL_TYPES.extend(TAR_TYPE)
 
-CONF_FILE="/home/ops/ariamh/conf/settings.conf"
+CONF_FILE = "/home/ops/ariamh/conf/settings.conf"
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
 
-
 def getConf():
-    uu ={}
+    uu = {}
     with open(CONF_FILE, 'r') as fp:
         allL = fp.readlines()
         dc = {}
         for line in allL:
             ls = line.split('=')
-            if(len(ls) == 2):                
+            if (len(ls) == 2):
                 dc[ls[0]] = ls[1]
         fp.close()
         try:
@@ -60,7 +62,7 @@ def getConf():
         try:
             uu['dav_url'] = dc['ARIA_DAV_URL'].strip()
         except:
-            uu['dav_url']=None
+            uu['dav_url'] = None
             pass
         try:
             uu['grq_index_prefix'] = dc['GRQ_INDEX_PREFIX'].strip()
@@ -78,21 +80,21 @@ def get_acquisition_data_from_slc(slc_id):
     es_url = uu['rest_url']
     es_index = "grq_*_*acquisition*"
     query = {
-      "query": {
-        "bool": {
-          "must": [
-            {
-              "term": {
-                "metadata.identifier.raw": slc_id 
-              }
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "term": {
+                            "metadata.identifier.raw": slc_id
+                        }
+                    }
+                ],
+                "must_not": {"term": {"metadata.tags": "deprecated"}}
             }
-          ],
-         "must_not":{"term": {"metadata.tags": "deprecated"}}
-        }
-      },
-      "partial_fields" : {
-            "partial" : {
-                "exclude" : "city",
+        },
+        "partial_fields": {
+            "partial": {
+                "exclude": "city",
             }
         }
     }
@@ -123,17 +125,17 @@ def get_dataset(id, es_index_data=None):
     uu = getConf()
     es_url = uu['rest_url']
 
-    #es_index = "grq_*_{}".format(index_suffix.lower())
+    # es_index = "grq_*_{}".format(index_suffix.lower())
     es_index = "grq"
     if es_index_data:
         es_index = es_index_data
 
     # query
     query = {
-        "query":{
-            "bool":{
-                "must":[
-                    { "term":{ "_id": id } }
+        "query": {
+            "bool": {
+                "must": [
+                    {"term": {"_id": id}}
                 ]
             }
         },
@@ -146,7 +148,7 @@ def get_dataset(id, es_index_data=None):
         search_url = '%s%s/_search' % (es_url, es_index)
     else:
         search_url = '%s/%s/_search' % (es_url, es_index)
-    logging.info("search_url : %s" %search_url)
+    logging.info("search_url : %s" % search_url)
 
     r = requests.post(search_url, data=json.dumps(query))
 
@@ -160,11 +162,11 @@ def get_dataset(id, es_index_data=None):
     logging.info(result['hits']['total'])
     return result
 
-def check_slc_status(slc_id, index_suffix=None):
 
+def check_slc_status(slc_id, index_suffix=None):
     result = get_dataset(slc_id, index_suffix)
     total = result['hits']['total']
-    logging.info("check_slc_status : total : %s" %total)
+    logging.info("check_slc_status : total : %s" % total)
     if total > 0:
         logging.info("check_slc_status : returning True")
         return True
@@ -186,7 +188,7 @@ def get_slc_checksum_md5_scihub(esa_uuid):
 
     md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
     md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
-    logging.info("md5_checksum_url : %s" %md5_checksum_url)
+    logging.info("md5_checksum_url : %s" % md5_checksum_url)
     req = requests.get(md5_checksum_url, timeout=30)
 
     if req.status_code == 404:
@@ -215,7 +217,8 @@ def get_download_params(url):
         else:
             if isinstance(prof['bucket_patterns'], list):
                 bucket_patterns = prof['bucket_patterns']
-            else: bucket_patterns = [ prof['bucket_patterns'] ]
+            else:
+                bucket_patterns = [prof['bucket_patterns']]
             for bucket_pattern in prof['bucket_patterns']:
                 regex = re.compile(bucket_pattern)
                 match = regex.search(url)
@@ -223,17 +226,17 @@ def get_download_params(url):
                     logging.info("{} matched '{}' for profile {}.".format(url, bucket_pattern, prof['profile']))
                     params['profile_name'] = prof['profile']
                     break
-                
+
     return params
 
 
 def update_context_file(localize_url, file_name, prod_name, prod_date, download_url):
-    logging.info("update_context_file :%s,  %s" %(localize_url, file_name))
+    logging.info("update_context_file :%s,  %s" % (localize_url, file_name))
     ctx_file = "_context.json"
     localized_url_array = []
     url_dict = {}
     url_dict["local_path"] = file_name
-    url_dict["url"]=localize_url
+    url_dict["url"] = localize_url
 
     localized_url_array.append(url_dict)
     with open(ctx_file) as f:
@@ -246,7 +249,8 @@ def update_context_file(localize_url, file_name, prod_name, prod_date, download_
 
     with open(ctx_file, 'w') as f:
         json.dump(ctx, f, indent=2, sort_keys=True)
- 
+
+
 def download_file(url, path, cache=False):
     """Download file/dir for input."""
 
@@ -262,12 +266,12 @@ def download_file(url, path, cache=False):
             logging.info("cache hit for {} at {}".format(url, cache_dir))
         else:
             logging.info("cache miss for {}".format(url))
-            try: osaka.main.get(url, cache_dir, params=params)
-            except Exception, e:
+            try:
+                osaka.main.get(url, cache_dir, params=params)
+            except Exception as e:
                 shutil.rmtree(cache_dir)
                 tb = traceback.format_exc()
-                raise(RuntimeError("Failed to download %s to cache %s: %s\n%s" % \
-                    (url, cache_dir, str(e), tb)))
+                raise RuntimeError("Failed to download %s to cache %s: %s\n%s" % (url, cache_dir, str(e), tb))
             with atomic_write(signal_file, overwrite=True) as f:
                 f.write("%sZ\n" % datetime.utcnow().isoformat())
         for i in os.listdir(cache_dir):
@@ -275,29 +279,35 @@ def download_file(url, path, cache=False):
             cached_obj = os.path.join(cache_dir, i)
             if os.path.isdir(cached_obj):
                 dst = os.path.join(path, i) if os.path.isdir(path) else path
-                try: os.symlink(cached_obj, dst)
+                try:
+                    os.symlink(cached_obj, dst)
                 except:
                     logger.error("Failed to soft link {} to {}".format(cached_obj, dst))
-                    raise
+                    raise RuntimeError("Failed to soft link {} to {}".format(cached_obj, dst))
             else:
-                try: os.symlink(cached_obj, path)
+                try:
+                    os.symlink(cached_obj, path)
                 except:
                     logger.error("Failed to soft link {} to {}".format(cached_obj, path))
-                    raise
-    else: return osaka.main.get(url, path, params=params)
+                    raise RuntimeError("Failed to soft link {} to {}".format(cached_obj, dst))
+    else:
+        return osaka.main.get(url, path, params=params)
 
 
 def localize_file(url, path, cache):
     """Localize urls for job inputs. Track metrics."""
 
     # get job info
-    job_dir = os.getcwd() #job['job_info']['job_dir']
+    job_dir = os.getcwd()  # job['job_info']['job_dir']
 
     # localize urls
-    if path is None: path = '%s/' % job_dir
+    if path is None:
+        path = '%s/' % job_dir
     else:
-        if path.startswith('/'): pass
-        else: path = os.path.join(job_dir, path)
+        if path.startswith('/'):
+            pass
+        else:
+            path = os.path.join(job_dir, path)
     if os.path.isdir(path) or path.endswith('/'):
         path = os.path.join(path, os.path.basename(url))
     dir_path = os.path.dirname(path)
@@ -305,13 +315,14 @@ def localize_file(url, path, cache):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
     loc_t1 = datetime.utcnow()
-    try: download_file(url, path, cache=cache)
-    except Exception, e:
+    try:
+        download_file(url, path, cache=cache)
+    except Exception as e:
         tb = traceback.format_exc()
-        raise(RuntimeError("Failed to download %s: %s\n%s" % (url, str(e), tb)))
+        raise RuntimeError("Failed to download %s: %s\n%s" % (url, str(e), tb))
     loc_t2 = datetime.utcnow()
     loc_dur = (loc_t2 - loc_t1).total_seconds()
-    #path_disk_usage = get_disk_usage(path)
+    # path_disk_usage = get_disk_usage(path)
     '''
     job['job_info']['metrics']['inputs_localized'].append({
         'url': url,
@@ -349,9 +360,10 @@ def get_log_err(log_file):
             if last:
                 err_msg = last
     except Exception as err:
-        logging.info("Error reading %s : %s" %(log_file, str(err)))
+        logging.info("Error reading %s : %s" % (log_file, str(err)))
 
     return err_msg
+
 
 def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
     """Run extractor configured in datasets JSON config."""
@@ -367,11 +379,11 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
 
         settings['DATASETS_CFG'] = "/home/ops/verdi/etc/datasets.json"
         settings["INCOMING_VERSION"] = "v0.1"
-        settings["EXTRACT_VERSION"]= "v0.1"
+        settings["EXTRACT_VERSION"] = "v0.1"
         settings["ACQ_TO_DSET_MAP"] = {"acquisition-S1-IW_SLC": "S1-IW_SLC"}
 
     # recognize
-    r = Recognizer(dsets_file, prod_path,os.path.basename(prod_path),settings["EXTRACT_VERSION"])
+    r = Recognizer(dsets_file, prod_path, os.path.basename(prod_path), settings["EXTRACT_VERSION"])
     objectid = r.getId()
 
     # get extractor
@@ -385,7 +397,7 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
     metadata_file = os.path.join(prod_path, '%s.met.json' % \
                                  os.path.basename(prod_path))
     dataset_file = os.path.join(prod_path, '%s.dataset.json' % \
-                                 os.path.basename(prod_path))
+                                os.path.basename(prod_path))
 
     with open(os.path.join(prod_path, '%s.zip.md5' % os.path.basename(prod_path)), 'w') as md5_file:
         md5_file.write(md5_hash)  # writing md5 hash into zip file if it passes
@@ -402,20 +414,20 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
         logging.info("No metadata extraction configured.")
     else:
         logging.info("Running metadata extractor %s on %s" % \
-                    (extractor, prod_path))
+                     (extractor, prod_path))
         try:
             m = check_output([extractor, prod_path])
         except CalledProcessError as e:
             err_msg = e.message
             root_dir = os.getcwd()
-            logging.info("root_dir with getcwd() : %s" %root_dir)
+            logging.info("root_dir with getcwd() : %s" % root_dir)
             if not root_dir.endswith("Z"):
                 root_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
 
-            logging.info("root_dir final : %s" %root_dir)
+            logging.info("root_dir final : %s" % root_dir)
             prov_log = os.path.join(root_dir, 'create_prov_es.log')
-            split_log  = os.path.join(root_dir, 'split_swath_products.log')
-            logging.info("%s\n%s" %(prov_log, split_log))
+            split_log = os.path.join(root_dir, 'split_swath_products.log')
+            logging.info("%s\n%s" % (prov_log, split_log))
             if os.path.isfile(prov_log):
                 prov_err = get_log_err(prov_log)
                 if prov_err:
@@ -423,9 +435,9 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
             elif os.path.isfile(split_log):
                 split_err = get_log_err(split_log)
                 if split_err:
-                    err_msg=split_err
+                    err_msg = split_err
             else:
-                logging.info("%s file NOT Found" %split_log)
+                logging.info("%s file NOT Found" % split_log)
 
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, err_msg))
 
@@ -434,7 +446,7 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
                 metadata.update(json.load(f))
 
     # set data_product_name
-    metadata['data_product_name'] = objectid 
+    metadata['data_product_name'] = objectid
 
     # set download url from context
     metadata['download_url'] = url
@@ -449,14 +461,15 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
 
     # Build datasets and add in "optional" fields, if not already created by extractor
     if not os.path.exists(dataset_file):
-        datasets = {"version":settings["EXTRACT_VERSION"]}
-        for key in ["location","starttime","endtime","label"]:
+        datasets = {"version": settings["EXTRACT_VERSION"]}
+        for key in ["location", "starttime", "endtime", "label"]:
             if key in m:
                 datasets[key] = m[key]
         # write it out to file
         with open(dataset_file, 'w') as f:
             json.dump(datasets, f, indent=2)
         logging.info("Wrote dataset to %s" % dataset_file)
+
 
 def create_product(file, url, prod_name, prod_date, md5_hash):
     """Create skeleton directory structure for product and run configured
@@ -472,13 +485,13 @@ def create_product(file, url, prod_name, prod_date, md5_hash):
 
         settings['DATASETS_CFG'] = "/home/ops/verdi/etc/datasets.json"
         settings["INCOMING_VERSION"] = "v0.1"
-        settings["EXTRACT_VERSION"]= "v0.1"
+        settings["EXTRACT_VERSION"] = "v0.1"
         settings["ACQ_TO_DSET_MAP"] = {"acquisition-S1-IW_SLC": "S1-IW_SLC"}
 
     # create product directory and move product file in it
     prod_path = os.path.abspath(prod_name)
     if not os.path.exists(prod_path):
-        os.makedirs(prod_path, 0775)
+        os.makedirs(prod_path, 0o775)
     shutil.move(file, os.path.join(prod_path, file))
 
     # copy _context.json if it exists
@@ -496,31 +509,33 @@ def create_product(file, url, prod_name, prod_date, md5_hash):
         dsets_file = "./datasets.json"
     run_extractor(dsets_file, prod_path, url, ctx, md5_hash)
 
-def is_non_zero_file(fpath):  
+
+def is_non_zero_file(fpath):
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("slc_id", help="id of the localized file") 
+    parser.add_argument("slc_id", help="id of the localized file")
     args = parser.parse_args()
-    prod_date = time.strftime('%Y-%m-%d' )    
- 
+    prod_date = time.strftime('%Y-%m-%d')
+
     if check_slc_status(args.slc_id.strip()):
-        logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
+        logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
         exit(0)
 
-    time.sleep( 5 )
-    #Recheck as this method sometime does not work    
+    time.sleep(5)
+    # Recheck as this method sometime does not work
     if check_slc_status(args.slc_id.strip()):
-        logging.info("Existing as we FOUND slc id : %s in ES query" %args.slc_id)
+        logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
         exit(0)
 
     acq_datas = get_acquisition_data_from_slc(args.slc_id)
-    if len(acq_datas)<1:
+    if len(acq_datas) < 1:
         raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(args.slc_id))
 
     acq_data = acq_datas[0]
-    if len(acq_datas)>1:
+    if len(acq_datas) > 1:
         for x in range(len(acq_datas)):
             acq_data = acq_datas[x]
             logging.info("Processing : {}".format(acq_data['_id']))
@@ -531,43 +546,46 @@ if __name__ == "__main__":
     acq_data = acq_data['fields']['partial'][0]
     download_url = acq_data['metadata']['download_url']
     archive_filename = acq_data['metadata']['archive_filename']
-    logging.info("download_url : %s" %download_url)
-    logging.info("archive_filename : %s" %archive_filename)
-    logging.info("acq_data['metadata']['id'] : %s" %acq_data['metadata']['id'])
+    logging.info("download_url : %s" % download_url)
+    logging.info("archive_filename : %s" % archive_filename)
+    logging.info("acq_data['metadata']['id'] : %s" % acq_data['metadata']['id'])
 
     # get md5 checksum from ESA sci-hub
     esa_sci_hub_md5_hash = get_slc_checksum_md5_scihub(acq_data['metadata']['id'])
 
     source = "scihub"
     localize_url = None
-    if source.lower()=="asf":
+    if source.lower() == "asf":
         vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
         r = requests.head(vertex_url, allow_redirects=True)
-        logging.info("Status Code from ASF : %s" %r.status_code)
+        logging.info("Status Code from ASF : %s" % r.status_code)
         if r.status_code in (200, 403):
-            localize_url = r.url
+            localize_url = vertex_url
         else:
-            raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
+            raise RuntimeError("Status Code from ASF for SLC %s : %s" % (args.slc_id, r.status_code))
     else:
         localize_url = download_url
-        
+
     try:
         filename, file_extension = os.path.splitext(archive_filename)
-        logging.info("localize_url : %s \nfile : %s" %(localize_url, archive_filename))
-       
+        logging.info("localize_url : %s \nfile : %s" % (localize_url, archive_filename))
+
         localize_file(localize_url, archive_filename, False)
 
-        #update _context.json with localize file info as it is used later
+        # update _context.json with localize file info as it is used later
         update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
 
         # getting the checksum value of the localized file
-        #slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
+        # slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
         slc_file_path = os.path.join(os.getcwd(), archive_filename)
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
         # comparing localized md5 hash with esa's md5 hash
         if localized_md5_checksum != esa_sci_hub_md5_hash:
-            raise RuntimeError("Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id, esa_sci_hub_md5_hash, localized_md5_checksum))
+            raise RuntimeError(
+                "Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id,
+                                                                                               esa_sci_hub_md5_hash,
+                                                                                               localized_md5_checksum))
 
         '''
         try:
@@ -581,15 +599,15 @@ if __name__ == "__main__":
             osaka.main.get(localize_url, archive_filename)
             logging.info("calling osaka successful")
          '''
-        #Corrects input dataset to input file, if supplied input dataset 
+        # Corrects input dataset to input file, if supplied input dataset
         if os.path.isdir(archive_filename):
-             shutil.move(os.path.join(archive_filename,archive_filename),"./tmp")
-             shutil.rmtree(archive_filename)
-             shutil.move("./tmp",archive_filename)
+            shutil.move(os.path.join(archive_filename, archive_filename), "./tmp")
+            shutil.rmtree(archive_filename)
+            shutil.move("./tmp", archive_filename)
 
-        #Check for Zero Sized File
+        # Check for Zero Sized File
         if not is_non_zero_file(archive_filename):
-            raise Exception("File Not Found or Empty File : %s" %archive_filename)
+            raise Exception("File Not Found or Empty File : %s" % archive_filename)
 
         create_product(archive_filename, localize_url, args.slc_id, prod_date, esa_sci_hub_md5_hash)
     except Exception as e:
