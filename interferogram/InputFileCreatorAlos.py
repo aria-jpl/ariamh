@@ -6,6 +6,9 @@
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+from builtins import zip
+from builtins import str
+from builtins import range
 import sys
 import os
 from interferogram.InputFileCreator import InputFileCreator

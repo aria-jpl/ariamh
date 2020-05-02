@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from __future__ import absolute_import
 import numpy as np
 import xml.etree.ElementTree as ET
-import sarSetup as SS
-import xmlSetup as XS
+from . import sarSetup as SS
+from . import xmlSetup as XS
 import os
 
 

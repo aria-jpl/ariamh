@@ -175,7 +175,7 @@ def update_met_json(orbit_type, scene_count, swath_num, master_mission,
     with open(json_file) as f:
         metadata = json.load(f)
     #update direction to ascending/descending
-    if 'direction' in metadata.keys():
+    if 'direction' in list(metadata.keys()):
         direct = metadata['direction']
         if direct == 'asc':
             direct = 'ascending'

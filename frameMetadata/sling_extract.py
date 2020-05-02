@@ -6,6 +6,7 @@ the product and leveraging the configured metadata extractor defined
 for the product in datasets JSON config.
 """
 
+from builtins import str
 import os, sys, re, hashlib, json, shutil, requests, logging, traceback, argparse
 from subprocess import check_output, CalledProcessError
 import time
@@ -93,11 +94,10 @@ def download_file(url, path, cache=False):
         else:
             logger.info("cache miss for {}".format(url))
             try: osaka.main.get(url, cache_dir, params=params)
-            except Exception, e:
+            except Exception as e:
                 shutil.rmtree(cache_dir)
                 tb = traceback.format_exc()
-                raise(RuntimeError("Failed to download %s to cache %s: %s\n%s" % \
-                    (url, cache_dir, str(e), tb)))
+                raise RuntimeError
             with atomic_write(signal_file, overwrite=True) as f:
                 f.write("%sZ\n" % datetime.utcnow().isoformat())
         for i in os.listdir(cache_dir):
@@ -308,11 +308,10 @@ def download_file(url, path, cache=False):
         else:
             logger.info("cache miss for {}".format(url))
             try: osaka.main.get(url, cache_dir, params=params)
-            except Exception, e:
+            except Exception as e:
                 shutil.rmtree(cache_dir)
                 tb = traceback.format_exc()
-                raise(RuntimeError("Failed to download %s to cache %s: %s\n%s" % \
-                    (url, cache_dir, str(e), tb)))
+                raise RuntimeError
             with atomic_write(signal_file, overwrite=True) as f:
                 f.write("%sZ\n" % datetime.utcnow().isoformat())
         for i in os.listdir(cache_dir):
@@ -351,9 +350,9 @@ def localize_file(url, path, cache):
         os.makedirs(dir_path)
     loc_t1 = datetime.utcnow()
     try: download_file(url, path, cache=cache)
-    except Exception, e:
+    except Exception as e:
         tb = traceback.format_exc()
-        raise(RuntimeError("Failed to download %s: %s\n%s" % (url, str(e), tb)))
+        raise RuntimeError
     loc_t2 = datetime.utcnow()
     loc_dur = (loc_t2 - loc_t1).total_seconds()
     #path_disk_usage = get_disk_usage(path)
@@ -470,7 +469,7 @@ def create_product(file, url, prod_name, prod_date):
     # create product directory and move product file in it
     prod_path = os.path.abspath(prod_name)
     if not os.path.exists(prod_path):
-        os.makedirs(prod_path, 0775)
+        os.makedirs(prod_path, 0o775)
     shutil.move(file, os.path.join(prod_path, file))
 
     # copy _context.json if it exists
@@ -520,7 +519,7 @@ if __name__ == "__main__":
         r = requests.head(vertex_url, allow_redirects=True)
         logging.info("Status Code from ASF : %s" %r.status_code)
         if r.status_code in (200, 403):
-            localize_url = r.url
+            localize_url = vertex_url
         else:
             raise RuntimeError("Status Code from ASF for SLC %s : %s" %(args.slc_id, r.status_code))
     else:

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import numpy
-import sarSetup as SS
-import insarSetup as IS
-import insar_check as IC
+from . import sarSetup as SS
+from . import insarSetup as IS
+from . import insar_check as IC
 import os 
 import sys
 import argparse

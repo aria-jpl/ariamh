@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import sys
 def createLines(csk,minMaxLon,minMaxLat,nFrames,dire,tr):
     #eps nearly one 10-th of a frame
-    eps = (minMaxLat[1] - minMaxLat[0])/(nFrames*10)
+    eps = old_div((minMaxLat[1] - minMaxLat[0]),(nFrames*10))
     #make top and bot a bit smaller to make sure the boundaries are included
     top = minMaxLat[1] - eps
     bot = minMaxLat[0] + eps
@@ -15,10 +18,10 @@ def createLines(csk,minMaxLon,minMaxLat,nFrames,dire,tr):
         nZones = 2
         delta = [(top - bot)*3/5.0,(top - bot)*2/5.0]
     else:
-        nZones = nFrames/3
+        nZones = old_div(nFrames,3)
         left = nFrames%3
         # 4 frames length
-        l4 = (top - bot)/(left/4.0 + 3/4.0*nZones)
+        l4 = old_div((top - bot),(left/4.0 + 3/4.0*nZones))
         # 3 frames length
         l3 = 3/4.0*l4
         # note tot length  (top - bot) = l4*left + l3*(nZones - left)
@@ -38,13 +41,13 @@ def createLines(csk,minMaxLon,minMaxLat,nFrames,dire,tr):
     ret = []
     for i in range(nZones):
         retN = '%s       %3d        %s       %.2f        %.2f       %.2f        %.2f        %d         %.2f       %.2f '\
-        %(csk,int(tr),dire,start,start + fact*delta[i],start + fact*delta[i]/2,getLon(top,bot,minMaxLon[1],minMaxLon[0],start + fact*delta[i]/2),nFrames,getLon(top,bot,minMaxLon[1],minMaxLon[0],start),getLon(top,bot,minMaxLon[1],minMaxLon[0],start + fact*delta[i]))         
+        %(csk,int(tr),dire,start,start + fact*delta[i],start + old_div(fact*delta[i],2),getLon(top,bot,minMaxLon[1],minMaxLon[0],start + old_div(fact*delta[i],2)),nFrames,getLon(top,bot,minMaxLon[1],minMaxLon[0],start),getLon(top,bot,minMaxLon[1],minMaxLon[0],start + fact*delta[i]))         
         ret.append(retN)
         start += fact*delta[i]
     
     return ret
 def getLon(nla,sla,nlo,slo,la):
-    return (nlo-slo)/(nla-sla)*(la-sla) + slo 
+    return old_div((nlo-slo),(nla-sla))*(la-sla) + slo 
         
 def getVal(string):
     return string.strip().replace('<value>','').replace('</value>','')

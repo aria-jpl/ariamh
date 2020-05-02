@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from builtins import str
+from builtins import range
 from utils.queryBuilder import buildQuery, postQuery
 import argparse
 import os
@@ -68,7 +70,7 @@ def rm_dups(urls,durls,swaths=None):
             ms[key] = [[sl,urls[i]]]
     #for those with more than one slave check if the slaves are in the same day
     nurls = []
-    for k,v in ms.items():
+    for k,v in list(ms.items()):
         if len(v) > 1:
             sl = []
             ur = []
@@ -137,7 +139,7 @@ def get_urls_sets_dev(urls,coord,swaths,aoi):
             dates2url[ms + '-' + sl] = [u]
     #for each date make sure its complete
     dates_complete = {}
-    for k,v in dates2url.items():
+    for k,v in list(dates2url.items()):
         #create a map with only images from each swath
         swath2url = {}
         dates_complete[k] = {}
@@ -154,7 +156,7 @@ def get_urls_sets_dev(urls,coord,swaths,aoi):
         #the maximum number of frames among the subswaths so they all have the
         #same number of frames
         sels = np.array([])
-        for k1,v1 in swath2url.items():
+        for k1,v1 in list(swath2url.items()):
             v1 = sorted(v1)
             #get the latmin,max for each image
             limits = []
@@ -200,7 +202,7 @@ def get_urls_sets_dev(urls,coord,swaths,aoi):
         if not complete:
             dates_complete[k] = {}
         else:
-            for k1,v1 in swath2url.items():
+            for k1,v1 in list(swath2url.items()):
                 dates_complete[k][k1] = np.array(v1)[sels].tolist()
 
     return dates_complete
@@ -462,7 +464,7 @@ def donwload(unw_name,frames,dirname,products):
     os.chdir(dirname)
     fnames = []
     failed = False
-    for i,urls in frames.items():
+    for i,urls in list(frames.items()):
         fname = []
         for j,v in enumerate(urls):
             rundir = 'run_' + str(j+1) + '_' + str(i)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from builtins import str
 from ariaml.Predictor import Predictor
 from utils.contextUtils import toContext
 from utils.UrlUtils import UrlUtils

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+from future import standard_library
+standard_library.install_aliases()
 import os, sys, requests
-from urlparse import urlparse
-from StringIO import StringIO
+from urllib.parse import urlparse
+from io import StringIO
 from lxml.etree import parse
 from easywebdav import connect
 

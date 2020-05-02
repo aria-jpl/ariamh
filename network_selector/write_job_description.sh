@@ -14,7 +14,7 @@ jd_json_file="job_description.json"
 echo "##########################################" 1>&2
 echo -n "Write inputs to job description JSON: " 1>&2
 date 1>&2
-/usr/bin/python3 $NETWORK_SELECTOR_HOME/write_job_description.py --file $jd_json_file --context context.json > jobDescriptorWriter.log 2>&1
+python $NETWORK_SELECTOR_HOME/write_job_description.py --file $jd_json_file --context context.json > jobDescriptorWriter.log 2>&1
 STATUS=$?
 echo -n "Finished writing inputs to job description JSON: " 1>&2
 date 1>&2

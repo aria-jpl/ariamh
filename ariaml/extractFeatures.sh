@@ -33,7 +33,7 @@ elif [ "$#" -eq 0 ]; then
   echo "##########################################" 1>&2
   echo -n "Create input JSON: " 1>&2
   date 1>&2
-  /usr/bin/python3 $ML_HOME/createInput.py _context.json input.json > createInput.log 2>&1
+  python $ML_HOME/createInput.py _context.json input.json > createInput.log 2>&1
   STATUS=$?
   echo -n "Finished creating input JSON: " 1>&2
   date 1>&2
@@ -52,7 +52,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Creating stitcher.xml: " 1>&2
 date 1>&2
-/usr/bin/python3 $ML_HOME/createStitcherXml.py stitcher.xml > createStitcherXml.log 2>&1
+python $ML_HOME/createStitcherXml.py stitcher.xml > createStitcherXml.log 2>&1
 STATUS=$?
 echo -n "Finished creating stitcher.xml: " 1>&2
 date 1>&2
@@ -67,7 +67,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Creating swbdStitcher.xml: " 1>&2
 date 1>&2
-/usr/bin/python3 $ML_HOME/createSwbdStitcherXml.py swbdStitcher.xml > createSwbdStitcherXml.log 2>&1
+python $ML_HOME/createSwbdStitcherXml.py swbdStitcher.xml > createSwbdStitcherXml.log 2>&1
 STATUS=$?
 echo -n "Finished creating swbdStitcher.xml: " 1>&2
 date 1>&2
@@ -82,7 +82,7 @@ fi
 echo "##########################################" 1>&2
 echo -n "Started feature extraction: " 1>&2
 date 1>&2
-/usr/bin/python3 $ML_HOME/extractFeatures.py input.json > extractFeatures.log 2>&1
+python $ML_HOME/extractFeatures.py input.json > extractFeatures.log 2>&1
 STATUS=$?
 echo -n "Finished feature extraction: " 1>&2
 date 1>&2

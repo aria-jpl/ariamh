@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from builtins import str
 try:
     from ariaml.ExpFeaturesExtractor import ExpFeaturesExtractor as FE
 except:
@@ -66,8 +67,8 @@ def extractFeatures(inputs,label):
         cwd = os.getcwd()
         os.chdir(product)
         json.dump({'url':url,'label':label},open(product + '.met.json','w'))
-        for k,v in res['outputs'].items():
-            for k1,v1 in v.items():
+        for k,v in list(res['outputs'].items()):
+            for k1,v1 in list(v.items()):
                 v1.tofile(k1 + '_choTh_' + str(k) + '.img') 
         os.chdir(cwd)
 

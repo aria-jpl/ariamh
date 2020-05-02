@@ -28,12 +28,12 @@ def harvest(extracted, safe_dir, productType):
     mis_char = MISSION_RE.search(extracted).group(1)
     if productType == "slc" or productType == "raw":
         fn = "%s/manifest.safe" % safe_dir
-        create_met_json.create_met_json(fn,metf,mis_char)
-        create_dataset_json.create_dataset_json(extracted,metf,dsf)
+        create_met_json.create_met_json(fn, metf, mis_char)
+        create_dataset_json.create_dataset_json(extracted, metf, dsf)
     else:
-        #Write JSON for this product
-        metadata={"productname":extracted}
-        with open(metf,"w") as f:
+        # Write JSON for this product
+        metadata = {"productname": extracted}
+        with open(metf, "w") as f:
             f.write(json.dumps(metadata))
     return metf
 
@@ -60,7 +60,7 @@ def split_swaths(extracted, safe_dir, job_dir):
         prod_dir = os.path.join(job_dir, "swaths", id) 
         print("prod_dir: %s" % prod_dir)
         if not os.path.isdir(prod_dir):
-            os.makedirs(prod_dir, 0755)
+            os.makedirs(prod_dir, 0o755)
 
         # get annotation
         ann_file = "%s/annotation/%s.xml" % (safe_dir, id)
@@ -87,11 +87,16 @@ def parser():
 
 if __name__ == "__main__":
     args = parser().parse_args()
-    print("args.zip_file : %s" %args.zip_file)
-    print("args.job_dir : %s" %args.job_dir)
-    if re.search(r'S1\w_IW_SLC', args.zip_file): typ = 'slc'
-    elif re.search(r'S1\w_IW_RAW', args.zip_file): typ = 'raw'
-    else: raise RuntimeError("Unknown type: %s" % args.zip_file)
+    print("args.zip_file : %s" % args.zip_file)
+    print("args.job_dir : %s" % args.job_dir)
+
+    if re.search(r'S1\w_IW_SLC', args.zip_file):
+        typ = 'slc'
+    elif re.search(r'S1\w_IW_RAW', args.zip_file):
+        typ = 'raw'
+    else:
+        raise RuntimeError("Unknown type: %s" % args.zip_file)
+
     extracted, safe_dir = extract(args.zip_file)
     split_swaths(extracted, safe_dir, args.job_dir)
     harvest(extracted, safe_dir, typ)

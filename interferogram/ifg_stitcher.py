@@ -1,4 +1,10 @@
 #!/usr/bin/env python3 
+from __future__ import division
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from scipy.ndimage.morphology import binary_dilation
 from scipy.ndimage import generate_binary_structure
 import numpy as np
@@ -21,7 +27,7 @@ from contrib.UnwrapComp.unwrapComponents import UnwrapComponents
 WATER_VALUE = 255
 #if changing the WATER_VALUE back to negative chenge this line np.logical_and(uim1 > 0,uim1 < WATER_VALUE)
 
-class IfgStitcher:
+class IfgStitcher(object):
     def __init__(self):
         #isce image object of the full mask
         self._wmask = None
@@ -44,7 +50,7 @@ class IfgStitcher:
         maxv = np.max(im)
         eps = 0.01 #might need to play a bit with this value  
         #subtract small amount to make sure don't miss case in which it's very close
-        i = int((minv - .1)/(2*np.pi))
+        i = int(old_div((minv - .1),(2*np.pi)))
         while(2*np.pi*i < maxv):
             toz = np.nonzero(np.abs(im - 2*i*np.pi) < eps)
             im[toz] = 0
@@ -216,11 +222,11 @@ class IfgStitcher:
         lonsize2 = im2.coord1.coordSize
         londelta2 = im2.coord1.coordDelta
         #if mask has diffrent resolution then image
-        factor = int(round(londelta1/londelta2))
+        factor = int(round(old_div(londelta1,londelta2)))
 
-        ilatstart = abs(int(round((latstart2-latstart1)/latdelta2)))
+        ilatstart = abs(int(round(old_div((latstart2-latstart1),latdelta2))))
         ilatend = ilatstart + factor*latsize1
-        ilonstart = abs(int(round((lonstart2-lonstart1)/londelta2)))
+        ilonstart = abs(int(round(old_div((lonstart2-lonstart1),londelta2))))
         ilonend = ilonstart + factor*lonsize1
         imIn = im2.memMap(band=0)
         imCrop = np.memmap(outname,im2.toNumpyDataType(),'w+',shape=(latsize1,lonsize1))    
@@ -254,8 +260,8 @@ class IfgStitcher:
             cover1.append(np.nonzero(imo1 == i)[0].size)
         cover1 = np.array(cover1)
         
-        sel = cover1 > self._keepth/factor
-        discard1 = uim1[np.logical_and(np.logical_not(sel),cover1 > self._keepth/(2*factor))]
+        sel = cover1 > old_div(self._keepth,factor)
+        discard1 = uim1[np.logical_and(np.logical_not(sel),cover1 > old_div(self._keepth,(2*factor)))]
         uim1 = uim1[sel]
         cover1 = cover1[sel]
         if len(cover1) == 0:
@@ -264,8 +270,8 @@ class IfgStitcher:
         for i in uim2:
             cover2.append(np.nonzero(imo2 == i)[0].size)
         cover2 = np.array(cover2)
-        sel = cover2 > self._keepth/factor
-        discard2 = uim2[np.logical_and(np.logical_not(sel),cover2 > self._keepth/(2*factor))]
+        sel = cover2 > old_div(self._keepth,factor)
+        discard2 = uim2[np.logical_and(np.logical_not(sel),cover2 > old_div(self._keepth,(2*factor)))]
         uim2 = uim2[sel]
         cover2 = cover2[sel]
         if len(cover2) == 0:
@@ -357,7 +363,7 @@ class IfgStitcher:
         for cc in ucc:
             sel = np.nonzero(cim == cc)
             num = sel[0].size
-            if num < self._keepth/2:
+            if num < old_div(self._keepth,2):
                 sels.append(sel)
             if num > largest:
                 largest = num
@@ -447,12 +453,12 @@ class IfgStitcher:
         addcc = np.max(tmp_unique[sel])
         ims[k2] = self.adjust_rest_conncomp(ims[k2],cims[k2],uccs[k2],ccoffset,addcc)
         ims[k1] = self.adjust_rest_conncomp(ims[k1],cims[k1],uccs[k1],ccoffset,0)
-        for k,v in selc.items():
+        for k,v in list(selc.items()):
             #make sure that there is not already a component with the same value
             #make sure that u2 is also not one that needs to change. if so do not
             #modify it    
             u2 = newcomps[k2][k]
-            if ((u2 in ucom2) and (u2 not in newcomps[k2].values()) or 
+            if ((u2 in ucom2) and (u2 not in list(newcomps[k2].values())) or 
                 u2 in discs[k2]):
                 sel  = np.nonzero(np.diff(ucom2) > 1)[0]
                 #reuse some of the gaps in numbering. if no gap use the last one and add 1
@@ -460,7 +466,7 @@ class IfgStitcher:
                     nu2 = ucom2[sel[0]] + 1
                 else:
                     nu2 = ucom2[-1] + 1
-                if (u2 in ucom2) and (u2 not in newcomps[k2].values()):
+                if (u2 in ucom2) and (u2 not in list(newcomps[k2].values())):
                     sel = cims[k2] == u2
                     cims[k2][sel] = nu2
                 if u2 in discs[k2]:
@@ -492,7 +498,7 @@ class IfgStitcher:
                 maxv = 0
                 bestc = None
                 maxc = 0
-                for k,v in ncomd.items():
+                for k,v in list(ncomd.items()):
                     if v > maxv:
                         maxv = v
                         bestc = conds[k]
@@ -539,21 +545,21 @@ class IfgStitcher:
         #i1,2 j1,2 are the offsets of im and im1 w.r.t. large image 
         #total width of combined images
         if lon1 > lon2:
-            width  = int(((lon1 - lon2) + nlon1*delta)/delta)
-            j1 = int((lon1 - lon2)/delta)
+            width  = int(old_div(((lon1 - lon2) + nlon1*delta),delta))
+            j1 = int(old_div((lon1 - lon2),delta))
             j2 = 0
         else:
-            width  = int(((lon2 - lon1) + nlon2*delta)/delta)
+            width  = int(old_div(((lon2 - lon1) + nlon2*delta),delta))
             j1 = 0
-            j2 = int((lon2 - lon1)/delta)
+            j2 = int(old_div((lon2 - lon1),delta))
         #total length of combined images
         if lat1 > lat2:
-            length = int(((lat1 - lat2) + nlat2*delta)/delta)
+            length = int(old_div(((lat1 - lat2) + nlat2*delta),delta))
             i1 = 0
-            i2 = int((lat1 - lat2)/delta)
+            i2 = int(old_div((lat1 - lat2),delta))
         else:
-            length = int(((lat2 - lat1) + nlat1*delta)/delta)
-            i1 = int((lat2 - lat1)/delta)
+            length = int(old_div(((lat2 - lat1) + nlat1*delta),delta))
+            i1 = int(old_div((lat2 - lat1),delta))
             i2 = 0
         
         wmsk1 = self.crop_mask(size1,self._wmask,'dummy.out')
