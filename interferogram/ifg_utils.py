@@ -788,9 +788,10 @@ def unzip_slcs(slcs, filters = []):
         else:
             with ZipFile(v, 'r') as zf:
                 zf.extractall(k)
-        
+        ''' 
         logging.info("Removing {}.".format(v))
         try: os.unlink(v)
         except: pass
+        '''
         
 
