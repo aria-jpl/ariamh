@@ -44,7 +44,7 @@
                             {
                               "name" : "GEOCOOR2",
                               "python_action" : "isce_functions.get_geocoded_coords_ISCE2",
-                              "python_action_args" : ["filt_topophase.unw.geo.vrt",["longitude","longitude"],["latitude","latitude"]],
+                              "python_action_args" : ["filt_*-*_*_*_*.unw.geo.vrt",["longitude","longitude"],["latitude","latitude"]],
                               "type" : "float64",
                               "crs_name" : "crs",
                               "crs_attribute" : [
@@ -63,7 +63,7 @@
                                 }]
                             },{
                               "name" : "unwrappedPhase",
-                              "src_file" : "filt_topophase.unw.geo.vrt",
+                              "src_file" : "filt_*-*_*_*_*.unw.geo.vrt",
                               "type" : "float32",
                               "nodata" : 0,
                               "band" : 2,
@@ -81,9 +81,9 @@
                                 }]
                             },{
                               "name" : "coherence",
-                              "src_file" : "phsig.cor.geo.vrt",
+                              "src_file" : "*-*_*rlks_*alks.phsig.vrt",
                               "python_action" : "isce_functions.get_conncomp",
-                              "python_action_args" : ["phsig.cor.geo.vrt",-1,"filt_topophase.unw.geo.vrt",0],
+                              "python_action_args" : ["*-*_*rlks_*alks.phsig.vrt",-1,"filt_*-*_*_*_*.unw.geo.vrt",0],
                               "nodata" : 0,
                               "type" : "float32",
                               "dims" : ["latitude","longitude"],
@@ -100,11 +100,12 @@
                                 }]
                             },{
                               "name" : "connectedComponents",
-                              "src_file" : "filt_topophase.unw.conncomp.geo.vrt",
+                              "src_file" : "filt_*-*_*rlks_*alks.unw.conncomp.vrt",
                               "python_action" : "isce_functions.get_conncomp",
-                              "python_action_args" : ["filt_topophase.unw.conncomp.geo.vrt",-1,"filt_topophase.unw.geo.vrt",0],
+                              "python_action_args" : ["filt_*-*_*rlks_*alks.unw.conncomp.vrt",-1,"filt_*-*_*_*_*.unw.geo.vrt",0],
                               "nodata" : -1,
                               "type" : "float32",
+                              "band" : 1,
                               "dims" : ["latitude","longitude"],
                               "attribute" : [
                                 {
@@ -119,7 +120,7 @@
                                 }]
                             },{
                               "name" : "amplitude",
-                              "src_file" : "filt_topophase.unw.geo.vrt",
+                              "src_file" : "filt_*-*_*_*_*.unw.geo.vrt",
                               "nodata" : 0,
                               "band" : 1,
                               "type" : "float32",
@@ -326,8 +327,8 @@
                                   "dataset" : [
                                     {
                                       "name" : "L1InputGranules",
-                                      "python_action" : "isce_functions.get_topsApp_variable",
-                                      "python_action_args" : ["../topsApp.xml","master.safe"],
+                                      "python_action" : "isce_functions.get_alos2_variable",
+                                      "python_action_args" : ["../alos2app_scansar.xml","reference.safe"],
                                       "attribute" : [
                                         {
                                           "name" : "description",
@@ -335,8 +336,8 @@
                                         }]
                                      },{
                                        "name" : "orbitType",
-                                       "python_action" : "isce_functions.get_tops_metadata_variable",
-                                       "python_action_args" : ["../master","orbittype"],
+                                       "python_action" : "isce_functions.get_alos2_metadata_variable",
+                                       "python_action_args" : ["../reference","orbittype"],
                                        "attribute" : [
                                          {
                                            "name" : "description",
@@ -351,8 +352,8 @@
                                   "dataset" : [
                                     {
                                       "name" : "L1InputGranules",
-                                      "python_action" : "isce_functions.get_topsApp_variable",
-                                      "python_action_args" : ["../topsApp.xml","slave.safe"],
+                                      "python_action" : "isce_functions.get_alos2_variable",
+                                      "python_action_args" : ["../alos2app_scansar.xml","secondary.safe"],
                                       "attribute" : [
                                         {
                                           "name" : "description",
@@ -360,8 +361,8 @@
                                         }]
                                     },{
                                       "name" : "orbitType",
-                                      "python_action" : "isce_functions.get_tops_metadata_variable",
-                                      "python_action_args" : ["../slave","orbittype"],
+                                      "python_action" : "isce_functions.get_alos2_metadata_variable",
+                                      "python_action_args" : ["../secondary","orbittype"],
                                       "attribute" : [
                                         {
                                             "name" : "description",                                             
@@ -379,8 +380,8 @@
                       "description" : "Sentinel-1"
                     },{
                       "name" : "wavelength",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","wavelength"],
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
+                      "python_action_args" : ["../reference","wavelength"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -391,8 +392,8 @@
                         }]
                     },{
                       "name" : "centerFrequency",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
-                      "python_action_args" : ["../master","frequency"],
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
+                      "python_action_args" : ["../reference","frequency"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -428,8 +429,8 @@
                       }]
                      },{
                       "name" : "DEM",
-                      "python_action" : "isce_functions.get_topsApp_variable",
-                      "python_action_args" : ["../topsApp.xml","DEM"],
+                      "python_action" : "isce_functions.get_alos2_variable",
+                      "python_action_args" : ["../alos2app_scansar.xml","DEM"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -440,8 +441,8 @@
                         }]
                     },{
                       "name" : "ESDthreshold",
-                      "python_action" : "isce_functions.get_topsApp_variable",
-                      "python_action_args" : ["../topsApp.xml","ESD"],
+                      "python_action" : "isce_functions.get_alos2_variable",
+                      "python_action_args" : ["../alos2app_scansar.xml","ESD"],
                       "attribute" : [
                         { 
                           "name" : "description",
@@ -453,7 +454,7 @@
 
                     },{
                       "name" : "azimuthZeroDopplerStartTime",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
                       "python_action_args" : ["../fine_interferogram","sensingStart"],
                       "attribute" : [
                         {
@@ -465,7 +466,7 @@
                         }]
                     },{
                       "name" : "azimuthZeroDopplerEndTime",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
                       "python_action_args" : ["../fine_interferogram","sensingStop"],
                       "attribute" : [
                         {
@@ -477,7 +478,7 @@
                         }]
                     },{
                       "name" : "azimuthTimeInterval",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
                       "python_action_args" : ["../fine_interferogram","azimuthTimeInterval"],
                       "attribute" : [
                         {
@@ -489,7 +490,7 @@
                         }]
                     },{
                       "name" : "slantRangeSpacing",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
                       "python_action_args" : ["../fine_interferogram","rangePixelSize"],
                       "attribute" : [
                         {
@@ -501,7 +502,7 @@
                         }]
                     },{
                       "name" : "slantRangeEnd",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
                       "python_action_args" : ["../fine_interferogram","farRange"],
                       "attribute" : [
                         {
@@ -513,7 +514,7 @@
                         }]
                     },{
                       "name" : "slantRangeStart",
-                      "python_action" : "isce_functions.get_tops_metadata_variable",
+                      "python_action" : "isce_functions.get_alos2_metadata_variable",
                       "python_action_args" : ["../fine_interferogram","startingRange"],
                       "attribute" : [
                         {
