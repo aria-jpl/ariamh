@@ -10,6 +10,9 @@
       "name" : "title",
       "value" : "ARIA ALOS2 UNW GEO IFG"
     },{
+      "name" : "filename",
+      "value" : "ALOS2-INSARZD-D-25042020T223107-4be9-v1_0.nc"
+    },{
       "name" : "version",
       "value" : "1b"
     },{
