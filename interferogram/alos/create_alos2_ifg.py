@@ -207,6 +207,23 @@ def main():
     os.chdir(wd)
     os.makedirs(prod_dir, 0o755)
 
+    # create alos2 packaging
+    alos2_prod_file = "{}.nc".format(id)
+
+    with open(os.path.join(BASE_PATH, "alos2_groups.json")) as f:
+        alos2_cfg = json.load(f)
+    alos2_cfg['filename'] = alos2_prod_file
+    with open('alos2_groups.json', 'w') as f:
+        json.dump(alos2_cfg, f, indent=2, sort_keys=True)
+    alos2_cmd = [
+        "{}/alos2_packaging.py".format(BASE_PATH)
+    ]
+    alos2_cmd_line = " ".join(alos2_cmd)
+    logger.info("Calling alos2_packaging.py: {}".format(alos2_cmd_line))
+    check_call(alos2_cmd_line, shell=True)
+
+    # chdir back up to work directory
+
     #Copy the producta
     for name in glob("{}/filt_diff_*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
