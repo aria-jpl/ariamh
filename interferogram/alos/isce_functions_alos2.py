@@ -6,6 +6,9 @@ from __future__ import division
 from builtins import str
 from builtins import range
 from past.utils import old_div
+import glob
+import os
+
 def data_loading(filename,out_data_type=None,data_band=None):
     """
         GDAL READER of the data
@@ -219,20 +222,20 @@ def get_geocoded_coords(args):
     coordinate_dict['data_transf'] = geoTrans
     return coordinate_dict
 
-def get_topsApp_data(topsapp_xml='topsApp'):
+def get_alos2App_data(alos2app_xml='alos2App'):
     '''  
-        loading the topsapp xml file
+        loading the alos2app xml file
     '''
 
     import isce
-    from topsApp import TopsInSAR
+    from alos2App import TopsInSAR
     import os
     import pdb
     # prvide the full path and strip off any .xml if pressent
-    topsapp_xml = os.path.splitext(os.path.abspath(topsapp_xml))[0]
+    alos2app_xml = os.path.splitext(os.path.abspath(alos2app_xml))[0]
     curdir = os.getcwd()
-    filedir = os.path.dirname(topsapp_xml)
-    filename = os.path.basename(topsapp_xml)
+    filedir = os.path.dirname(alos2app_xml)
+    filename = os.path.basename(alos2app_xml)
 
     os.chdir(filedir)
     #pdb.set_trace()
@@ -248,18 +251,18 @@ def get_isce_version_info(args):
         isce_version = "ISCE version = " + isce_version + ", " + "SVN revision = " + isce.release_svn_revision
     return isce_version
 
-def get_topsApp_variable(args):
+def get_alos2App_variable(args):
     '''
         return the value of the requested variable
     '''
    
     import os
     import pdb
-    topsapp_xml = args[0]
+    alos2app_xml = args[0]
     variable = args[1]
 
     #pdb.set_trace()
-    insar = get_topsApp_data(topsapp_xml)
+    insar = get_alos2App_data(alos2app_xml)
     # ESD specific
     if variable == 'ESD':
         import numpy as np
@@ -284,7 +287,7 @@ def get_topsApp_variable(args):
             print("isce_function : demFilename NOT Found. Defaulting to SRTM")
             data = "SRTM"
     else:
-        # tops has issues with calling a nested variable, will need to loop over it
+        # alos2 has issues with calling a nested variable, will need to loop over it
         variables = variable.split('.')
         insar_temp = insar
         for variable in variables:
@@ -300,7 +303,7 @@ def get_topsApp_variable(args):
 
 
 
-def get_tops_subswath_xml(masterdir):
+def get_alos2_subswath_xml(masterdir):
     ''' 
         Find all available IW[1-3].xml files
     '''
@@ -396,23 +399,23 @@ def get_h5_dataset(args):
     return data
 
 
-def get_tops_metadata_variable(args):
+def get_alos2_metadata_variable(args):
     '''
         return the value of the requested variable
     '''
     masterdir = args[0]
     variable = args[1]
-    tops_metadata = get_tops_metadata(masterdir)
-    data = tops_metadata[variable]
+    alos2_metadata = create_alos2_md_json(masterdir) # get_alos2_metadata(masterdir)
+    data = alos2_metadata[variable]
 
     return data
 
-def get_tops_metadata(masterdir):
+def get_alos2_metadata(masterdir):
     import pdb
     from scipy.constants import c
 
     # get a list of avialble xml files for IW*.xml
-    IWs = get_tops_subswath_xml(masterdir)
+    IWs = get_alos2_subswath_xml(masterdir)
 
     # append all swaths togheter
     frames=[]
@@ -442,9 +445,9 @@ def get_tops_metadata(masterdir):
     #output['bbox'] = get_bbox(masterdir)
     # geo transform grt for x y 
     # bandwith changes per swath - placeholder c*b/2 or delete
-    # tops xml file
+    # alos2 xml file
     # refer to safe files frame doppler centroid burst[middle].doppler
-    # extract from topsapp.xml 
+    # extract from alos2app.xml 
 
     return output
 
@@ -619,8 +622,8 @@ def get_bbox(args):
     bboxes = []
     master_dir = args[0]
 
-    IWs = get_tops_subswath_xml(master_dir)
-    print("isce_functions : get_bbox : after get_tops_subswath_xml : %s" %len(IWs))
+    IWs = get_alos2_subswath_xml(master_dir)
+    print("isce_functions : get_bbox : after get_alos2_subswath_xml : %s" %len(IWs))
     for IW in IWs:
         try:
             prod = read_isce_product(IW)
@@ -642,4 +645,149 @@ def get_bbox(args):
     return geom_union_str
 
 
+def create_alos2app_xml(dir_name):
+    fp = open('alos2App.xml', 'w')
+    fp.write('<alos2App>\n')
+    fp.write('    <component name="alos2insar">\n')
+    fp.write('        <property name="master directory">{}</property>\n'.format(os.path.abspath(dir_name)))
+    fp.write('        <property name="slave directory">{}</property>\n'.format(os.path.abspath(dir_name)))
+    fp.write('    </component>\n')
+    fp.write('</alos2App>\n')
+    fp.close()
 
+
+def loadProduct(xmlname):
+    '''
+    Load the product using Product Manager.
+    '''
+    # from Cunren's code on extracting track data from alos2App
+    import isce, isceobj
+    from iscesys.Component.ProductManager import ProductManager as PM
+    pm = PM()
+    pm.configure()
+    obj = pm.loadProduct(xmlname)
+    return obj
+
+
+def loadTrack(date):
+    '''
+    date: YYMMDD
+    '''
+    # from Cunren's code on extracting track data from alos2App
+    track = loadProduct('{}.track.xml'.format(date))
+    track.frames = []
+    frameParameterFiles = sorted(glob.glob(os.path.join('f*_*', '{}.frame.xml'.format(date))))
+    for x in frameParameterFiles:
+        track.frames.append(loadProduct(x))
+    return track
+
+def getMetadataFromISCE(track):
+    # from Cunren's code on extracting track data from alos2App
+    import isce, isceobj
+    from isceobj.Alos2Proc.Alos2ProcPublic import getBboxRdr
+
+    #####################################
+    # in image coordinate
+    #         1      2
+    #         --------
+    #         |      |
+    #         |      |
+    #         |      |
+    #         --------
+    #         3      4
+    # in geography coorindate
+    #        1       2
+    #         --------
+    #         \       \
+    #          \       \
+    #           \       \
+    #            --------
+    #            3       4
+    #####################################
+
+    pointingDirection = {'right': -1, 'left': 1}
+    bboxRdr = getBboxRdr(track)
+    rangeMin = bboxRdr[0]
+    rangeMax = bboxRdr[1]
+    azimuthTimeMin = bboxRdr[2]
+    azimuthTimeMax = bboxRdr[3]
+
+    # in image coordinate
+    # corner 1
+    llh1 = track.orbit.rdr2geo(azimuthTimeMin, rangeMin, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 2
+    llh2 = track.orbit.rdr2geo(azimuthTimeMin, rangeMax, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 3
+    llh3 = track.orbit.rdr2geo(azimuthTimeMax, rangeMin, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 4
+    llh4 = track.orbit.rdr2geo(azimuthTimeMax, rangeMax, height=0, side=pointingDirection[track.pointingDirection])
+
+    # re-sort in geography coordinate
+    if track.passDirection.lower() == 'descending':
+        if track.pointingDirection.lower() == 'right':
+            footprint = [llh2, llh1, llh4, llh3]
+        else:
+            footprint = [llh1, llh2, llh3, llh4]
+    else:
+        if track.pointingDirection.lower() == 'right':
+            footprint = [llh4, llh3, llh2, llh1]
+        else:
+            footprint = [llh3, llh4, llh1, llh2]
+
+    # footprint
+    return footprint, azimuthTimeMin, azimuthTimeMax
+
+
+def get_alos2_obj(dir_name):
+    import os
+    import glob
+    import re
+    from subprocess import check_call, check_output
+
+    track = None
+    img_file = sorted(glob.glob(os.path.join(dir_name, 'IMG*')))
+
+    if len(img_file) > 0:
+        match = re.search('IMG-[A-Z]{2}-(ALOS2)(.{05})(.{04})-(\d{6})-.{4}.*',img_file[0])
+        if match:
+            date = match.group(4)
+            create_alos2app_xml(dir_name)
+            check_output("alos2App.py --steps --end=preprocess", shell=True)
+            track = loadTrack(date)
+            track.spacecraftName = match.group(1)
+            track.orbitNumber = match.group(2)
+            track.frameNumber = match.group(3)
+
+    return track
+
+
+def create_alos2_md_json(dirname):
+    track = get_alos2_obj(dirname)
+
+    bbox, sensingStart, sensingEnd = getMetadataFromISCE(track)
+    md = {}
+    md['geometry'] = {
+        "coordinates":[[
+        bbox[0][1:None:-1], # NorthWest Corner
+        bbox[1][1:None:-1], # NorthEast Corner
+        bbox[3][1:None:-1], # SouthWest Corner
+        bbox[2][1:None:-1], # SouthEast Corner
+        bbox[0][1:None:-1],
+        ]],
+        "type":"Polygon"
+    }
+    md['start_time'] = sensingStart.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    md['stop_time'] = sensingEnd.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    md['absolute_orbit'] = track.orbitNumber
+    md['frame'] = track.frameNumber
+    md['flight_direction'] = 'asc' if 'asc' in track.catalog['passdirection'] else 'dsc'
+    md['satellite_name'] = track.spacecraftName
+    md['source'] = "isce_preprocessing"
+
+    return md
+
+def create_alos2_md_isce(dirname, filename):
+    md = create_alos2_md_isce(dirname)
+    with open(filename, "w") as f:
+        json.dump(md, f, indent=2)
+        f.close()
