@@ -99,6 +99,16 @@ def main():
     ref_md = extract_alos2_md.create_alos2_md_json(ref_data_dir)
     sec_md = extract_alos2_md.create_alos2_md_json(sec_data_dir)
 
+    ref_md_json = "ref_alos2_md.json"
+    with open(ref_md_json, "w") as f:
+        json.dump(ref_md, f, indent=2)
+        f.close()
+
+    sec_md_json = "sec_alos2_md.json"
+    with open(sec_md_json, "w") as f:
+        json.dump(sec_md, f, indent=2)
+        f.close()
+
     ''' Extrach Reference SLC Metadata 
     extract_alos2_md.create_alos2_md_isce(ref_data_dir, "ref_alos2_md.json")
     extract_alos2_md.create_alos2_md_isce(sec_data_dir, "sec_alos2_md.json")
