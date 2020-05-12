@@ -5,16 +5,6 @@
     "$HOME/.aws": ["/home/ops/.aws", "ro"],
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
-  "dependency_images": [
-    {
-      "container_image_name": "aria/isce_giant:latest",
-      "container_image_url": "s3://s3-us-west-2.amazonaws.com/grfn-v2-dev-code-bucket/aria-isce_giant-latest.tar.gz",
-      "container_mappings": {
-        "$HOME/.netrc": ["/root/.netrc"],
-        "$HOME/.aws": ["/root/.aws", "ro"]
-      }
-    }
-  ],
   "recommended-queues" : [
     "grfn-job_worker-small",
     "aria-job_worker-small",
