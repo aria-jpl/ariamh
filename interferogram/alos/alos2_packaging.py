@@ -152,7 +152,12 @@ def write_dataset(fid,data,properties_data):
                 dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
             elif properties_data.dims is None:
                 dset = fid.createVariable(properties_data.name, properties_data.type)
-            dset[:] = data
+            try: #temp change
+                dset[:] = data
+            except Exception as e:
+                logger.error(e)
+                logger.error(traceback.format_exc())
+                pass
         elif isinstance(data, collections.Iterable):
             if isinstance(data[0],str):
                 dset = fid.createVariable(properties_data.name, str, ('matchup',), zlib=True)
@@ -599,7 +604,12 @@ if __name__ == '__main__':
     # iterate over the different datasets
     try:
         for dataset in structure.get("dataset", []):
-            create_dataset(fid, dataset, fid_parent=fid)
+            try:
+                create_dataset(fid, dataset, fid_parent=fid)
+            except Exception as e:
+                logger.error(e)
+                logger.error(traceback.format_exc())
+                pass
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
