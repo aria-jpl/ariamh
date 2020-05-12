@@ -138,8 +138,119 @@
                                 }]
                             }]
                         }]
-                    },
-                    {
+                    },{
+                      "name" : "imagingGeometry",
+                      "content" : [
+                        {
+                          "dataset" : [
+                            {
+                              "name" : "GEOCOOR3",
+                              "python_action" : "isce_functions_alos2.get_h5_dataset_coords",
+                              "python_action_args" : ["metadata.h5",["/cube/lons","longitudeMeta"],["/cube/lats","latitudeMeta"],["/cube/heights","heightsMeta"]],
+                              "type" : "float64",
+                              "crs_name" : "crsMeta",
+                              "crs_attribute" : [
+                                {
+                                  "name" : "grid_mapping_name",
+                                  "value" : "latitude_longitude"
+                                },{
+                                  "name" : "longitude_of_prime_meridian",
+                                  "value" : 0.0
+                                },{
+                                  "name" : "semi_major_axis",
+                                  "value" : 6378137.0
+                                },{
+                                  "name" : "inverse_flattening",
+                                  "value" : 298.257223563
+                                }]
+                            },{
+                              "name" : "perpendicularBaseline",
+                              "python_action" : "isce_functions_alos2.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/bperp"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Perpendicular baseline"
+                                },{
+                                  "name" : "units",
+                                  "value" : "meter"
+                                 },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crsMeta"
+                                }]
+                            },{
+                              "name" : "parallelBaseline",
+                              "python_action" : "isce_functions_alos2.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/bparallel"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Parallel baseline"
+                                },{
+                                  "name" : "units",
+                                  "value" : "meter"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crsMeta"
+                                }]
+                            },{
+                              "name" : "incidenceAngle",
+                              "python_action" : "isce_functions_alos2.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/incangle"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Incidence angle"
+                                },{
+                                  "name" : "units",
+                                  "value" : "degrees"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crsMeta"
+                                }]
+                            },{
+                              "name" : "lookAngle",
+                              "python_action" : "isce_functions_alos2.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/lookangle"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Look angle"
+                                },{
+                                  "name" : "units",
+                                  "value" : "degrees"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crsMeta"
+                                }]
+                            },{
+                              "name" : "azimuthAngle",
+                              "python_action" : "isce_functions_alos2.get_h5_dataset",
+                              "python_action_args" : ["metadata.h5","/cube/azangle"],
+                              "dims" : ["heightsMeta","latitudeMeta","longitudeMeta"],
+                              "nodata" : 0,
+                              "attribute" : [
+                                {
+                                  "name" : "description",
+                                  "value" : "Azimuth angle"
+                                },{
+                                  "name" : "units",
+                                  "value" : "degrees"
+                                },{
+                                  "name" : "grid_mapping",
+                                  "value" : "crsMeta"
+                                }]
+                            }]
+                        }]
+                    },{
                       "name" : "corrections",
                       "content" : [
                         {

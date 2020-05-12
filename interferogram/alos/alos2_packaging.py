@@ -78,6 +78,7 @@ def create_group(fid,group,fid_parent=None):
 
     name = group["name"] 
     contents = group["content"]
+    print("create_group : name : {}".format(name))
     
     # create a group with the provided name
     grp_id = fid.createGroup(name)
@@ -226,7 +227,7 @@ def create_dataset(fid,dataset,fid_parent=None):
     import copy
 
     name = dataset["name"]
-    logger.info("dataset name = " + name)
+    logger.info("\ncreate_dataset : dataset name = " + name)
 
     # extracting the data properties
     properties_data = content_properties(dataset)
@@ -235,7 +236,7 @@ def create_dataset(fid,dataset,fid_parent=None):
     # running a python function
     if properties_data.python_action is not None:
        data = python_execution(properties_data.python_action,properties_data.python_action_args)
-
+       print("\ndata : {}\n\n".format(data))
     # loading data from a src file
     elif properties_data.src_file is not None:
        
@@ -490,6 +491,7 @@ def data_loading(filename,out_data_type=None,data_band=None):
         data_band: the band that needs to be loaded, default is all
     """
 
+    print("data_loading : filename={},out_data_type={},data_band={}".format(filename,out_data_type,data_band))
     # converting to the absolute path
     filename = os.path.abspath(filename)
     if not os.path.isfile(filename):
@@ -529,6 +531,7 @@ def data_loading(filename,out_data_type=None,data_band=None):
         # changing the format if needed
         out_data = out_data.astype(dtype=out_data_type)
 
+    print("out_data : {}, geoTrans,projectionRef : {}, NoData : {}".format(out_data, geoTrans,projectionRef, NoData))
     return out_data, geoTrans,projectionRef, NoData
 
 def extract_key(data_dict,key):
