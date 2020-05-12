@@ -19,6 +19,7 @@ from osgeo import gdal
 from osgeo import osr
 import collections
 import pdb
+import glob
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -82,7 +83,7 @@ def create_group(fid,group,fid_parent=None):
     grp_id = fid.createGroup(name)
  
     # track the parent fid 
-    if id_parent is None:
+    if fid_parent is None:
         fid_parent = fid
     
     for content in contents:
@@ -232,8 +233,11 @@ def create_dataset(fid,dataset,fid_parent=None):
 
     # loading data from a src file
     elif properties_data.src_file is not None:
-        
+       
+       properties_data.src_file = glob.glob(properties_data.src_file)[0]
+       
        # loading the data
+       print("properties_data.src_file : {}".format(properties_data.src_file))
        data, data_transf, data_proj, data_nodata = data_loading(properties_data.src_file,properties_data.type,properties_data.band)
 
        # setting the no-data value in case the user is not overwriting it
