@@ -197,6 +197,7 @@ def main():
     alos2_start_time=datetime.now()
     logger.info("ALOS2 Start Time : {}".format(alos2_start_time)) 
 
+    os.chdir(wd)
     cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file)]
     ifg_utils.run_command(cmd)
     '''
