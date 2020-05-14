@@ -198,7 +198,7 @@ def main():
     logger.info("ALOS2 Start Time : {}".format(alos2_start_time)) 
 
     os.chdir(wd)
-    cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file)]
+    cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file), "{}".format("--steps")]
     ifg_utils.run_command(cmd)
     '''
     cmd = ["python3", "{}/applications/ion.py".format(os.environ['ISCE_HOME']),  "{}".format(xml_file)]
