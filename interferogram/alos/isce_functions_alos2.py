@@ -259,19 +259,23 @@ def get_alos2_variable(args):
    
     import os
     import pdb
+    import json
     alos2_xml = args[0]
     variable = args[1]
 
     #pdb.set_trace()
     #insar = get_alos2App_data(alos2app_xml)
     print(alos2_xml)
-    alos2insar = xml_json_converter.xml2json(alos2_xml)['also2insar']
+    resp = json.loads(json.dumps(xml_json_converter.xml2json(alos2_xml)))
+    print((json.dumps(resp, indent=2)))
+    print(resp.keys())
+    alos2insar = resp['alos2insar']
     print(alos2insar)
     # ESD specific
     if variable == 'ESD':
         import numpy as np
-        if 'doESD' in also2insar:
-            insar_temp = also2insar['esdCoherenceThreshold']
+        if 'doESD' in alos2insar:
+            insar_temp = alos2insar['esdCoherenceThreshold']
         else:
             insar_temp = -1.0 
         data = np.float(insar_temp)
