@@ -262,7 +262,8 @@ def get_alos2_variable(args):
     import json
     alos2_xml = args[0]
     variable = args[1]
-
+    
+    print("\n\nget_alos2_variable : {} : {}".format(alos2_xml, variable))
     #pdb.set_trace()
     #insar = get_alos2App_data(alos2app_xml)
     print(alos2_xml)
@@ -415,6 +416,9 @@ def get_alos2_metadata_variable(args):
     data = None
     masterdir = args[0]
     variable = args[1]
+
+    print("\n\nget_alos2_metadata_variable(args) : {}".format(args))
+
     alos2_metadata = get_alos2_metadata_reference_json() #create_alos2_md_json(masterdir) # get_alos2_metadata(masterdir)
     if variable in alos2_metadata:
         data = alos2_metadata[variable]
