@@ -8,6 +8,7 @@ from builtins import range
 from past.utils import old_div
 import glob
 import os
+import xml_json_converter
 
 def data_loading(filename,out_data_type=None,data_band=None):
     """
@@ -251,23 +252,26 @@ def get_isce_version_info(args):
         isce_version = "ISCE version = " + isce_version + ", " + "SVN revision = " + isce.release_svn_revision
     return isce_version
 
-def get_alos2App_variable(args):
+def get_alos2_variable(args):
     '''
         return the value of the requested variable
     '''
    
     import os
     import pdb
-    alos2app_xml = args[0]
+    alos2_xml = args[0]
     variable = args[1]
 
     #pdb.set_trace()
-    insar = get_alos2App_data(alos2app_xml)
+    #insar = get_alos2App_data(alos2app_xml)
+    print(alos2_xml)
+    alos2insar = xml_json_converter.xml2json(alos2_xml)['also2insar']
+    print(alos2insar)
     # ESD specific
     if variable == 'ESD':
         import numpy as np
-        if insar.__getattribute__('doESD'):
-            insar_temp = insar.__getattribute__('esdCoherenceThreshold')
+        if 'doESD' in also2insar:
+            insar_temp = also2insar['esdCoherenceThreshold']
         else:
             insar_temp = -1.0 
         data = np.float(insar_temp)
@@ -275,8 +279,8 @@ def get_alos2App_variable(args):
     elif variable == 'DEM':
         import numpy as np
         print("isce_function: variable = DEM")
-        if insar.__getattribute__('demFilename'):
-            insar_temp = insar.__getattribute__('demFilename')
+        if "dem for coregistration" in alos2insar:
+            insar_temp = alos2insar["dem for coregistration"]
             print("isce_function: demFilename Found. insar_temp : %s" %insar_temp)
             if insar_temp.startswith("NED"):
                 data = "NED"
@@ -289,9 +293,9 @@ def get_alos2App_variable(args):
     else:
         # alos2 has issues with calling a nested variable, will need to loop over it
         variables = variable.split('.')
-        insar_temp = insar
+        insar_temp = alos2insar
         for variable in variables:
-            insar_temp = insar_temp.__getattribute__(variable)
+            insar_temp = insar_temp[variable]
         data = insar_temp
 
     # further processing if needed
@@ -403,11 +407,22 @@ def get_alos2_metadata_variable(args):
     '''
         return the value of the requested variable
     '''
+
+    data = None
     masterdir = args[0]
     variable = args[1]
-    alos2_metadata = create_alos2_md_json(masterdir) # get_alos2_metadata(masterdir)
-    data = alos2_metadata[variable]
+    alos2_metadata = get_alos2_metadata_reference_json() #create_alos2_md_json(masterdir) # get_alos2_metadata(masterdir)
+    if variable in alos2_metadata:
+        data = alos2_metadata[variable]
 
+    return data
+
+def get_alos2_metadata_reference_json():
+    import json
+
+    data = {}
+    with open ("../ref_alos2_md.json", 'r') as f:
+        data = json.load(f)
     return data
 
 def get_alos2_metadata(masterdir):
