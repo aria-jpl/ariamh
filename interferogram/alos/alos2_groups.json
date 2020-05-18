@@ -230,7 +230,7 @@
                                      },{
                                        "name" : "orbitType",
                                        "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                                       "python_action_args" : ["../reference","orbittype"],
+                                       "python_action_args" : ["../ref_alos2_md.json","orbittype"],
                                        "attribute" : [
                                          {
                                            "name" : "description",
@@ -274,7 +274,7 @@
                     },{
                       "name" : "wavelength",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","wavelength"],
+                      "python_action_args" : ["../ref_alos2_md.json","wavelength"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -286,7 +286,7 @@
                     },{
                       "name" : "centerFrequency",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","frequency"],
+                      "python_action_args" : ["../ref_alos2_md.json","frequency"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -334,8 +334,7 @@
                         }]
                     },{
                       "name" : "ESDthreshold",
-                      "python_action" : "isce_functions_alos2.get_alos2_variable",
-                      "python_action_args" : ["../alos2app_scansar.xml","ESD"],
+
                       "attribute" : [
                         { 
                           "name" : "description",
@@ -348,7 +347,7 @@
                     },{
                       "name" : "azimuthZeroDopplerStartTime",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","sensingStart"],
+                      "python_action_args" : ["../ref_alos2_md.json","start_time"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -360,7 +359,7 @@
                     },{
                       "name" : "azimuthZeroDopplerEndTime",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","sensingStop"],
+                      "python_action_args" : ["../ref_alos2_md.json","stop_time"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -372,7 +371,7 @@
                     },{
                       "name" : "azimuthTimeInterval",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","azimuthTimeInterval"],
+                      "python_action_args" : ["../ref_alos2_md.json","azimuthTimeInterval"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -384,7 +383,7 @@
                     },{
                       "name" : "slantRangeSpacing",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","rangePixelSize"],
+                      "python_action_args" : ["../ref_alos2_md.json","rangePixelSize"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -396,7 +395,7 @@
                     },{
                       "name" : "slantRangeEnd",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","farRange"],
+                      "python_action_args" : ["../ref_alos2_md.json","farRange"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -408,7 +407,7 @@
                     },{
                       "name" : "slantRangeStart",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                      "python_action_args" : ["../reference","startingRange"],
+                      "python_action_args" : ["../ref_alos2_md.json","startingRange"],
                       "attribute" : [
                         {
                           "name" : "description",
@@ -420,7 +419,7 @@
                     },{
                       "name" : "productBoundingBox",
                       "python_action" : "isce_functions_alos2.get_bbox",
-                      "python_action_args" : ["../fine_interferogram"],
+                      "python_action_args" : ["../ref_alos2_md.json"],
                       "data_type" : "polygon",
                       "attribute" : [
                       {

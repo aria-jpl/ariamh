@@ -252,7 +252,13 @@ def get_isce_version_info(args):
         isce_version = "ISCE version = " + isce_version + ", " + "SVN revision = " + isce.release_svn_revision
     return isce_version
 
-def get_alos2_variable(args):
+
+
+def get_also2_variable(args):
+    get_alos2_variable2(args)    
+
+alos2app_scansar.xml
+def get_alos2_variable2(args):
     '''
         return the value of the requested variable
     '''
@@ -806,6 +812,7 @@ def create_alos2_md_json(dirname):
     md['flight_direction'] = 'asc' if 'asc' in track.catalog['passdirection'] else 'dsc'
     md['satellite_name'] = track.spacecraftName
     md['source'] = "isce_preprocessing"
+    md['bbox'] = bbox
 
     return md
 
