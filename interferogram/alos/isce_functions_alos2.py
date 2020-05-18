@@ -10,6 +10,202 @@ import glob
 import os
 import xml_json_converter
 
+def getTrackFrameData(track):
+    '''
+    get frame information 
+    '''
+    import datetime
+
+    frameData = {}
+
+    numberOfFrames = len(track.frames)
+    numberOfSwaths = len(track.frames[0].swaths)
+
+    rangepixelsizeList = []
+    sensingStartList = []
+    sensingEndList = []
+    startingRangeList = []
+    endingRangeList = []
+    azimuthlineintervalList =[]
+    azimuthpixelsizeList = []
+
+    for i in range(numberOfFrames):
+        for j in range(numberOfSwaths):
+            swath = track.frames[i].swaths[j]
+            rangepixelsizeList.append(swath.rangepixelsize)
+            azimuthlineintervalList.append(swath.azimuthlineinterval)
+            azimuthpixelsizeList.append(swath.azimuthpixelsize)
+            sensingStartList.append(swath.sensingStart)
+            sensingEndList.append(swath.sensingStart + datetime.timedelta(seconds=(swath.numberOfLines-1) * swath.azimuthLineInterval))
+            startingRangeList.append(swath.startingRange)
+            endingRangeList.append(swath.startingRange + (swath.numberOfSamples - 1) * swath.rangePixelSize)
+    azimuthTimeMin = min(sensingStartList)
+    azimuthTimeMax = max(sensingEndList)
+    azimuthTimeMid = azimuthTimeMin+datetime.timedelta(seconds=(azimuthTimeMax-azimuthTimeMin).total_seconds()/2.0)
+    rangeMin = min(startingRangeList)
+    rangeMax = max(endingRangeList)
+    rangeMid = (rangeMin + rangeMax) / 2.0
+
+    bbox = [rangeMin, rangeMax, azimuthTimeMin, azimuthTimeMax]
+    pointingDirection = {'right': -1, 'left': 1}
+
+    # in image coordinate
+    # corner 1
+    llh1 = track.orbit.rdr2geo(azimuthTimeMin, rangeMin, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 2
+    llh2 = track.orbit.rdr2geo(azimuthTimeMin, rangeMax, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 3
+    llh3 = track.orbit.rdr2geo(azimuthTimeMax, rangeMin, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 4
+    llh4 = track.orbit.rdr2geo(azimuthTimeMax, rangeMax, height=0, side=pointingDirection[track.pointingDirection])
+
+    # re-sort in geography coordinate
+    if track.passDirection.lower() == 'descending':
+        if track.pointingDirection.lower() == 'right':
+            footprint = [llh2, llh1, llh4, llh3]
+        else:
+            footprint = [llh1, llh2, llh3, llh4]
+    else:
+        if track.pointingDirection.lower() == 'right':
+            footprint = [llh4, llh3, llh2, llh1]
+        else:
+            footprint = [llh3, llh4, llh1, llh2]
+
+    
+    frameData['numberOfFrames'] = numberOfFrames
+    frameData['numberOfSwaths'] = numberOfSwaths 
+    frameData['rangepixelsizeList'] = rangepixelsizeList
+    frameData['sensingStartList'] = sensingStartList
+    frameData['sensingEndList'] = sensingEndList
+    frameData['startingRangeList'] = startingRangeList
+    frameData['endingRangeList'] = endingRangeList
+    frameData['azimuthlineintervalList'] = azimuthlineintervalList
+    frameData['azimuthpixelsizeList'] = azimuthpixelsizeList
+    frameData['bbox'] = bbox
+    frameData['footprint'] = footprint
+
+    return frameData
+
+def getMetadataFromISCE(track):
+    # from Cunren's code on extracting track data from alos2App
+    import isce, isceobj
+
+    #####################################
+    # in image coordinate
+    #         1      2
+    #         --------
+    #         |      |
+    #         |      |
+    #         |      |
+    #         --------
+    #         3      4
+    # in geography coorindate
+    #        1       2
+    #         --------
+    #         \       \
+    #          \       \
+    #           \       \
+    #            --------
+    #            3       4
+    #####################################
+
+    md = {}
+    pointingDirection = {'right': -1, 'left': 1}
+    
+    frameData = getTrackFrameData(track)
+
+    md['number_of_frames'] = frameData['numberOfFrames']
+    md['number_of_swaths'] = frameData['numberOfSwaths']
+    
+    bboxRdr = getBboxRdr(track)
+    rangeMin = bboxRdr[0]
+    rangeMax = bboxRdr[1]
+    azimuthTimeMin = bboxRdr[2]
+    azimuthTimeMax = bboxRdr[3]
+
+    # in image coordinate
+    # corner 1
+    llh1 = track.orbit.rdr2geo(azimuthTimeMin, rangeMin, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 2
+    llh2 = track.orbit.rdr2geo(azimuthTimeMin, rangeMax, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 3
+    llh3 = track.orbit.rdr2geo(azimuthTimeMax, rangeMin, height=0, side=pointingDirection[track.pointingDirection])
+    # corner 4
+    llh4 = track.orbit.rdr2geo(azimuthTimeMax, rangeMax, height=0, side=pointingDirection[track.pointingDirection])
+
+    # re-sort in geography coordinate
+    if track.passDirection.lower() == 'descending':
+        if track.pointingDirection.lower() == 'right':
+            footprint = [llh2, llh1, llh4, llh3]
+        else:
+            footprint = [llh1, llh2, llh3, llh4]
+    else:
+        if track.pointingDirection.lower() == 'right':
+            footprint = [llh4, llh3, llh2, llh1]
+        else:
+            footprint = [llh3, llh4, llh1, llh2]
+
+    # footprint
+    return footprint, azimuthTimeMin, azimuthTimeMax
+
+
+def get_alos2_obj(dir_name):
+    import os
+    import glob
+    import re
+    from subprocess import check_call, check_output
+
+    track = None
+    img_file = sorted(glob.glob(os.path.join(dir_name, 'IMG*')))
+
+    if len(img_file) > 0:
+        match = re.search('IMG-[A-Z]{2}-(ALOS2)(.{05})(.{04})-(\d{6})-.{4}.*',img_file[0])
+        if match:
+            date = match.group(4)
+            create_alos2app_xml(dir_name)
+            check_output("alos2App.py --steps --end=preprocess", shell=True)
+            track = loadTrack(date)
+            track.spacecraftName = match.group(1)
+            track.orbitNumber = match.group(2)
+            track.frameNumber = match.group(3)
+
+    return track
+
+
+def create_alos2_md_json(dirname):
+    track = get_alos2_obj(dirname)
+
+    bbox, sensingStart, sensingEnd = getMetadataFromISCE(track)
+    md = {}
+    md['geometry'] = {
+        "coordinates":[[
+        bbox[0][1:None:-1], # NorthWest Corner
+        bbox[1][1:None:-1], # NorthEast Corner
+        bbox[3][1:None:-1], # SouthWest Corner
+        bbox[2][1:None:-1], # SouthEast Corner
+        bbox[0][1:None:-1],
+        ]],
+        "type":"Polygon"
+    }
+    md['start_time'] = sensingStart.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    md['stop_time'] = sensingEnd.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    md['absolute_orbit'] = track.orbitNumber
+    md['frame'] = track.frameNumber
+    md['flight_direction'] = 'asc' if 'asc' in track.catalog['passdirection'] else 'dsc'
+    md['satellite_name'] = track.spacecraftName
+    md['source'] = "isce_preprocessing"
+    md['bbox'] = bbox
+
+    return md
+
+def create_alos2_md_isce(dirname, filename):
+    md = create_alos2_md_isce(dirname)
+    with open(filename, "w") as f:
+        json.dump(md, f, indent=2)
+        f.close()
+
+
+
 def data_loading(filename,out_data_type=None,data_band=None):
     """
         GDAL READER of the data
