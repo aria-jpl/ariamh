@@ -8,7 +8,7 @@ from datetime import datetime
 import xml.etree.cElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
 from zipfile import ZipFile
-import extract_alos2_md
+import isce_functions_alos2
 import ifg_utils
 from create_input_xml_alos2 import create_input_xml
 
@@ -96,8 +96,8 @@ def main():
     os.chdir(wd)
 
     ''' Extrach SLC Metadata '''
-    ref_md = extract_alos2_md.create_alos2_md_json(ref_data_dir)
-    sec_md = extract_alos2_md.create_alos2_md_json(sec_data_dir)
+    ref_md = isce_functions_alos2.create_alos2_md_json(ref_data_dir)
+    sec_md = isce_functions_alos2.create_alos2_md_json(sec_data_dir)
 
     ref_md_json = "ref_alos2_md.json"
     with open(ref_md_json, "w") as f:
@@ -110,8 +110,8 @@ def main():
         f.close()
 
     ''' Extrach Reference SLC Metadata 
-    extract_alos2_md.create_alos2_md_isce(ref_data_dir, "ref_alos2_md.json")
-    extract_alos2_md.create_alos2_md_isce(sec_data_dir, "sec_alos2_md.json")
+    isce_functions_alos2.create_alos2_md_isce(ref_data_dir, "ref_alos2_md.json")
+    isce_functions_alos2.create_alos2_md_isce(sec_data_dir, "sec_alos2_md.json")
     with open("ref_alos2_md.json") as f:
         ref_md = json.load(f)
     with open("sec_alos2_md.json") as f:

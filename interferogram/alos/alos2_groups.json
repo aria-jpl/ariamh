@@ -246,7 +246,7 @@
                                     {
                                       "name" : "L1InputGranules",
                                       "python_action" : "isce_functions_alos2.get_alos2_variable",
-                                      "python_action_args" : ["../alos2app_scansar.xml","secondary.safe"],
+                                      "python_action_args" : ["../alos2app_scansar.xml","secondary"],
                                       "attribute" : [
                                         {
                                           "name" : "description",
@@ -255,7 +255,7 @@
                                     },{
                                       "name" : "orbitType",
                                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
-                                      "python_action_args" : ["../secondary","orbit_type"],
+                                      "python_action_args" : ["../sec_alos2_md.json","orbit_type"],
                                       "attribute" : [
                                         {
                                             "name" : "description",                                             
@@ -270,7 +270,7 @@
                     {
                       "name" : "missionID",
                       "type" : "str",
-                      "description" : "Sentinel-1"
+                      "description" : "ALOS2"
                     },{
                       "name" : "wavelength",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
@@ -333,19 +333,6 @@
                           "value" : "unitless"
                         }]
                     },{
-                      "name" : "ESDthreshold",
-                      "python_action" : "isce_functions_alos2.get_alos2_variable",
-                      "python_action_args" : ["../alos2app_scansar.xml","ESD"],
-                      "attribute" : [
-                        { 
-                          "name" : "description",
-                          "value" : "ESD threshold, -1 = no ESD applied"
-                        },{
-                          "name" : "units",
-                          "value" : "unitless"
-                        }]
-
-                    },{
                       "name" : "azimuthZeroDopplerStartTime",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
                       "python_action_args" : ["../ref_alos2_md.json","sensing_start"],
@@ -376,7 +363,7 @@
                       "attribute" : [
                         {
                           "name" : "description",
-                          "value" : "Azimuth time interval"
+                          "value" : "Mean Azimuth time interval of all SubSwaths"
                         },{
                           "name" : "units",
                           "value" : "seconds"
@@ -388,7 +375,7 @@
                       "attribute" : [
                         {
                           "name" : "description",
-                          "value" : "Slant range pixel spacing"
+                          "value" : "Mean SubSwaths Slant range pixel spacing"
                         },{
                           "name" : "units",
                           "value" : "meter"

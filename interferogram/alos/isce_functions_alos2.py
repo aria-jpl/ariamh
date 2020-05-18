@@ -538,7 +538,7 @@ def get_alos2_variable(args):
     '''
         return the value of the requested variable
     '''
-   
+    import re
     import os
     import pdb
     import json
@@ -554,16 +554,8 @@ def get_alos2_variable(args):
     print(resp.keys())
     alos2insar = resp['alos2insar']
     print(alos2insar)
-    # ESD specific
-    if variable == 'ESD':
-        import numpy as np
-        if 'doESD' in alos2insar:
-            insar_temp = alos2insar['esdCoherenceThreshold']
-        else:
-            insar_temp = -1.0 
-        data = np.float(insar_temp)
-    # other variables
-    elif variable == 'DEM':
+    data = None
+    if variable == 'DEM':
         import numpy as np
         print("isce_function: variable = DEM")
         if "dem for coregistration" in alos2insar:
@@ -578,22 +570,13 @@ def get_alos2_variable(args):
             print("isce_function : demFilename NOT Found. Defaulting to SRTM")
             data = "SRTM"
     elif variable == 'reference':
-        return glob.glob(os.path.join(alos2insar['master directory'], "*.zip"))
+        img_file =  os.path.basename(glob.glob(os.path.join(alos2insar['master directory'], "IMG-*"))[0])
+        data = re.split("__[A|D]-F*", img_file)[0]
     elif variable == 'secondary':
-        return glob.glob(os.path.join(alos2insar['slave  directory'], "*.zip"))
-    else:
-        # alos2 has issues with calling a nested variable, will need to loop over it
-        variables = variable.split('.')
-        insar_temp = alos2insar
-        for variable in variables:
-            insar_temp = insar_temp[variable]
-        data = insar_temp
+        img_file =  os.path.basename(glob.glob(os.path.join(alos2insar['slave directory'], "IMG-*"))[0])
+        data = re.split("__[A|D]-F*", img_file)[0]
 
-    # further processing if needed
-    # removing any paths and only re-ruturning a list of files
-    if variable == 'safe':
-        data  = [os.path.basename(SAFE) for SAFE in data]
-
+    print("data : {}".format(data))
     return data
 
 
