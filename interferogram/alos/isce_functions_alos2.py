@@ -55,10 +55,12 @@ def getTrackFrameData(track):
     endingRangeList = []
     azimuthLineIntervalList =[]
     azimuthPixelSizeList = []
+    swaths = []
 
     for i in range(numberOfFrames):
         for j in range(numberOfSwaths):
             swath = track.frames[i].swaths[j]
+            swaths.append(swath)
             rangePixelSizeList.append(swath.rangePixelSize)
             azimuthLineIntervalList.append(swath.azimuthLineInterval)
             azimuthPixelSizeList.append(swath.azimuthPixelSize)
@@ -129,6 +131,7 @@ def getTrackFrameData(track):
     frameData['azimuthPixelSizeList'] = azimuthPixelSizeList
     frameData['bbox'] = bbox
     frameData['footprint'] = footprint
+    frameData['swaths'] = swaths
 
     return frameData
 
