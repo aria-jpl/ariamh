@@ -99,6 +99,7 @@ def main():
     ref_md = isce_functions_alos2.create_alos2_md_json(ref_data_dir)
     sec_md = isce_functions_alos2.create_alos2_md_json(sec_data_dir)
 
+    '''
     ref_md_json = "ref_alos2_md.json"
     with open(ref_md_json, "w") as f:
         json.dump(ref_md, f, indent=2)
@@ -109,7 +110,6 @@ def main():
         json.dump(sec_md, f, indent=2)
         f.close()
 
-    ''' Extrach Reference SLC Metadata 
     isce_functions_alos2.create_alos2_md_isce(ref_data_dir, "ref_alos2_md.json")
     isce_functions_alos2.create_alos2_md_isce(sec_data_dir, "sec_alos2_md.json")
     with open("ref_alos2_md.json") as f:
@@ -269,11 +269,39 @@ def main():
     ifg_utils.create_dataset_json(id, version, met_file, ds_file)
  
     #alos2_packagina(id)
+    os.chdir(wd)
+    isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
+    isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
+
+    os.chdir(prod_dir)
+    mgc_cmd = [
+        "{}/makeAlos2Geocube.py".format(BASE_PATH), "-m", "../master",
+        "-s", "../slave", "-o", "metadata.h5"
+    ]
+    mgc_cmd_line = " ".join(mgc_cmd)
+    logger.info("Calling makeAlos2Geocube.py: {}".format(mgc_cmd_line))
+    check_call(mgc_cmd_line, shell=True)
+    
+    alos2_prod_file = "{}.nc".format(id)
+    with open(os.path.join(BASE_PATH, "alos2_groups.json")) as f:
+        alos2_cfg = json.load(f)
+    alos2_cfg['filename'] = alos2_prod_file
+    with open('alos2_groups.json', 'w') as f:
+        json.dump(alos2_cfg, f, indent=2, sort_keys=True)
+    alos2_cmd = [
+        "{}/alos2_packaging.py".format(BASE_PATH)
+    ]
+    alos2_cmd_line = " ".join(alos2_cmd)
+    logger.info("Calling alos2_packaging.py: {}".format(alos2_cmd_line))
+    check_call(alos2_cmd_line, shell=True)
+
+    # chdir back up to work directory
+    os.chdir(wd)
 
 
 if __name__ == '__main__':
     complete_start_time=datetime.now()
-    logger.info("TopsApp End Time : {}".format(complete_start_time))
+    logger.info("Alos2App End Time : {}".format(complete_start_time))
     cwd = os.getcwd()
 
     ctx_file = os.path.abspath('_context.json')

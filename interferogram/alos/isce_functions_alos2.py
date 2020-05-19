@@ -132,6 +132,9 @@ def getTrackFrameData(track):
     frameData['bbox'] = bbox
     frameData['footprint'] = footprint
     frameData['swaths'] = swaths
+    frameData['rangeMin'] = rangeMin
+    frameData['rangeMax'] = rangeMax
+    frameData['rangeMid'] = rangeMid
 
     return frameData
 
@@ -208,6 +211,10 @@ def create_alos2_md_json(dirname):
     md['frequency'] = old_div(c, track.catalog['radarwavelength'])
     md['orbit_type'] = get_orbit_type(track.orbit.getOrbitQuality())
     md['orbit_source'] = track.orbit.getOrbitSource()
+    md['nearRange'] = frameData['rangeMin']
+    md['farRange'] = frameData['rangeMax']
+    md['rangePixelSize'] = track.catalog['rangepixelsize']	
+
     return md
 
 def get_orbit_type(orbit_quality):
@@ -218,7 +225,7 @@ def get_orbit_type(orbit_quality):
 def create_alos2_md_file(dirname, filename):
     import json
     md = create_alos2_md_json(dirname)
-    print(md)
+    #print(md)
     with open(filename, "w") as f:
         json.dump(md, f, indent=2)
         f.close()
@@ -551,12 +558,12 @@ def get_alos2_variable(args):
     print("\n\nget_alos2_variable : {} : {}".format(alos2_xml, variable))
     #pdb.set_trace()
     #insar = get_alos2App_data(alos2app_xml)
-    print(alos2_xml)
+    #print(alos2_xml)
     resp = json.loads(json.dumps(xml_json_converter.xml2json(alos2_xml)))
-    print((json.dumps(resp, indent=2)))
-    print(resp.keys())
+    #print((json.dumps(resp, indent=2)))
+    #print(resp.keys())
     alos2insar = resp['alos2insar']
-    print(alos2insar)
+    #print(alos2insar)
     data = None
     if variable == 'DEM':
         import numpy as np
