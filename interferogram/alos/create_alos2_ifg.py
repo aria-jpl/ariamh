@@ -240,10 +240,11 @@ def main():
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
 
-    for name in glob("{}/filt_*".format(insar_dir)):
+    for name in glob("{}/*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
 
+    '''
     for name in glob("{}/diff_*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
@@ -256,6 +257,7 @@ def main():
     for name in glob("{}/*.xml".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
+    '''
 
     shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
 
