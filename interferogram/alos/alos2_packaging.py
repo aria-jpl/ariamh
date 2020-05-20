@@ -126,6 +126,8 @@ def write_dataset(fid,data,properties_data):
     '''
         Writing out the data in netcdf arrays or strings depending on the type of data or polygons depending on the data_type.
     '''
+    import numpy 
+
     # for now only support polygon for vector
     if False:
         print("nothing")
@@ -153,10 +155,14 @@ def write_dataset(fid,data,properties_data):
                 dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
             elif properties_data.dims is None:
                 dset = fid.createVariable(properties_data.name, properties_data.type)
+            logger.info("SHAPE OF deset : {}".format(numpy.shape(dset)))
+            logger.info("SHAPE OF data : {}".format(numpy.shape(data)))
+
             try: #temp change
                 dset[:] = data
             except Exception as e:
                 logger.error(e)
+                logger.error("{} vs {}".format(numpy.shape(dset), numpy.shape(data)))
                 logger.error(traceback.format_exc())
                 pass
         elif isinstance(data, collections.Iterable):

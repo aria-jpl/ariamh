@@ -794,4 +794,13 @@ def unzip_slcs(slcs, filters = []):
         except: pass
         '''
         
+def change_dir(wd):
+    os.chdir(wd)
+    cmd= ["pwd"]
+    run_command(cmd)
+
+def run_command(cmd_array):
+    cmd_line = " ".join(cmd_array)
+    check_call(cmd_line, shell=True)
+
 

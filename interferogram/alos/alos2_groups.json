@@ -48,7 +48,7 @@
                             {
                               "name" : "GEOCOOR2",
                               "python_action" : "isce_functions_alos2.get_geocoded_coords_ISCE2",
-                              "python_action_args" : ["filt_*-*_*_*_*.unw.geo.vrt",["longitude","longitude"],["latitude","latitude"]],
+                              "python_action_args" : ["filt_*-*_*rlks_*alks.unw.geo.vrt",["longitude","longitude"],["latitude","latitude"]],
                               "type" : "float64",
                               "crs_name" : "crs",
                               "crs_attribute" : [
@@ -67,7 +67,7 @@
                                 }]
                             },{
                               "name" : "unwrappedPhase",
-                              "src_file" : "filt_*-*_*_*_*.unw.geo.vrt",
+                              "src_file" : "filt_*-*_*rlks_*alks.unw.geo.vrt",
                               "type" : "float32",
                               "nodata" : 0,
                               "band" : 2,
@@ -85,9 +85,9 @@
                                 }]
                             },{
                               "name" : "coherence",
-                              "src_file" : "*-*_*rlks_*alks.phsig.vrt",
+                              "src_file" : "*-*_*rlks_*alks.phsig.geo.vrt",
                               "python_action" : "isce_functions_alos2.get_conncomp",
-                              "python_action_args" : ["*-*_*rlks_*alks.phsig.geo.vrt",-1,"filt_*-*_*_*_*.unw.geo.vrt",0],
+                              "python_action_args" : ["*-*_*rlks_*alks.phsig.geo.vrt",-1,"filt_*-*_*rlks_*alks.unw.geo.vrt",0],
                               "nodata" : 0,
                               "type" : "float32",
                               "dims" : ["latitude","longitude"],
@@ -104,9 +104,9 @@
                                 }]
                             },{
                               "name" : "connectedComponents",
-                              "src_file" : "filt_*-*_*rlks_*alks.unw.conncomp.vrt",
+                              "src_file" : "filt_*-*_*rlks_*alks.unw.conncomp.geo.vrt",
                               "python_action" : "isce_functions_alos2.get_conncomp",
-                              "python_action_args" : ["filt_*-*_*rlks_*alks.unw.conncomp.geo.vrt",-1,"filt_*-*_*_*_*.unw.geo.vrt",0],
+                              "python_action_args" : ["filt_*-*_*rlks_*alks.unw.conncomp.geo.vrt",-1,"filt_*-*_*rlks_*alks.unw.geo.vrt",0],
                               "nodata" : -1,
                               "type" : "float32",
                               "band" : 1,
@@ -124,7 +124,7 @@
                                 }]
                             },{
                               "name" : "amplitude",
-                              "src_file" : "filt_*-*_*_*_*.unw.geo.vrt",
+                              "src_file" : "filt_*-*_*rlks_*alks.unw.geo.vrt",
                               "nodata" : 0,
                               "band" : 1,
                               "type" : "float32",

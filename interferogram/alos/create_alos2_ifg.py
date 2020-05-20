@@ -23,12 +23,6 @@ IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
 IFG_ID_ALOS2_TMPL = "ALOS2-INSARZD-{}-{}-{}-{}"
 SLC_FILTERS = ['IMG-HH', 'LED', 'TRL']
 
-def create_product(id, wd):
-    insar_dir = os.path.json(wd, "insar")
-    product_dir = os.path.join(wd, id)
-
-    
-
 def main():
 
 
@@ -93,7 +87,7 @@ def main():
     alos2_script_path = os.environ['ISCE_HOME']
     print("alos2_script_path : {}".format(alos2_script_path))
 
-    os.chdir(wd)
+    ifg_utils.change_dir(wd)
 
     ''' Extrach SLC Metadata '''
     ref_md = isce_functions_alos2.create_alos2_md_json(ref_data_dir)
@@ -197,7 +191,7 @@ def main():
     alos2_start_time=datetime.now()
     logger.info("ALOS2 Start Time : {}".format(alos2_start_time)) 
 
-    os.chdir(wd)
+    ifg_utils.change_dir(wd)
     cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file), "{}".format("--steps")]
     ifg_utils.run_command(cmd)
     '''
@@ -207,45 +201,34 @@ def main():
     cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "-i", "{}".format(xml_file), "-s", "filter"]
     ifg_utils.run_command(cmd)
     '''
-
     ifg_md['sensing_stop'] = "%sZ" % datetime.utcnow().isoformat('T')
-     
+
+    ifg_utils.change_dir(wd)
+    isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
+    isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
+
     prod_dir = id
     logger.info("prod_dir : %s" %prod_dir)
     
     insar_dir = os.path.join(wd, "insar")
 
-    os.chdir(wd)
+    ifg_utils.change_dir(wd)
     os.makedirs(prod_dir, 0o755)
 
-    # create alos2 packaging
-    alos2_prod_file = "{}.nc".format(id)
-
-    with open(os.path.join(BASE_PATH, "alos2_groups.json")) as f:
-        alos2_cfg = json.load(f)
-    alos2_cfg['filename'] = alos2_prod_file
-    with open('alos2_groups.json', 'w') as f:
-        json.dump(alos2_cfg, f, indent=2, sort_keys=True)
-    alos2_cmd = [
-        "{}/alos2_packaging.py".format(BASE_PATH)
-    ]
-    alos2_cmd_line = " ".join(alos2_cmd)
-    logger.info("Calling alos2_packaging.py: {}".format(alos2_cmd_line))
-    check_call(alos2_cmd_line, shell=True)
-
     # chdir back up to work directory
-    os.chdir(wd)
+    ifg_utils.change_dir(wd)
 
     #Copy the producta
     for name in glob("{}/*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
-
+    
+    '''
     for name in glob("{}/*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
 
-    '''
+    
     for name in glob("{}/diff_*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)
@@ -272,25 +255,33 @@ def main():
     ifg_utils.create_dataset_json(id, version, met_file, ds_file)
  
     #alos2_packagina(id)
-    os.chdir(wd)
+    ifg_utils.change_dir(wd)
+ 
     isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
     isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
 
-    os.chdir(prod_dir)
+
+    #ALOS2 metadata.h5 creation
+    ifg_utils.change_dir(prod_dir)
+    ls_cmd = ["ls", "-l"]
+    ifg_utils.run_command(ls_cmd)
+
     mgc_cmd = [
-        "{}/makeAlos2Geocube.py".format(BASE_PATH), "-m", "../master",
-        "-s", "../slave", "-o", "metadata.h5"
+        "{}/makeAlos2Geocube.py".format(BASE_PATH), "-m", "../reference",
+        "-s", "../secondary", "-o", "metadata.h5"
     ]
     mgc_cmd_line = " ".join(mgc_cmd)
     logger.info("Calling makeAlos2Geocube.py: {}".format(mgc_cmd_line))
     check_call(mgc_cmd_line, shell=True)
-    
+
+    #ALOS2 PACKAGING
     alos2_prod_file = "{}.nc".format(id)
     with open(os.path.join(BASE_PATH, "alos2_groups.json")) as f:
         alos2_cfg = json.load(f)
     alos2_cfg['filename'] = alos2_prod_file
     with open('alos2_groups.json', 'w') as f:
         json.dump(alos2_cfg, f, indent=2, sort_keys=True)
+
     alos2_cmd = [
         "{}/alos2_packaging.py".format(BASE_PATH)
     ]
@@ -299,7 +290,7 @@ def main():
     check_call(alos2_cmd_line, shell=True)
 
     # chdir back up to work directory
-    os.chdir(wd)
+    ifg_utils.change_dir(wd)
 
 
 if __name__ == '__main__':
