@@ -234,9 +234,10 @@ def main():
     check_call(alos2_cmd_line, shell=True)
 
     # chdir back up to work directory
+    os.chdir(wd)
 
     #Copy the producta
-    for name in glob("{}/filt_diff_*".format(insar_dir)):
+    for name in glob("{}/*".format(insar_dir)):
         logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
         shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
 
