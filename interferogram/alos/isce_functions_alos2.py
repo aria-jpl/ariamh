@@ -179,6 +179,7 @@ def get_alos2_bbox_from_footprint(footprint):
 
 def create_alos2_md_json(dirname):
     from scipy.constants import c
+    from statistics import mean
 
     track = get_alos2_obj(dirname)
     frameData = getTrackFrameData(track)
@@ -206,14 +207,14 @@ def create_alos2_md_json(dirname):
     md['pointing_direction'] = track.catalog['pointingdirection']
     md['radar_wave_length'] = track.catalog['radarwavelength']
     md['starting_range'] = min(frameData['startingRangeList'])
-    md['azimuth_pixel_size'] = max(frameData['azimuthPixelSizeList'])
-    md['azimuth_line_interval'] = max(frameData['azimuthLineIntervalList'])
+    md['azimuth_pixel_size'] = mean(frameData['azimuthPixelSizeList'])
+    md['azimuth_line_interval'] = mean(frameData['azimuthLineIntervalList'])
     md['frequency'] = old_div(c, track.catalog['radarwavelength'])
     md['orbit_type'] = get_orbit_type(track.orbit.getOrbitQuality())
     md['orbit_source'] = track.orbit.getOrbitSource()
     md['nearRange'] = frameData['rangeMin']
     md['farRange'] = frameData['rangeMax']
-    md['rangePixelSize'] = track.catalog['rangepixelsize']	
+    md['rangePixelSize'] = mean(frameData['rangePixelSizeList'])
 
     return md
 
