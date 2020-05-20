@@ -220,8 +220,10 @@ def main():
 
     #Copy the producta
     for name in glob("{}/*".format(insar_dir)):
-        logger.info("Copying {} to {}".format(os.path.join(insar_dir, name),  prod_dir))
-        shutil.copy(os.path.join(insar_dir, name),  prod_dir)    
+        input_path = os.path.join(insar_dir, name)
+        if os.path.isfile(input_path):
+            logger.info("Copying {} to {}".format(input_path,  prod_dir))
+            shutil.copy(input_path,  prod_dir)    
     
     '''
     for name in glob("{}/*".format(insar_dir)):
