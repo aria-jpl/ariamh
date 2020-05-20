@@ -1,5 +1,4 @@
-FROM hysds/isce2:v2.3.3-es1
-#FROM hysds/isce2:latest
+FROM hysds/isce2:latest
 # to build GPU/CUDA version use this base instead:
 #FROM hysds/isce2:latest-cuda
 
