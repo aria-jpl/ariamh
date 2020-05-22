@@ -6,13 +6,7 @@
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "grfn-job_worker-small",
-    "aria-job_worker-small",
-    "mem-job_worker-small",
-    "dwr-job_worker-small",
-    "chevron-job_worker-small",
-    "floodmap-job_worker-small",
-    "urgent-response-job_worker-small"
+    "sciflo-s1-slcp-mrpe"
   ],
   "soft_time_limit": 7200,
   "time_limit": 7500,
