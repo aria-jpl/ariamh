@@ -264,18 +264,18 @@ def main():
 
 
     #ALOS2 metadata.h5 creation
-    ifg_utils.change_dir(prod_dir)
+    os.chdir(prod_dir)
     ls_cmd = ["ls", "-l"]
-    ifg_utils.run_command(ls_cmd)
+    check_call(ls_cmd, shell=True)
 
     mgc_cmd = [
-        "{}/makeAlos2Geocube.py".format(BASE_PATH), "-m", "../reference",
-        "-s", "../secondary", "-o", "metadata.h5"
+        "{}/makeAlos2Geocube.py".format(BASE_PATH),  "-m", "../reference", "-s", "../secondary",  "-o", "metadata.h5"
     ]
     mgc_cmd_line = " ".join(mgc_cmd)
     logger.info("Calling makeAlos2Geocube.py: {}".format(mgc_cmd_line))
     check_call(mgc_cmd_line, shell=True)
 
+    $BASE_PATH/makeAlos2Geocube.py -m ../reference -s ../secondary -o metadata.h5
     #ALOS2 PACKAGING
     alos2_prod_file = "{}.nc".format(id)
     with open(os.path.join(BASE_PATH, "alos2_groups.json")) as f:

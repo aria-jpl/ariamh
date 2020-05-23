@@ -11,7 +11,7 @@
     <property name="slave polarization">$SEC_POL</property>
     <property name="dem for coregistration">$DEM_FILE</property>
     <property name="dem for geocoding">$GEOCODED_DEM_FILE</property>
-    <property name="geocode file list">['insar/filt_*-*_*rlks_*alks.unw', 'insar/filt_*-*_*rlks_*alks.unw.conncomp', 'insar/filt_*-*_*rlks_*alks_msk.unw', 'insar/filt_*-*_*rlks_*alks.int', 'insar/*-*_*rlks_*alks.phsig', 'insar/*-*_*rlks_*alks.cor', 'insar/*-*_*rlks_*alks.los', 'insar/*-*_*rlks_*alks.ion',  'insar/*-*_*rlks_*alks.amp']</property>
+    <property name="geocode file list">['filt_*-*_30rlks_168alks.unw', 'filt_*-*_30rlks_168alks.unw.conncomp', 'filt_*-*_30rlks_168alks_msk.unw', 'filt_*-*_30rlks_168alks.int', '*-*_30rlks_168alks.phsig', '*-*_30rlks_168alks.cor', '*-*_30rlks_168alks.los', '*-*_30rlks_168alks.ion',  '*-*_30rlks_168alks.amp', '*-*_1rlks_14alks.los']</property>
     <property name="use GPU">False</property>
     <property name="do ionospheric phase estimation">True</property>
     <property name="apply ionospheric phase correction">False</property>
@@ -19,6 +19,7 @@
     <property name="number of azimuth looks 1">14</property>
     <property name="number of range looks 2">30</property>
     <property name="number of azimuth looks 2">12</property>
+
     <property name="geocode bounding box"><value>$BBOX</value></property>
     <property name="number of range looks ion">40</property>
     <property name="number of azimuth looks ion">16</property>
