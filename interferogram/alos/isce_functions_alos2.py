@@ -385,7 +385,7 @@ def get_conncomp(args):
     print("no_data_aux : {}".format(no_data_aux))
     # update the connected comp no-data value
     #ATTENTION!! FAILURE
-    #conn_comp_data[aux_data==no_data_aux]=no_data_conn
+    conn_comp_data[aux_data==no_data_aux]=no_data_conn
 
     # return a dictionary
     output_dict = {}
