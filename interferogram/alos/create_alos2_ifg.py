@@ -275,7 +275,7 @@ def main():
     logger.info("Calling makeAlos2Geocube.py: {}".format(mgc_cmd_line))
     check_call(mgc_cmd_line, shell=True)
 
-    $BASE_PATH/makeAlos2Geocube.py -m ../reference -s ../secondary -o metadata.h5
+    #$BASE_PATH/makeAlos2Geocube.py -m ../reference -s ../secondary -o metadata.h5
     #ALOS2 PACKAGING
     alos2_prod_file = "{}.nc".format(id)
     with open(os.path.join(BASE_PATH, "alos2_groups.json")) as f:
