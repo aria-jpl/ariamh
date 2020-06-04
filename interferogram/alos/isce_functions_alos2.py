@@ -9,6 +9,7 @@ from past.utils import old_div
 import glob
 import os
 import xml_json_converter
+import traceback
 
 def loadProduct(xmlname):
     '''
@@ -385,15 +386,22 @@ def get_conncomp(args):
     print("no_data_aux : {}".format(no_data_aux))
     # update the connected comp no-data value
     #ATTENTION!! FAILURE
-    conn_comp_data[aux_data==no_data_aux]=no_data_conn
+    try:
+        print("aux_data : {}, no_data_aux : {}, no_data_conn : {}".format(aux_data, no_data_aux, no_data_conn))
+        
+        conn_comp_data[aux_data==no_data_aux]=no_data_conn
+        print("conn_comp_data : {}".format(conn_comp_data))
 
+    except Exception as err:
+        print(err)
+        traceback.format_exc()
     # return a dictionary
     output_dict = {}
     output_dict['data'] = conn_comp_data
     output_dict['data_transf'] = geoTrans
     output_dict['data_proj'] = projectionRef
     output_dict['data_nodata'] = no_data_conn
-    print(output_dict)
+    print(" get_conncomp : {}".format(output_dict))
     return output_dict
 
 

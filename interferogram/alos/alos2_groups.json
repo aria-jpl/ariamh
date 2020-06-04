@@ -279,7 +279,7 @@
                                             "attribute" : [
                                             { 
                                               "name" : "description",
-                                              "value" : "Unwrapped phase"
+                                              "value" : "ionosphere"
                                             },{
                                               "name" : "units",
                                               "value" : "rad"
@@ -287,15 +287,15 @@
                                               "name" : "grid_mapping",
                                               "value" : "crs"
                                             }]
-                                          },
-                                          {                                                                                                                                                                              
+                                          }]
+                                        },{                                                                                                                                                                              
                                             "name" : "ionosphere_dummy",
                                             "type" : "str",
                                             "description" : "placeholder dummy: [2D]"
                                           }]
                                       }]
                                     }]
-                                }]
+                                
                             },{
                               "name" : "external",
                               "content" : [

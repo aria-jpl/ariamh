@@ -127,7 +127,7 @@ def write_dataset(fid,data,properties_data):
         Writing out the data in netcdf arrays or strings depending on the type of data or polygons depending on the data_type.
     '''
     import numpy 
-
+    print("WRITE DATASET : fid : {},\ndata : {}, \nproperties_data : {}".format(fid,data,properties_data))
     # for now only support polygon for vector
     if False:
         print("nothing")
@@ -145,25 +145,32 @@ def write_dataset(fid,data,properties_data):
                 nodata = np.array(properties_data.nodata,dtype=properties_data.type)
             else:
                 nodata = None
-    
-             
-            if len(properties_data.dims)==1:
-                dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0]), fill_value=nodata, zlib=True)
-            elif len(properties_data.dims)==2:
-                dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0], properties_data.dims[1]), fill_value=nodata, zlib=True)
-            elif len(properties_data.dims)==3:
-                dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
-            elif properties_data.dims is None:
-                dset = fid.createVariable(properties_data.name, properties_data.type)
-            logger.info("SHAPE OF deset : {}".format(numpy.shape(dset)))
-            logger.info("SHAPE OF data : {}".format(numpy.shape(data)))
 
-            try: #temp change
+            dset = None 
+            try:
+                if len(properties_data.dims)==1:
+                    dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0]), fill_value=nodata, zlib=True)
+                elif len(properties_data.dims)==2:
+                    dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0], properties_data.dims[1]), fill_value=nodata, zlib=True)
+                elif len(properties_data.dims)==3:
+                    dset = fid.createVariable(properties_data.name, properties_data.type, (properties_data.dims[0],properties_data.dims[1], properties_data.dims[2]), fill_value=nodata, zlib=True)
+                elif properties_data.dims is None:
+                    dset = fid.createVariable(properties_data.name, properties_data.type)
+                logger.info("SHAPE OF deset : {}".format(numpy.shape(dset)))
+                logger.info("SHAPE OF data : {}".format(numpy.shape(data)))
+
                 dset[:] = data
+                print("WRITE DATASET data : {}".format(data))
+                print("WRITE DATASET dset : {}".format(dset))
             except Exception as e:
+                print("WRITE DATASET ERROR :properties_data.name : {}, properties_data.type : {}, properties_data.dims[0] : {}, properties_data.dims[1]): {}, nodata : {}".format(properties_data.name, properties_data.type, properties_data.dims[0], properties_data.dims[1], nodata))
+                #print("WRITE DATASET : fid : {},\ndata : {}, \nproperties_data : {}".format(fid,data,properties_data))
                 logger.error(e)
-                logger.error("{} vs {}".format(numpy.shape(dset), numpy.shape(data)))
                 logger.error(traceback.format_exc())
+                if dset:
+                    logger.error("{} vs {}".format(numpy.shape(dset), numpy.shape(data)))
+                    print("{} vs {}".format(numpy.shape(dset), numpy.shape(data)))
+                traceback.format_exc()               
                 pass
         elif isinstance(data, collections.Iterable):
             if isinstance(data[0],str):
@@ -606,6 +613,8 @@ if __name__ == '__main__':
         global_attribute = structure["global_attribute"]
         add_attributes(fid, global_attribute)
     except Exception as e:
+        print(str(e))
+        traceback.format_exc()
         logger.error(e)
         logger.error(traceback.format_exc())
         pass
@@ -616,6 +625,8 @@ if __name__ == '__main__':
             try:
                 create_dataset(fid, dataset, fid_parent=fid)
             except Exception as e:
+                print(str(e))
+                traceback.format_exc()
                 logger.error(e)
                 logger.error(traceback.format_exc())
                 pass
@@ -629,6 +640,9 @@ if __name__ == '__main__':
         for group in structure.get("group", []):
             create_group(fid, group, fid_parent=fid)
     except Exception as e:
+        print(str(e))
+        traceback.format_exc()
+
         logger.error(e)
         logger.error(traceback.format_exc())
         pass
