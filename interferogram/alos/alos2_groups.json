@@ -269,10 +269,24 @@
                                       "content" : [
                                       {
                                           "dataset" : [
-                                          {                                                                                                                                                                              
+                                          { 
                                             "name" : "ionosphere",
-                                            "type" : "str",
-                                            "description" : "placeholder dummy: [2D]"
+                                            "src_file" : "*-*_30rlks_168alks.ion.geo.vrt",
+                                            "type" : "float32",
+                                            "nodata" : 0,
+                                            "band" : 1,
+                                            "dims" : ["latitude","longitude"],
+                                            "attribute" : [
+                                            {
+                                              "name" : "description",
+                                              "value" : "Ionosphric phase"
+                                            },{
+                                              "name" : "units",
+                                              "value" : "rad"
+                                            },{
+                                              "name" : "grid_mapping",
+                                              "value" : "crs"
+                                            }]                                                                                                                                                                             
                                           }]
                                       }]
                                     }]
