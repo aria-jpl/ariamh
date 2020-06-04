@@ -269,33 +269,14 @@
                                       "content" : [
                                       {
                                           "dataset" : [
-                                          {
+                                          {                                                                                                                                                                              
                                             "name" : "ionosphere",
-                                            "src_file" : "150301-150412_30rlks_168alks.ion.geo.vrt",
-                                            "type" : "float32",
-                                            "nodata" : 0,
-                                            "band" : 1,
-                                            "dims" : ["latitude","longitude"],
-                                            "attribute" : [
-                                            { 
-                                              "name" : "description",
-                                              "value" : "ionosphere"
-                                            },{
-                                              "name" : "units",
-                                              "value" : "rad"
-                                            },{
-                                              "name" : "grid_mapping",
-                                              "value" : "crs"
-                                            }]
-                                          }]
-                                        },{                                                                                                                                                                              
-                                            "name" : "ionosphere_dummy",
                                             "type" : "str",
                                             "description" : "placeholder dummy: [2D]"
                                           }]
                                       }]
                                     }]
-                                
+                                }]
                             },{
                               "name" : "external",
                               "content" : [
