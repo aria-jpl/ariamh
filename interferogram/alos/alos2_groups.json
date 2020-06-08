@@ -13,12 +13,8 @@
          "value":"ARIA ALOS2 UNW GEO IFG"
       },
       {
-         "name":"filename",
-         "value":"ALOS2-INSARZD-D-25042020T223107-4be9-v1_0.nc"
-      },
-      {
          "name":"version",
-         "value":"1b"
+         "value":"1c"
       },
       {
          "name":"author",
@@ -30,7 +26,7 @@
       },
       {
          "name":"source",
-         "value":"Contains modified Copernicus Sentinel data processed by ESA and ARIA NASA/JPL"
+         "value":"Contains modified ALOS-2 data processed by JAXA and ARIA NASA/JPL"
       },
       {
          "name":"references",
@@ -390,60 +386,48 @@
                                     }
                                  ],
                                  "name":"imagingGeometry"
-                              },
-                              {
-                                 "content":[
-                                    {
-                                       "group":[
-                                          {
-                                             "content":[
+                              },{
+                                "name":"corrections",
+                                "content":[
+                                  {
+                                     "group":[
+                                      {
+                                        "name" : "derived",
+                                        "content":[
+                                            {
+                                              "group" : [
                                                 {
-                                                   "dataset":[
+                                                  "name" : "ionosphere",
+                                                  "content" : [
+                                                  {
+                                                    "dataset":[
                                                       {
                                                          "name":"GEOCOOR2",
                                                          "python_action":"isce_functions_alos2.get_geocoded_coords_ISCE2",
-                                                         "python_action_args":[
-                                                            "filt_*-*_*rlks_*alks.ion.geo.vrt",
-                                                            [
-                                                               "longitude",
-                                                               "longitudeIono"
-                                                            ],
-                                                            [
-                                                               "latitude",
-                                                               "latitudeIono"
-                                                            ]
-                                                         ],
+                                                         "python_action_args":["*-*_*rlks_*alks.ion.geo.vrt",["longitude", "longitudeIono"],["latitude","latitudeIono"]],
                                                          "type":"float64",
                                                          "crs_name":"crsIono",
                                                          "crs_attribute":[
                                                             {
                                                                "name":"grid_mapping_name",
                                                                "value":"latitude_longitude"
-                                                            },
-                                                            {
+                                                            },{
                                                                "name":"longitude_of_prime_meridian",
                                                                "value":0.0
-                                                            },
-                                                            {
+                                                            },{
                                                                "name":"semi_major_axis",
                                                                "value":6378137.0
-                                                            },
-                                                            {
+                                                            },{
                                                                "name":"inverse_flattening",
                                                                "value":298.257223563
-                                                            }
-                                                         ]
-                                                      },
-                                                      {
+                                                            }]
+                                                      },{
                                                          "name":"ionosphere",
-                                                         "src_file":"filt_*-*_*rlks_*alks.ion.geo.vrt",
+                                                         "src_file":"*-*_*rlks_*alks.ion.geo.vrt",
                                                          "type":"float32",
                                                          "nodata":0,
                                                          "band":2,
-                                                         "dims":[
-                                                            "latitudeIono",
-                                                            "longitudeIono"
-                                                         ],
+                                                         "dims":["latitudeIono","longitudeIono"],
                                                          "attribute":[
                                                             {
                                                                "name":"description",
@@ -456,67 +440,51 @@
                                                             {
                                                                "name":"grid_mapping",
                                                                "value":"crsIono"
-                                                            }
-                                                         ]
-                                                      }
-                                                   ]
-                                                }
-                                             ],
-                                             "name":"derived"
-                                          },
-                                          {
-                                             "content":[
-                                                {
-                                                   "group":[
-                                                      {
-                                                         "content":[
-                                                            {
-                                                               "dataset":[
-                                                                  {
-                                                                     "description":"placeholder dummy: [3D]",
-                                                                     "name":"troposphereHydrostatic",
-                                                                     "type":"str"
-                                                                  },
-                                                                  {
-                                                                     "description":"placeholder dummy: [3D]",
-                                                                     "name":"troposphereWet",
-                                                                     "type":"str"
-                                                                  }
-                                                               ]
-                                                            }
-                                                         ],
-                                                         "name":"troposphere"
-                                                      },
-                                                      {
-                                                         "content":[
-                                                            {
-                                                               "dataset":[
-                                                                  {
-                                                                     "description":"placeholder dummy: [2D]",
-                                                                     "name":"solidEarthTide",
-                                                                     "type":"str"
-                                                                  }
-                                                               ]
-                                                            }
-                                                         ],
-                                                         "name":"tides"
-                                                      }
-                                                   ]
-                                                }
-                                             ],
-                                             "name":"external"
-                                          }
-                                       ]
-                                    }
-                                 ],
-                                 "name":"corrections"
-                              }
-                           ]
-                        }
-                     ],
+                                                            }]
+                                                      }]
+                                                  }]
+                                            }]
+                                        },{
+                                           "name":"external",
+                                           "content":[
+                                              {
+                                                 "group":[
+                                                    {
+                                                       "name":"troposphere",
+                                                       "content":[
+                                                          {
+                                                             "dataset":[
+                                                                {
+                                                                   "description":"placeholder dummy: [3D]",
+                                                                   "name":"troposphereHydrostatic",
+                                                                   "type":"str"
+                                                                },
+                                                                {
+                                                                   "description":"placeholder dummy: [3D]",
+                                                                   "name":"troposphereWet",
+                                                                   "type":"str"
+                                                                }
+                                                             ]
+                                                          }]
+                                                    },{
+                                                       "content":[
+                                                          {
+                                                             "dataset":[
+                                                                {
+                                                                   "description":"placeholder dummy: [2D]",
+                                                                   "name":"solidEarthTide",
+                                                                   "type":"str"
+                                                                }]
+                                                          }],
+                                                       "name":"tides"
+                                                    }]
+                                                }]
+                                          }]
+                                    }]
+                              }]
+                        }],
                      "name":"grids"
-                  },
-                  {
+                  },{
                      "content":[
                         {
                            "dataset":[
@@ -857,6 +825,5 @@
             }
          ],
          "name":"science"
-      }
-   ]
+      }]
 }
