@@ -426,7 +426,7 @@
                                                          "src_file":"*-*_*rlks_*alks.ion.geo.vrt",
                                                          "type":"float32",
                                                          "nodata":0,
-                                                         "band":2,
+                                                         "band":1,
                                                          "dims":["latitudeIono","longitudeIono"],
                                                          "attribute":[
                                                             {
