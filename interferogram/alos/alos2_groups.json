@@ -267,27 +267,46 @@
                                     {
                                       "name" : "ionosphere",
                                       "content" : [
-                                      {
-                                          "dataset" : [
-                                          { 
-                                            "name" : "ionosphere",
-                                            "src_file" : "*-*_30rlks_168alks.ion.geo.vrt",
-                                            "type" : "float32",
-                                            "nodata" : 0,
-                                            "band" : 1,
-                                            "dims" : ["latitude","longitude"],
-                                            "attribute" : [
-                                            {
-                                              "name" : "description",
-                                              "value" : "Ionosphric phase"
-                                            },{
-                                              "name" : "units",
-                                              "value" : "rad"
-                                            },{
-                                              "name" : "grid_mapping",
-                                              "value" : "crs"
-                                            }]                                                                                                                                                                             
-                                          }]
+                                       "dataset" : [
+                                           {
+                                             "name" : "GEOCOOR2",
+                                             "python_action" : "isce_functions_alos2.get_geocoded_coords_ISCE2",
+                                             "python_action_args" : ["filt_*-*_*rlks_*alks.ion.geo.vrt",["longitude","longitudeIono"],["latitude","latitudeIono"]],
+                                             "type" : "float64",
+                                             "crs_name" : "crsIono",
+                                             "crs_attribute" : [
+                                               {
+                                                 "name" : "grid_mapping_name",
+                                                 "value" : "latitude_longitude"
+                                               },{
+                                                 "name" : "longitude_of_prime_meridian",
+                                                 "value" : 0.0
+                                               },{
+                                                 "name" : "semi_major_axis",
+                                                 "value" : 6378137.0
+                                               },{
+                                                 "name" : "inverse_flattening",
+                                                 "value" : 298.257223563
+                                               }]
+                                             },{
+                                               "name" : "ionosphere",
+                                               "src_file" : "filt_*-*_*rlks_*alks.ion.geo.vrt",
+                                               "type" : "float32",
+                                               "nodata" : 0,
+                                               "band" : 2,
+                                               "dims" : ["latitudeIono","longitudeIono"],
+                                               "attribute" : [
+                                                 {
+                                                    "name" : "description",
+                                                    "value" : "Ionospheric phase correction"
+                                                 },{
+                                                    "name" : "units",
+                                                    "value" : "rad"
+                                                 },{
+                                                    "name" : "grid_mapping",
+                                                    "value" : "crsIono"
+                                                 }]
+                                              }]{
                                       }]
                                     }]
                                 }]
