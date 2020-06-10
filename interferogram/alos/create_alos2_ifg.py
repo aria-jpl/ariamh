@@ -112,13 +112,22 @@ def main():
         sec_md = json.load(f)
     '''
 
+    
+
     ref_md['location'] = ref_md.pop('geometry')
     sec_md['location'] = sec_md.pop('geometry')
+
+    
     
     sat_direction = "D"
     direction = ref_md["flight_direction"]
     if direction.lower() == 'asc':
         sat_direction = "A"
+
+    pointing_direction = "L"
+    if ref_md['pointing_direction'].lower() == 'right':
+        pointing_direction = "R"
+
     dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
     ifg_hash = ifg_hash[0:4]
 
@@ -193,7 +202,9 @@ def main():
 
     ifg_utils.change_dir(wd)
     cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file), "{}".format("--steps")]
-    ifg_utils.run_command(cmd)
+    ifg_utils.run_command(cmd)a
+
+    
     '''
     cmd = ["python3", "{}/applications/ion.py".format(os.environ['ISCE_HOME']),  "{}".format(xml_file)]
     ifg_utils.run_command(cmd)
@@ -261,6 +272,7 @@ def main():
  
     isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
     isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
+
 
 
     #ALOS2 metadata.h5 creation
