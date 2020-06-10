@@ -420,7 +420,7 @@
                     {
                       "name" : "missionID",
                       "type" : "str",
-                      "description" : "Sentinel-1"
+                      "description" : "ALOS2"
                     },{
                       "name" : "wavelength",
                       "python_action" : "isce_functions_alos2.get_alos2_metadata_variable",
