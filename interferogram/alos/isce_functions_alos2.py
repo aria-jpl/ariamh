@@ -386,15 +386,10 @@ def get_conncomp(args):
     print("no_data_aux : {}".format(no_data_aux))
     # update the connected comp no-data value
     #ATTENTION!! FAILURE
-    try:
-        print("aux_data : {}, no_data_aux : {}, no_data_conn : {}".format(aux_data, no_data_aux, no_data_conn))
         
-        conn_comp_data[aux_data==no_data_aux]=no_data_conn
-        print("conn_comp_data : {}".format(conn_comp_data))
+    conn_comp_data[aux_data==no_data_aux]=no_data_conn
+    print("conn_comp_data : {}".format(conn_comp_data))
 
-    except Exception as err:
-        print(err)
-        traceback.format_exc()
     # return a dictionary
     output_dict = {}
     output_dict['data'] = conn_comp_data
@@ -583,11 +578,11 @@ def get_alos2_variable(args):
             if insar_temp.startswith("NED"):
                 data = "NED"
             else:
-                data = "SRTM"
+                data = "SRTM+v3"
             
         else:
             print("isce_function : demFilename NOT Found. Defaulting to SRTM")
-            data = "SRTM"
+            data = "SRTM+v3"
     elif variable == 'reference':
         img_file =  os.path.basename(glob.glob(os.path.join(alos2insar['master directory'], "IMG-*"))[0])
         data = re.split("__[A|D]-F*", img_file)[0]
