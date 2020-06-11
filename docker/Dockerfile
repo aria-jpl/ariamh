@@ -15,7 +15,7 @@ COPY . /home/ops/ariamh
 
 RUN set -ex \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 \
-    && $HOME/verdi/bin/pip install joblib netcdf4 \
+    && $HOME/verdi/bin/pip install joblib netcdf4 lxml \
     && sudo rm -rf /root/.cache \
     && sudo chown -R ops:ops /home/ops/ariamh \
     && cd /home/ops/verdi/ops/slcp2pm/src \
