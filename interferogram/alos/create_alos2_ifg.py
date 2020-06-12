@@ -21,6 +21,7 @@ BASE_PATH = os.path.dirname(__file__)
 
 IMG_RE=r'IMG-(\w{2})-ALOS(\d{6})(\d{4})-*'
 IFG_ID_ALOS2_TMPL = "ALOS2-INSARZD-{}-{}-{}-{}"
+IFG_ID_ALOS2_TMPL = "ALOS2-GUNW-{}-{}-{:03d}-scansar-{}_{}-{}-{}-PP-{}-{}"
 SLC_FILTERS = ['IMG-HH', 'LED', 'TRL']
 
 def main():
@@ -131,14 +132,18 @@ def main():
     dt_string = datetime.now().strftime("%d%m%YT%H%M%S")
     ifg_hash = ifg_hash[0:4]
 
+
+    '''
     #Check if ifg_already exists
-    id = IFG_ID_ALOS2_TMPL.format(sat_direction, dt_string, ifg_hash, version.replace('.', '_') )
+    #id = IFG_ID_ALOS2_TMPL.format(sat_direction, dt_string, ifg_hash, version.replace('.', '_') )
 
     #id = "ALOS2-INSARZD-D-18042020T154753-4be9-v1_0"
     if ifg_utils.check_ifg_status(id, "grq"):
         print("{} Already Exists. Exiting ....".format(id))
         exit(0)
+    '''
 
+    ifg_md['track'] = ref_md['track'] 
 
     ifg_md['satelite_direction'] = direction
     ref_orbit = ref_md["absolute_orbit"]
@@ -183,10 +188,10 @@ def main():
     ifg_md["polarization"] = ref_pol
 
 
-    ''' Some Fake Data'''
-    ifg_md['sensing_start'] = "%sZ" % datetime.utcnow().isoformat('T')
-    
-    xml_file = "alos2app_{}.xml".format(ifg_type)
+    ifg_md['sensing_start'] = ref_md["sensing_start"], 
+    acq_center_time = ifg_utils.get_center_time(ref_md['sensing_start'] , ref_md['sensing_stop'] )
+    ref_dt = ref_md["sensing_start"].split('T')[0].replace('-', '')
+    sec_dt = sec_md["sensing_start"].split('T')[0].replace('-', '')
     tmpl_file = "{}.tmpl".format(xml_file)
 
     tmpl_file = os.path.join(BASE_PATH, tmpl_file)
@@ -200,9 +205,16 @@ def main():
     alos2_start_time=datetime.now()
     logger.info("ALOS2 Start Time : {}".format(alos2_start_time)) 
 
+    '''
+    isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
+    isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
+
+    exit(0)
+    '''
+
     ifg_utils.change_dir(wd)
     cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file), "{}".format("--steps")]
-    ifg_utils.run_command(cmd)a
+    ifg_utils.run_command(cmd)
 
     
     '''
@@ -218,11 +230,28 @@ def main():
     isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
     isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
 
+    insar_dir = os.path.join(wd, "insar")
+    #vrt_file = "filt_150301-150412_30rlks_168alks.unw.geo.vrt"
+    vrt_file = glob("{}/filt_*-*_30rlks_168alks.unw.geo.vrt".format(insar_dir))[0]
+    lats = ifg_utils.get_geocoded_lats(vrt_file)
+    print(lats)
+    print("lats : {}".format(lats))
+    print("max(lats) : {} : {}".format(max(lats), ifg_utils.convert_number(max(lats))))
+    print("min(lats) : {} : {}".format(min(lats), ifg_utils.convert_number(min(lats))))
+    print("sorted(lats)[-2] : {} : {}".format(sorted(lats)[-2], ifg_utils.convert_number(sorted(lats)[-2])))
+    print("sorted(lats)[1]  {} : {}".format(sorted(lats)[1], ifg_utils.convert_number(sorted(lats)[1])))
+
+    print("sat_direction : {}".format(sat_direction))
+
+    west_lat= "{}_{}".format(ifg_utils.convert_number(sorted(lats)[-2]), ifg_utils.convert_number(min(lats)))
+
+    #IFG_ID_ALOS2_TMPL = "ALOS2-GUNW-{}-{}-{:03d}-scansar-{}_{}-{}-{}-PP-{}-{}"
+    # id = IFG_ID_ALOS2_TMPL.format(sat_direction, dt_string, ifg_hash, version.replace('.', '_') )
+    # ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
+    id = IFG_ID_ALOS2_TMPL.format(sat_direction, "R", ref_md['track'], ref_dt, sec_dt, acq_center_time, west_lat, ifg_hash, version.replace('.', '_') ) 
     prod_dir = id
     logger.info("prod_dir : %s" %prod_dir)
     
-    insar_dir = os.path.join(wd, "insar")
-
     ifg_utils.change_dir(wd)
     os.makedirs(prod_dir, 0o755)
 
