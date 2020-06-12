@@ -163,13 +163,20 @@ def get_alos2_obj(dir_name):
     return track
 
 def get_alos2_bbox(args):
+    from osgeo import gdal, ogr, osr
     import json
 
     ref_json_file = args[0]
     with open (ref_json_file, 'r') as f:
         data = json.load(f)
+   
+    bbox = data['bbox']
+    print('bbox : {}'.format(bbox))
 
-    return data['bbox']
+    bbox = "{}".format(ogr.CreateGeometryFromJson(json.dumps(get_loc(bbox))))
+    print('bbox : {}'.format(bbox))
+
+    return bbox
 
     
 def get_alos2_bbox_from_footprint(footprint):
@@ -199,14 +206,15 @@ def create_alos2_md_json(dirname):
     }
     md['sensing_start'] = "{}".format(min(frameData['sensingStartList']).strftime("%Y-%m-%dT%H:%M:%S.%f"))
     md['sensing_stop'] = "{}".format(max(frameData['sensingEndList']).strftime("%Y-%m-%dT%H:%M:%S.%f"))
-    md['absolute_orbit'] = track.orbitNumber
+    md['absolute_orbit'] = int(track.orbitNumber)
+    md['track'] = int((14 * int(track.orbitNumber) + 24) % 207)
     md['frame'] = track.frameNumber
     md['flight_direction'] = 'asc' if 'asc' in track.catalog['passdirection'] else 'dsc'
     md['satellite_name'] = track.spacecraftName
     md['source'] = "isce_preprocessing"
     md['bbox'] = get_alos2_bbox_from_footprint(bbox)
     md['pointing_direction'] = track.catalog['pointingdirection']
-    md['radar_wave_length'] = track.catalog['radarwavelength']
+    md['wavelength'] = track.catalog['radarwavelength']
     md['starting_range'] = min(frameData['startingRangeList'])
     md['azimuth_pixel_size'] = mean(frameData['azimuthPixelSizeList'])
     md['azimuth_line_interval'] = mean(frameData['azimuthLineIntervalList'])
