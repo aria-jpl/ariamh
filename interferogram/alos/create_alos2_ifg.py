@@ -186,12 +186,12 @@ def main():
     '''
 
     ifg_md["polarization"] = ref_pol
-
-
     ifg_md['sensing_start'] = ref_md["sensing_start"], 
     acq_center_time = ifg_utils.get_center_time(ref_md['sensing_start'] , ref_md['sensing_stop'] )
     ref_dt = ref_md["sensing_start"].split('T')[0].replace('-', '')
     sec_dt = sec_md["sensing_start"].split('T')[0].replace('-', '')
+
+    xml_file = "alos2app_{}.xml".format(ifg_type)
     tmpl_file = "{}.tmpl".format(xml_file)
 
     tmpl_file = os.path.join(BASE_PATH, tmpl_file)
@@ -205,17 +205,9 @@ def main():
     alos2_start_time=datetime.now()
     logger.info("ALOS2 Start Time : {}".format(alos2_start_time)) 
 
-    '''
-    isce_functions_alos2.create_alos2_md_file("reference", "ref_alos2_md.json")
-    isce_functions_alos2.create_alos2_md_file("secondary", "sec_alos2_md.json")
-
-    exit(0)
-    '''
-
     ifg_utils.change_dir(wd)
     cmd = ["python3", "{}/applications/alos2App.py".format(os.environ['ISCE_HOME']), "{}".format(xml_file), "{}".format("--steps")]
     ifg_utils.run_command(cmd)
-
     
     '''
     cmd = ["python3", "{}/applications/ion.py".format(os.environ['ISCE_HOME']),  "{}".format(xml_file)]
