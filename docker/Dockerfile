@@ -14,10 +14,10 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 COPY . /home/ops/ariamh
 
 RUN set -ex \
-    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj \
+    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     &&  $HOME/verdi/bin/pip install 'fiona==1.7.13' \
-    #&& $HOME/verdi/bin/pip install 'pyproj==1.9.6' \
+    && $HOME/verdi/bin/pip install 'pyproj==2.6.1' \
     && sudo rm -rf /root/.cache \
     && sudo chown -R ops:ops /home/ops/ariamh \
     && cd /home/ops/verdi/ops/slcp2pm/src \
