@@ -18,7 +18,6 @@ RUN set -ex \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     &&  $HOME/verdi/bin/pip install 'fiona==1.7.13' \
     && $HOME/verdi/bin/pip install 'pyproj==1.9.6' \
-    && $HOME/verdi/bin/pip install 'geopandas==0.6.3'1 \
     && sudo rm -rf /root/.cache \
     && sudo chown -R ops:ops /home/ops/ariamh \
     && cd /home/ops/verdi/ops/slcp2pm/src \
