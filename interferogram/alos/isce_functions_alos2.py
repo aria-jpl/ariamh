@@ -170,10 +170,8 @@ def get_alos2_bbox(args):
     with open (ref_json_file, 'r') as f:
         data = json.load(f)
    
-    bbox = data['bbox']
-    #bbox = data['geometry']["coordinates"][0]
+    bbox = data['geometry']
     print('bbox : {}'.format(bbox))
-
     bbox = ["%s"%ogr.CreateGeometryFromJson(json.dumps(bbox))]
     print('bbox : {}'.format(bbox))
 
@@ -219,7 +217,8 @@ def create_alos2_md_json(dirname):
     md['flight_direction'] = 'asc' if 'asc' in track.catalog['passdirection'] else 'dsc'
     md['satellite_name'] = track.spacecraftName
     md['source'] = "isce_preprocessing"
-    md['bbox'] = get_loc(get_alos2_bbox_from_footprint(bbox))["coordinates"][0]
+    #print(get_alos2_bbox_from_footprint(bbox))
+    md['bbox'] = get_alos2_bbox_from_footprint(bbox)
     md['pointing_direction'] = track.catalog['pointingdirection']
     md['wavelength'] = track.catalog['radarwavelength']
     md['starting_range'] = min(frameData['startingRangeList'])
