@@ -171,6 +171,7 @@ def get_alos2_bbox(args):
         data = json.load(f)
    
     bbox = data['bbox']
+    #bbox = data['geometry']["coordinates"][0]
     print('bbox : {}'.format(bbox))
 
     bbox = ["%s"%ogr.CreateGeometryFromJson(json.dumps(get_loc(bbox)))]
@@ -769,10 +770,14 @@ def get_loc(box):
     coords = [
         [ bbox[0,1], bbox[0,0] ],
         [ bbox[1,1], bbox[1,0] ],
-        [ bbox[2,1], bbox[2,0] ],
+        #[ bbox[2,1], bbox[2,0] ],
         [ bbox[3,1], bbox[3,0] ],
+        [ bbox[2,1], bbox[2,0] ],
         [ bbox[0,1], bbox[0,0] ],
     ]
+    
+    coords = change_direction(coords)
+
     return {
         "type": "Polygon",
         "coordinates":  [coords] 
