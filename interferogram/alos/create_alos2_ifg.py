@@ -114,7 +114,7 @@ def main():
     '''
 
     
-
+    
     ref_md['location'] = ref_md.pop('geometry')
     sec_md['location'] = sec_md.pop('geometry')
 
@@ -159,6 +159,8 @@ def main():
 
     ifg_md["frame"] = "{}".format(ref_frame)
     
+    print("ref_md['location'] : {}".format(ref_md['location']))
+
     ref_bbox = ref_md['location']['coordinates'][0]
     sec_bbox = sec_md['location']['coordinates'][0]
     union_geojson = ifg_utils.get_union_geometry([ref_md['location'], sec_md['location']])
