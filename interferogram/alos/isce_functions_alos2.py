@@ -174,7 +174,7 @@ def get_alos2_bbox(args):
     #bbox = data['geometry']["coordinates"][0]
     print('bbox : {}'.format(bbox))
 
-    bbox = ["%s"%ogr.CreateGeometryFromJson(json.dumps(get_loc(bbox)))]
+    bbox = ["%s"%ogr.CreateGeometryFromJson(json.dumps(bbox)]
     print('bbox : {}'.format(bbox))
 
     return bbox
@@ -195,6 +195,8 @@ def create_alos2_md_json(dirname):
     bbox = frameData['footprint']
     
     md = {}
+   
+    '''
     md['geometry'] = {
         "coordinates":[[
         bbox[0][1:None:-1], # NorthWest Corner
@@ -205,6 +207,13 @@ def create_alos2_md_json(dirname):
         ]],
         "type":"Polygon"
     }
+
+    '''
+
+    md['geometry'] = {
+        "coordinates": get_loc(get_alos2_bbox_from_footprint(bbox)),
+        "type":"Polygon"
+    }
     md['sensing_start'] = "{}".format(min(frameData['sensingStartList']).strftime("%Y-%m-%dT%H:%M:%S.%f"))
     md['sensing_stop'] = "{}".format(max(frameData['sensingEndList']).strftime("%Y-%m-%dT%H:%M:%S.%f"))
     md['absolute_orbit'] = int(track.orbitNumber)
@@ -213,7 +222,7 @@ def create_alos2_md_json(dirname):
     md['flight_direction'] = 'asc' if 'asc' in track.catalog['passdirection'] else 'dsc'
     md['satellite_name'] = track.spacecraftName
     md['source'] = "isce_preprocessing"
-    md['bbox'] = get_alos2_bbox_from_footprint(bbox)
+    md['bbox'] = get_loc(get_alos2_bbox_from_footprint(bbox))
     md['pointing_direction'] = track.catalog['pointingdirection']
     md['wavelength'] = track.catalog['radarwavelength']
     md['starting_range'] = min(frameData['startingRangeList'])
