@@ -8,7 +8,7 @@ import isce_functions_alos2
 
 
 def main():
-    md = isce_functions_alos2.get_alos2_metadata("/sp_data/alos2/david/reference")
+    md = isce_functions_alos2.create_alos2_md_file("/data/SP1/secondary", "sec_alos2_md.json")
     print(md)
 
 if __name__ == '__main__':
