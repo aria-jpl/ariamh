@@ -1758,7 +1758,19 @@ def main():
     md['dem_type'] = dem_type
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
-    md['tags'] = ['standard_product']
+
+    ### md['tags'] = ['standard_product']
+    # turn dataset_tag from a string to a list
+    tag_list0 = ctx['dataset_tag'].split(',')
+    tag_list = []
+    for str1 in tag_list0:
+      str2 = str1.strip()
+      if str2 != '':
+        str2 = str2.replace(' ', '_')
+        tag_list.append(str2)
+
+    md['tags'] = tag_list
+
     md['polarization']= match_pol.upper()
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
