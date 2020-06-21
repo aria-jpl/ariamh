@@ -14,9 +14,7 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 COPY . /home/ops/ariamh
 
 RUN set -ex \
-    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib \
-    && sudo /opt/conda/bin/conda create -n gis -c conda-forge python=3.7 gdal nco \
-    && sudo /opt/conda/bin/conda activate gis \
+    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib fiona \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     && sudo rm -rf /root/.cache \
     && sudo chown -R ops:ops /home/ops/ariamh \
