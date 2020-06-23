@@ -160,10 +160,11 @@ def get_track(info):
         h = info[id]
         fields = h['fields']['partial'][0]
 
-        if 'trackNumber' in fields['metadata']:
-            track = fields['metadata']['trackNumber']   
-        else:
+        try:
             track = fields['metadata']['track_number']
+        except KeyError:
+            track = fields['metadata']['trackNumber']
+
         tracks.setdefault(track, []).append(id)
     if len(tracks) != 1:
         raise RuntimeError("Failed to find SLCs for only 1 track.")
