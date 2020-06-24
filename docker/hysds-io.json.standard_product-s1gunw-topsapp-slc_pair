@@ -1,0 +1,77 @@
+{
+  "submission_type": "individual",
+  "label" : "TopsApp Interferogram",
+  "allowed_accounts": [ "ops" ],
+  "params" : [
+    { 
+      "name": "dataset_tag",
+      "from": "submitter",
+      "type": "text",
+      "default": "standard",
+      "placeholder": "A value to append to the dataset identifier"
+    },
+    { 
+      "name": "master_ids",
+      "from": "submitter",
+      "type": "text",
+      "placeholder": "space-delimited list of master SLC IDs, e.g. S1A_IW_SLC__1SDV_20161201T141616_20161201T141643_014187_016EBB_0B78"
+    },
+    { 
+      "name": "slave_ids",
+      "from": "submitter",
+      "type": "text",
+      "placeholder": "space-delimited list of slave SLC IDs, e.g. S1A_IW_SLC__1SDV_20161107T141549_20161107T141618_013837_0163EB_5CC8 S1A_IW_SLC__1SDV_20161107T141616_20161107T141644_013837_0163EB_63B0"
+    },
+    { 
+      "name": "subswaths",
+      "from": "submitter",
+      "type": "text",
+      "default": "1 2 3"
+      "placeholder": "space-delimited list of subswaths, e.g. 1 2 3"
+    },
+    { 
+      "name": "auto_bbox",
+      "from": "value",
+      "type": "boolean",
+      "value": "true"
+    },
+    { 
+      "name": "precise_orbit_only",
+      "from": "submitter",
+      "type": "boolean",
+      "default": "false"
+    },
+    { 
+      "name": "azimuth_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "11"
+    },
+    { 
+      "name": "range_looks",
+      "from": "submitter",
+      "type": "number",
+      "lambda": "lambda x: int(x)",
+      "default": "33"
+    },
+    { 
+      "name": "filter_strength",
+      "from": "submitter",
+      "type": "number",
+      "default": "0.5"
+    },
+    { 
+      "name": "query",
+      "from": "passthrough"
+    },
+    { 
+      "name": "name",
+      "from": "passthrough"
+    },
+    { 
+      "name": "username",
+      "from": "passthrough"
+    }
+  ]
+}
