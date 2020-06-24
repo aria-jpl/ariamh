@@ -1,6 +1,6 @@
 {
   "submission_type": "individual",
-  "label" : "TopsApp Interferogram",
+  "label" : "Standard Product S1-GUNW - TopsApp from SLC PAIRS",
   "allowed_accounts": [ "ops" ],
   "params" : [
     { 
