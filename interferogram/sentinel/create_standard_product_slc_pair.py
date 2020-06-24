@@ -8,6 +8,8 @@ from utils.UrlUtils import UrlUtils as UU
 from fetchOrbitES import fetch
 from datetime import datetime
 import ifg_utils as util
+from create_standard_product_s1 import create_interferogram
+
 
 # set logger and custom filter to handle being run from sciflo
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -379,6 +381,9 @@ def initiate_standard_product_job(context_file):
     master_platform = util.get_unique_metadata_from_md_array(master_md, 'platform')
     slave_platform = util.get_unique_metadata_from_md_array(slave_md, 'platform')
 
+    master_dem_type = util.get_dem_type(master_md)
+    slave_dem_type = util.get_dem_type(slave_md)
+
     ref_scence = master_md
     if len(master_ids)==1:
 	ref_scence = master_md
@@ -462,119 +467,25 @@ def initiate_standard_product_job(context_file):
     input_metadata["master_scenes"] = master_ids
     input_metadata["slave_scenes"] = slave_ids
     input_metadata["union_geojson"] = master_union_geojson
-    input_metadata["direction"] = 
+    input_metadata["direction"] = satelite_orientation
     input_metadata["master_zip_file"] = master_urls
     input_metadata["slave_zip_file"]  = slave_urls
     input_metadata["master_orbit_file"] = master_orbit_url
     input_metadata["slave_orbit_file"] = slave_orbit_url
     input_metadata["track_number"] = track
-    input_metadata['dem_type'] = 
-    input_metadata['full_id_hash'] = 
-    input_metadata['slc_slave_dt'] =
-    input_metadata['slc_master_dt'] =    
+    input_metadata['dem_type'] = master_dem_type
+    input_metadata['full_id_hash'] = ifg_hash
+    input_metadata['slc_slave_dt'] = ifg_slave_dt
+    input_metadata['slc_master_dt'] = ifg_master_dt
     input_metadata['azimuth_looks'] = azimuth_looks
     input_metadata['range_looks'] = range_looks
     input_metadata['filter_strength'] = filter_strength
     input_metadata[precise_orbit_only'] = precise_orbit_only
-    input_metadata['priority'] = 
+    input_metadata['priority'] = 5
+    input_metadata['subswaths'] = subswaths
 
-
-
-'''
-def initiate_sp2(context_file):
-
-    # get context
-    with open(context_file) as f:
-        context = json.load(f)
-
-    ifg_ids = []
-    master_zip_urls = []
-    master_orbit_urls = []
-    slave_zip_urls = []
-    slave_orbit_urls = []
-    swathnums = [1, 2, 3]
-    bboxes = []
-    auto_bboxes = []
-    orbit_dict = {}
-    dem_type = "SRTM+v3"
-    master_orbit_number = None
-    slave_orbit_number = None
-    #bboxes.append(bbox)
-    #auto_bboxes.append(auto_bbox)
-    projects.append(context["project"])
-
-
-    #master_slcs = context["master_slc"]
-    #slave_slcs = context["slave_slcs"]
-    
-    master_slcs = ["acquisition-S1A_IW_SLC__1SDV_20180807T135955_20180807T140022_023141_02837E_DA79"]
-    slave_slcs =["acquisition-S1A_IW_SLC__1SDV_20180714T140019_20180714T140046_022791_027880_AFD3", "acquisition-S1A_IW_SLC__1SDV_20180714T135954_20180714T140021_022791_027880_D224", "acquisition-S1A_IW_SLC__1SDV_20180714T135929_20180714T135956_022791_027880_9FCA"]
-
-    #print(master_slcs)
-
-    print("Processing Master")
-    for slc_id in master_slcs:
-  	result = query_grq(slc_id)[0]['_source']
-	track = result['metadata']['track_number']
-	master_orbit_number = result['metadata']['orbitNumber']
-        zip_url = get_prod_url(result['urls'], result['metadata']['archive_filename'])
-	orbit_url = get_orbit_url (slc_id, track)
-        dem_type = get_dem_type(result)
-        print("%s : %s : %s : %s : %s : %s" %(master_orbit_number, slc_id, track, zip_url, orbit_url, dem_type))
-	master_zip_urls.append(zip_url)
-	master_orbit_urls.append(orbit_url)
-    
-
-    print("Processing Slaves")
-    for slc_id in slave_slcs:
-	result = query_grq(slc_id)[0]['_source']
-        track = result['metadata']['track_number']
-	slave_orbit_number = result['metadata']['orbitNumber']
-        zip_url = get_prod_url(result['urls'], result['metadata']['archive_filename'])
-        orbit_url = get_orbit_url (slc_id, track)
-        dem_type = get_dem_type(result)
-        print("%s : %s : %s : %s : %s : %s" %(slave_orbit_number, slc_id, track, zip_url, orbit_url, dem_type))
-        slave_zip_urls.append(zip_url)
-        slave_orbit_urls.append(orbit_url)
-
-
-    print("\n\n\n Master Zips:")
-    print_list(master_zip_urls)
-    print("\nSlave Zip:")
-    print_list(slave_zip_urls)
-    print("\nMaster Orbit:")
-    print_list(master_orbit_urls)
-    print("\nSlave Orbit:")
-    print_list(slave_orbit_urls)
-
-    print("\n\n")
-    # get orbit type
-    orbit_type = 'poeorb'
-    for o in master_orbit_urls+ slave_orbit_urls:
-	print(o)
-	if RESORB_RE.search(o):
-	    orbit_type = 'resorb'
-     	    break
-
-    print(orbit_type)
-    if orbit_type == 'resorb':
-	logger.info("Precise orbit required. Filtering job configured with restituted orbit.")
-    #else:
-	swathnums=[1,2,3]
-	ifg_hash = hashlib.md5(json.dumps([
-                                    IFG_ID_TMPL,
-                                    master_zip_urls[-1],
-                                    master_orbit_urls[-1],
-                                    slave_zip_urls[-1],
-                                    slave_orbit_urls[-1],
-                                    #bboxes[-1],
-                                    #auto_bboxes[-1],
-                                    projects[-1],
-                                    dem_type
-                                ])).hexdigest()
-	ifg_id = IFG_ID_TMPL.format('M', len(master_slcs), len(slave_slcs), track, master_orbit_number, slave_orbit_number, swathnums, orbit_type, ifg_hash[0:4])
-        
-    return context['project'], True, ifg_id, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, context['bbox'], context['wuid'], context['job_num']
+    context["input_metadata"] = input_metadata
+    create_interferogram(context)
 
 
 def get_prod_url (urls, archive_file):

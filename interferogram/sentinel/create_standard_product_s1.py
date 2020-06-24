@@ -793,11 +793,6 @@ def call_noerr(cmd):
 def main():
     """HySDS PGE wrapper for TopsInSAR interferogram generation."""
 
-    # save cwd (working directory)
-    complete_start_time=datetime.now()
-    logger.info("TopsApp End Time : {}".format(complete_start_time))
-    cwd = os.getcwd()
-
     # get context
     ctx_file = os.path.abspath('_context.json')
     if not os.path.exists(ctx_file):
@@ -805,9 +800,17 @@ def main():
     with open(ctx_file) as f:
         ctx = json.load(f)
 
-
     #logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
+    create_interferogram(ctx):
+
+def create_interferogram(ctx):
+
+
+    # save cwd (working directory)
+    complete_start_time=datetime.now()
+    logger.info("TopsApp End Time : {}".format(complete_start_time))
+    cwd = os.getcwd()
 
     input_metadata = ctx['input_metadata']
     if type(input_metadata) is list:
