@@ -1673,19 +1673,53 @@ def update_doc(body=None, index=None, doc_type=None, doc_id=None):
 def get_track(info):
     """Get track number."""
 
+    track = None
     tracks = {}
+
     for id in info:
         print(id)
         h = info[id]
         fields = h["_source"]
-        track = fields['metadata']['track_number']
+
+        try:
+            track = fields['metadata']['track_number']
+        except KeyError:
+            track = fields['metadata']['trackNumber']
         print(track)
         tracks.setdefault(track, []).append(id)
     if len(tracks) != 1:
         print(tracks)
-        
         raise RuntimeError("Failed to find SLCs for only 1 track : %s" %tracks)
     return track
+
+def get_unique_metadata_from_md_array(md_array, param):
+    """Get Direction."""
+
+    param_values = {}
+    param_value = None
+    for id in md_array:
+        param_value = md_array['id']['_source']['metadata'][param]
+        param_values.setdefault(directions, []).append(id)
+    if len(param_values) != 1:
+        print(param_values)
+        raise RuntimeError("Failed to find SLCs for only 1 %s : %s" %(param, param_values))
+    return param_value
+
+
+ def get_union_geojson_from_md_array(md_array):
+    """Get track number."""
+
+    geoms = list()
+    union = None
+    
+    for id in md_array:
+        h = md_array[id]
+        fields = h["_source"]
+        geom = ogr.CreateGeometryFromJson(json.dumps(fields['location']))
+        geoms.append(geom)
+        union = geom if union is None else union.Union(geom)
+    union_geojson =  json.loads(union.ExportToJson())
+    return union_geojson
 
 def get_start_end_time(info):
     starttimes = list()

@@ -297,7 +297,10 @@ def get_track(info):
     for id in info:
         h = info[id]
         fields = h["_source"]
-        track = fields['metadata']['track_number']
+        try:
+            track = fields['metadata']['track_number']
+        except KeyError:
+            track = fields['metadata']['trackNumber']
         tracks.setdefault(track, []).append(id)
     if len(tracks) != 1:
         raise RuntimeError("Failed to find SLCs for only 1 track.")
@@ -319,7 +322,6 @@ def initiate_standard_product_job(context_file):
     filter_strength = float(context.get('filter_strength', 0.5))
     precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
 
-    union_geojson = input_metadata["union_geojson"]
     direction = input_metadata["direction"]
     platform = input_metadata["platform"]
     subswaths = [1, 2, 3]
@@ -367,6 +369,15 @@ def initiate_standard_product_job(context_file):
     logger.info("slave_track: {}".format(slave_track))
     if track != slave_track:
         raise RuntimeError("Slave track {} doesn't match master track {}.".format(slave_track, track))
+
+    master_union_geojson = util.get_union_geojson_from_md_array(master_md)
+    slave_union_geojson = util.get_union_geojson_from_md_array(slave_md)
+
+    master_direction = util.get_unique_metadata_from_md_array(master_md, 'direction')
+    slave_direction = util.get_unique_metadata_from_md_array(slave_md, 'direction')
+
+    master_platform = util.get_unique_metadata_from_md_array(master_md, 'platform')
+    slave_platform = util.get_unique_metadata_from_md_array(slave_md, 'platform')
 
     ref_scence = master_md
     if len(master_ids)==1:
@@ -431,59 +442,43 @@ def initiate_standard_product_job(context_file):
     auto_bbox = True
     id_tmpl = IFG_ID_TMPL
 
-
+    direction = master_direction
     satelite_orientation = "D"
     if direction.lower()=="asc":
         satelite_orientation = "A"
     satelite_look_direction = "R"
         
 
-    ifg_hash = hashlib.md5(json.dumps([
-        id_tmpl,
-        stitched_args[-1],
-        master_zip_urls[-1],
-        master_orbit_urls[-1],
-        slave_zip_urls[-1],
-        slave_orbit_urls[-1],
-        #swathnums[-1],
-        #bboxes[-1],
-        #auto_bboxes[-1],
-        projects[-1],
-        #azimuth_looks,
-        track,
-        filter_strength,master_orbit_url
-	dem_type
-    ])).hexdigest()
-    ifg_hashes.append(ifg_hash[0:4])
+    ifg_hash = util.get_ifg_hash(master_ids,  slave_ids)
 
     ifg_ids.append(id_tmpl.format('M', len(master_ids), len(slave_ids),
                                       track, ifg_master_dt,
                                       ifg_slave_dt, orbit_type, ifg_hash[0:4]))
                             
 
-    logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types, ifg_master_dts, ifg_slave_dts))
-   
-
 
     input_metadata = {}
     input_metadata["id"] = ifg_ids[0]
     input_metadata["master_scenes"] = master_ids
     input_metadata["slave_scenes"] = slave_ids
-    input_metadata["union_geojson"] = 
+    input_metadata["union_geojson"] = master_union_geojson
     input_metadata["direction"] = 
     input_metadata["master_zip_file"] = master_urls
     input_metadata["slave_zip_file"]  = slave_urls
     input_metadata["master_orbit_file"] = master_orbit_url
     input_metadata["slave_orbit_file"] = slave_orbit_url
-    input_metadata["track_number"] = 
-    
+    input_metadata["track_number"] = track
+    input_metadata['dem_type'] = 
+    input_metadata['full_id_hash'] = 
+    input_metadata['slc_slave_dt'] =
+    input_metadata['slc_master_dt'] =    
+    input_metadata['azimuth_looks'] = azimuth_looks
+    input_metadata['range_looks'] = range_looks
+    input_metadata['filter_strength'] = filter_strength
+    input_metadata[precise_orbit_only'] = precise_orbit_only
+    input_metadata['priority'] = 
 
 
-
-
-    return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
-             master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
-             bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types, ifg_master_dts, ifg_slave_dts)
 
 '''
 def initiate_sp2(context_file):
