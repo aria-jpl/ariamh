@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from utils.UrlUtils import UrlUtils as UU
 from fetchOrbitES import fetch
 from datetime import datetime
+import ifg_utils as util
 
 # set logger and custom filter to handle being run from sciflo
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -312,47 +313,15 @@ def initiate_standard_product_job(context_file):
     project = "ARIA"
     master_ids = [i.strip() for i in context['master_ids'].split()]
     slave_ids = [i.strip() for i in context['slave_ids'].split()]
-    subswaths = [int(i.strip()) for i in context['subswaths'].split()]
-    azimuth_looks = int(context['azimuth_looks'])
-    range_looks = int(context['range_looks'])
-    filter_strength = float(context['filter_strength'])
+    subswaths = [int(i.strip()) for i in context.get('subswaths', '1 2 3').split()]
+    azimuth_looks = int(context.get('azimuth_looks', 7)
+    range_looks = int(context.get('range_looks', 19))
+    filter_strength = float(context.get('filter_strength', 0.5))
     precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
 
-    # log inputs
-    logger.info("project: {}".format(project))
-    logger.info("master_ids: {}".format(master_ids))
-    logger.info("slave_ids: {}".format(slave_ids))
-    logger.info("subswaths: {}".format(subswaths))
-    logger.info("azimuth_looks: {}".format(azimuth_looks))
-    logger.info("range_looks: {}".format(range_looks))
-    logger.info("filter_strength: {}".format(filter_strength))
-    logger.info("precise_orbit_only: {}".format(precise_orbit_only))
-
-    master_scenes = input_metadata["master_scenes"]
-    slave_scenes = input_metadata["slave_scenes"]
     union_geojson = input_metadata["union_geojson"]
     direction = input_metadata["direction"]
     platform = input_metadata["platform"]
-    subswaths = [1, 2, 3] #context['subswaths']
-    
-    azimuth_looks = 7
-    if 'azimuth_looks' in input_metadata:
-	azimuth_looks = int(input_metadata['azimuth_looks'])
-
-    range_looks = 19
-    if 'range_looks' in input_metadata:
-        range_looks = int(input_metadata['range_looks'])
-
-    filter_strength = 0.5
-    if 'filter_strength' in input_metadata:
-        filter_strength = float(input_metadata['filter_strength'])
-
-    precise_orbit_only = True
-    if 'precise_orbit_only' in input_metadata:
-	precise_orbit_only = get_bool_param(input_metadata, 'precise_orbit_only')
-
-    job_priority = int(input_metadata['priority'])
-
     subswaths = [1, 2, 3]
 
 
@@ -456,58 +425,12 @@ def initiate_standard_product_job(context_file):
     # get ifg start and end dates
     ifg_master_dt, ifg_slave_dt = get_ifg_dates(master_ids, slave_ids)
 
-    #submit jobs
-    projects = []
-    stitched_args = []
-    ifg_ids = []
-    master_zip_urls = []
-    master_orbit_urls = []
-    slave_zip_urls = []
-    slave_orbit_urls = []
-    swathnums = []
-    bboxes = []
-    auto_bboxes = []
-    dem_types = []
-    job_priorities =[]
-    orbit_dict = {}
-    master_scenes = []
-    slave_scenes = []
-    union_geojsons = []
-    union_geojsons.append(union_geojson)
-    west_lats = []
-    west_lats.append(west_lat)   
-    ifg_hashes = [] 
-    directions = []
-    directions.append(direction)
-    platforms = []
-    platforms.append(platform)
-    tracks = []
-    tracks.append(track)
-    orbit_types = []
-    orbit_types.append(orbit_type)
 
     # generate job configs
     bbox = [-90., 90., -180., 180.]
     auto_bbox = True
     id_tmpl = IFG_ID_TMPL
 
-    stitched_args.append(False if len(master_ids) == 1 or len(slave_ids) == 1 else True)
-    master_zip_urls.append(master_urls)
-    master_orbit_urls.append(master_orbit_url)
-    slave_zip_urls.append(slave_urls)
-    slave_orbit_urls.append(slave_orbit_url)
-    swathnums.append(subswaths)
-    bboxes.append(bbox)
-    auto_bboxes.append(auto_bbox)
-    projects.append(project)
-    dem_types.append(dem_type)
-    job_priorities.append(job_priority)
-    master_scenes.append(master_ids)
-    slave_scenes.append(slave_ids)
-    ifg_master_dts = []
-    ifg_master_dts.append(ifg_master_dt.strftime("%Y%m%d"))
-    ifg_slave_dts = []
-    ifg_slave_dts.append(ifg_slave_dt.strftime("%Y%m%d"))
 
     satelite_orientation = "D"
     if direction.lower()=="asc":
@@ -528,7 +451,7 @@ def initiate_standard_product_job(context_file):
         projects[-1],
         #azimuth_looks,
         track,
-        filter_strength,
+        filter_strength,master_orbit_url
 	dem_type
     ])).hexdigest()
     ifg_hashes.append(ifg_hash[0:4])
@@ -539,6 +462,25 @@ def initiate_standard_product_job(context_file):
                             
 
     logger.info("\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" %(projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls, master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums, bboxes, dem_types, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types, ifg_master_dts, ifg_slave_dts))
+   
+
+
+    input_metadata = {}
+    input_metadata["id"] = ifg_ids[0]
+    input_metadata["master_scenes"] = master_ids
+    input_metadata["slave_scenes"] = slave_ids
+    input_metadata["union_geojson"] = 
+    input_metadata["direction"] = 
+    input_metadata["master_zip_file"] = master_urls
+    input_metadata["slave_zip_file"]  = slave_urls
+    input_metadata["master_orbit_file"] = master_orbit_url
+    input_metadata["slave_orbit_file"] = slave_orbit_url
+    input_metadata["track_number"] = 
+    
+
+
+
+
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
              bboxes, dem_types, job_priorities, master_scenes,slave_scenes, union_geojsons, ifg_hashes, platforms, directions, west_lats, tracks, orbit_types, ifg_master_dts, ifg_slave_dts)
