@@ -9,7 +9,7 @@ from fetchOrbitES import fetch
 from datetime import datetime
 import ifg_utils as util
 from create_standard_product_s1 import create_interferogram
-
+from dateutil import parser
 
 # set logger and custom filter to handle being run from sciflo
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -33,7 +33,8 @@ SLC_RE = re.compile(r'(?P<mission>S1\w)_IW_SLC__.*?' +
                     r'_(?P<end_year>\d{4})(?P<end_month>\d{2})(?P<end_day>\d{2})' +
                     r'T(?P<end_hour>\d{2})(?P<end_min>\d{2})(?P<end_sec>\d{2})_.*$')
 
-IFG_ID_TMPL = "S1-IFG_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s123-{}-{}-standard_product"
+IFG_ID_TMPL = "S1-GUNW-ifg-R{}-M{:d}S{:d}-TN{:03d}-{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}-{}-{}"
+#IFG_ID_TMPL = "S1-IFG_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s123-{}-{}-standard_product"
 RSP_ID_TMPL = "S1-SLCP_R{}_M{:d}S{:d}_TN{:03d}_{:%Y%m%dT%H%M%S}-{:%Y%m%dT%H%M%S}_s{}-{}-{}"
 
 
@@ -97,8 +98,8 @@ def query_grq( doc_id):
 def get_dem_type(slc_source):
     dem_type = "SRTM+v3"
     if slc_source['city'] is not None and len(slc_source['city'])>0:
-	if slc_source['city'][0]['country_name'] is not None and slc_source['city'][0]['country_name'].lower() == "united states":
-	    dem_type="Ned1"
+        if slc_source['city'][0]['country_name'] is not None and slc_source['city'][0]['country_name'].lower() == "united states":
+            dem_type="Ned1"
     return dem_type
 '''
 
@@ -109,27 +110,27 @@ def get_dem_type(info):
 
     dems = {}
     for id in info:
-	dem_type = "SRTM+v3"
+        dem_type = "SRTM+v3"
         h = info[id]
         fields = h["_source"]
-	try:
-	    if 'city' in fields:
-	        if fields['city'][0]['country_name'] is not None and fields['city'][0]['country_name'].lower() == "united states":
+        try:
+            if 'city' in fields:
+                if fields['city'][0]['country_name'] is not None and fields['city'][0]['country_name'].lower() == "united states":
                     dem_type="Ned1"
                 dems.setdefault(dem_type, []).append(id)
-	except:
-	    dem_type = "SRTM+v3"
+        except:
+            dem_type = "SRTM+v3"
 
     if len(dems) != 1:
-	logger.info("There are more than one type of dem, so selecting SRTM+v3")
-	dem_type = "SRTM+v3"
+        logger.info("There are more than one type of dem, so selecting SRTM+v3")
+        dem_type = "SRTM+v3"
     return dem_type
 
 
 
 def print_list(l):
     for f in l:
-	print("\n%s"%f)
+        print("\n%s"%f)
 
 def get_metadata(id, rest_url, url):
     """Get SLC metadata."""
@@ -319,20 +320,18 @@ def initiate_standard_product_job(context_file):
     master_ids = [i.strip() for i in context['master_ids'].split()]
     slave_ids = [i.strip() for i in context['slave_ids'].split()]
     subswaths = [int(i.strip()) for i in context.get('subswaths', '1 2 3').split()]
-    azimuth_looks = int(context.get('azimuth_looks', 7)
+    azimuth_looks = int(context.get('azimuth_looks', 7))
     range_looks = int(context.get('range_looks', 19))
     filter_strength = float(context.get('filter_strength', 0.5))
     precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
 
-    direction = input_metadata["direction"]
-    platform = input_metadata["platform"]
+    #direction = input_metadata["direction"]
+    #platform = input_metadata["platform"]
     subswaths = [1, 2, 3]
 
 
     # log inputs
     logger.info("project: {}".format(project))
-    logger.info("master_scenes: {}".format(master_scenes))
-    logger.info("slave_scenes: {}".format(slave_scenes))
     logger.info("master_ids: {}".format(master_ids))
     logger.info("slave_ids: {}".format(slave_ids))
     logger.info("subswaths: {}".format(subswaths))
@@ -340,8 +339,6 @@ def initiate_standard_product_job(context_file):
     logger.info("range_looks: {}".format(range_looks))
     logger.info("filter_strength: {}".format(filter_strength))
     logger.info("precise_orbit_only: {}".format(precise_orbit_only))
-    logger.info("direction : {}".format(direction))
-    logger.info("platform : {}".format(platform))
 
     # query docs
     uu = UU()
@@ -386,11 +383,11 @@ def initiate_standard_product_job(context_file):
 
     ref_scence = master_md
     if len(master_ids)==1:
-	ref_scence = master_md
+        ref_scence = master_md
     elif len(slave_ids)==1:
-	ref_scence = slave_md
+        ref_scence = slave_md
     elif len(master_ids) > 1 and  len(slave_ids)>1:
-	raise RuntimeError("Single Scene Reference Required.")
+        raise RuntimeError("Single Scene Reference Required.")
  
     # get urls (prefer s3)
     master_urls = get_urls(master_md) 
@@ -406,7 +403,7 @@ def initiate_standard_product_job(context_file):
     slave_dem_type = get_dem_type(slave_md)
     logger.info("slave_dem_type: {}".format(slave_dem_type))
     if dem_type != slave_dem_type:
-	dem_type = "SRTM+v3"
+        dem_type = "SRTM+v3"
 
 
     # get orbits
@@ -433,10 +430,11 @@ def initiate_standard_product_job(context_file):
     x = polygon.bounds
     west_lat1 = convert_number(x[1])
     west_lat2 = convert_number(x[3])
-    '''
+    
     minlat, maxlat = get_minmax(union_geojson)
     west_lat= "{}_{}".format(convert_number(minlat), convert_number(maxlat))
     logger.info("west_latitude : {}".format(west_lat))
+    '''
 
     # get ifg start and end dates
     ifg_master_dt, ifg_slave_dt = get_ifg_dates(master_ids, slave_ids)
@@ -454,33 +452,35 @@ def initiate_standard_product_job(context_file):
     satelite_look_direction = "R"
         
 
+    
     ifg_hash = util.get_ifg_hash(master_ids,  slave_ids)
 
-    ifg_ids.append(id_tmpl.format('M', len(master_ids), len(slave_ids),
-                                      track, ifg_master_dt,
-                                      ifg_slave_dt, orbit_type, ifg_hash[0:4]))
-                            
-
-
+    ifg_id = IFG_ID_TMPL.format('M', len(master_ids), len(slave_ids), track, parser.parse(ifg_master_dt.strftime('%Y%m%dT%H%M%S')), parser.parse(ifg_slave_dt.strftime('%Y%m%dT%H%M%S')), orbit_type, ifg_hash[0:4])
     input_metadata = {}
-    input_metadata["id"] = ifg_ids[0]
+    input_metadata["master_zip_file"] = [os.path.basename(i) for i in master_urls]
+    input_metadata["master_orbit_file"] = os.path.basename(master_orbit_url)
+    input_metadata["slave_zip_file"] = [os.path.basename(i) for i in slave_urls]
+    input_metadata["slave_orbit_file"] = os.path.basename(slave_orbit_url)
+    input_metadata['project'] = 'aria'
+    input_metadata["id"] = ifg_id
     input_metadata["master_scenes"] = master_ids
     input_metadata["slave_scenes"] = slave_ids
     input_metadata["union_geojson"] = master_union_geojson
     input_metadata["direction"] = satelite_orientation
-    input_metadata["master_zip_file"] = master_urls
-    input_metadata["slave_zip_file"]  = slave_urls
-    input_metadata["master_orbit_file"] = master_orbit_url
-    input_metadata["slave_orbit_file"] = slave_orbit_url
+    input_metadata['platform'] = master_platform
+    input_metadata["master_zip_url"] = master_urls
+    input_metadata["slave_zip_url"]  = slave_urls
+    input_metadata["master_orbit_url"] = master_orbit_url
+    input_metadata["slave_orbit_url"] = slave_orbit_url
     input_metadata["track_number"] = track
     input_metadata['dem_type'] = master_dem_type
     input_metadata['full_id_hash'] = ifg_hash
-    input_metadata['slc_slave_dt'] = ifg_slave_dt
-    input_metadata['slc_master_dt'] = ifg_master_dt
+    input_metadata['slc_slave_dt'] = ifg_slave_dt.strftime('%Y%m%dT%H%M%S')
+    input_metadata['slc_master_dt'] = ifg_master_dt.strftime('%Y%m%dT%H%M%S')
     input_metadata['azimuth_looks'] = azimuth_looks
     input_metadata['range_looks'] = range_looks
     input_metadata['filter_strength'] = filter_strength
-    input_metadata[precise_orbit_only'] = precise_orbit_only
+    input_metadata['precise_orbit_only'] = precise_orbit_only
     input_metadata['priority'] = 5
     input_metadata['subswaths'] = subswaths
 
@@ -525,15 +525,15 @@ def get_orbit_url (slc_id, track):
                               int(match.group('end_sec')))
 
         #print("slc_end_dt : %s" %slc_end_dt)
-	dt_orb = "%s_%s" % (slc_start_dt.isoformat(), slc_start_dt.isoformat())
+        dt_orb = "%s_%s" % (slc_start_dt.isoformat(), slc_start_dt.isoformat())
 
         
- 	if dt_orb not in orbit_dict:
+        if dt_orb not in orbit_dict:
             match = SLC_RE.search(slc_id)
             if not match:
                 raise RuntimeError("Failed to recognize SLC ID %s." % slc_id)
             mission = match.group('mission')
-     	    print(mission)
+            print(mission)
             orbit_url = fetch("%s.0" % slc_start_dt.isoformat(),
                                            "%s.0" % slc_end_dt.isoformat(),
                                            mission=mission, dry_run=True)
@@ -546,14 +546,13 @@ def get_orbit_url (slc_id, track):
                                    slc_start_dt, slc_end_dt))
 
     except Exception as e:
-	print(str(e))
+        print(str(e))
 
     return orbit_url
-'''
 
 
 def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master_zip_url, master_orbit_url, 
-		   slave_zip_url, slave_orbit_url, swathnums, bbox, dem_type, job_priority, master_scenes, slave_scenes, union_geojson, 
+                   slave_zip_url, slave_orbit_url, swathnums, bbox, dem_type, job_priority, master_scenes, slave_scenes, union_geojson, 
                    ifg_hash, platform, direction, west_lat, track, orbit_type, master_ifg_dt, slave_ifg_dt, wuid=None, job_num=None):
     """Map function for create standard_product interferogram job json creation."""
 
@@ -612,13 +611,13 @@ def create_standard_product_job(project, stitched_arg, auto_bbox, ifg_id, master
             "slave_orbit_url": slave_orbit_url,
             "slave_orbit_file": os.path.basename(slave_orbit_url),
             "swathnum": [1,2,3],
-	    "azimuth_looks": 7,
-  	    "range_looks" : 19,
-	    "singlesceneOnly": True,
- 	    "covth": 0.99,
-	    "dem_type": dem_type,
-	    "filter_strength": 0.5,
-	    "job_priority": job_priority,
+            "azimuth_looks": 7,
+            "range_looks" : 19,
+            "singlesceneOnly": True,
+            "covth": 0.99,
+            "dem_type": dem_type,
+            "filter_strength": 0.5,
+            "job_priority": job_priority,
             "bbox": bbox,
             "auto_bbox": auto_bbox,
             "slave_scenes" : slave_scenes,

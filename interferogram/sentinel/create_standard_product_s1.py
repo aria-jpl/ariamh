@@ -802,7 +802,7 @@ def main():
 
     #logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
-    create_interferogram(ctx):
+    create_interferogram(ctx)
 
 def create_interferogram(ctx):
 
@@ -877,7 +877,7 @@ def create_interferogram(ctx):
             logger.info("Added %s key to ctx" %k)
         else:
             logger.info("key %s already in ctx with value %s and input_metadata value is %s" %(k, ctx[k], input_metadata[k]))
-    logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
+    #logger.info("ctx: {}".format(json.dumps(ctx, indent=2)))
 
     azimuth_looks = 7
     if 'azimuth_looks' in input_metadata:
@@ -979,7 +979,7 @@ def create_interferogram(ctx):
     logger.info("Using filter_strength of %f" % ctx['filter_strength'])
 
     logger.info("\nContext \n")
-    logger.info(json.dumps(ctx, indent=4, sort_keys=True))
+    #logger.info(json.dumps(ctx, indent=4, sort_keys=True))
 
 
     #Check if ifg_name exists

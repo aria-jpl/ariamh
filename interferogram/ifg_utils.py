@@ -19,8 +19,8 @@ import dateutil.parser
 from datetime import datetime, timedelta
 #import groundTrack
 from osgeo import ogr, osr
-import elasticsearch
-import lightweight_water_mask
+#import elasticsearch
+#import lightweight_water_mask
 import pytz
 from dateutil import parser
 import collections, operator
@@ -110,8 +110,8 @@ class ACQ(object):
         self.sensingStart = sensingStart
         self.sensingStop = sensingStop
         self.ingestiondate = ingestiondate
-        self.covers_only_water = lightweight_water_mask.covers_only_water(location)
-        self.covers_only_land = lightweight_water_mask.covers_only_land(location)
+        self.covers_only_water = False #lightweight_water_mask.covers_only_water(location)
+        self.covers_only_land = False #lightweight_water_mask.covers_only_land(location)
         
         #print("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s" %(acq_id, download_url, tracknumber, location, starttime, endtime, direction, orbitnumber, identifier, pv))
 
@@ -1378,7 +1378,7 @@ def get_intersection_area(cord1, cord2):
     print("\nget_intersection_area between %s and %s" %(cord1, cord2))
     p3 =0
 
-    
+    '''    
     p1=Polygon(cord1)
     p2=Polygon(cord2)
     p1_land_area = lightweight_water_mask.get_land_area(p1)
@@ -1395,6 +1395,7 @@ def get_intersection_area(cord1, cord2):
         print("\n%s intersects %s with area : %s\n" %(p1, p2, p3))
         p3 = intersection_land_area/p1_land_area
         print("updated_land_area : %s" %p3)
+    '''
     return p3
 
 def is_within(geojson1, geojson2):
@@ -1695,18 +1696,14 @@ def get_track(info):
 def get_unique_metadata_from_md_array(md_array, param):
     """Get Direction."""
 
-    param_values = {}
     param_value = None
     for id in md_array:
-        param_value = md_array['id']['_source']['metadata'][param]
-        param_values.setdefault(directions, []).append(id)
-    if len(param_values) != 1:
-        print(param_values)
-        raise RuntimeError("Failed to find SLCs for only 1 %s : %s" %(param, param_values))
+        print(id)
+        param_value = md_array[id]['_source']['metadata'][param]
     return param_value
 
 
- def get_union_geojson_from_md_array(md_array):
+def get_union_geojson_from_md_array(md_array):
     """Get track number."""
 
     geoms = list()
