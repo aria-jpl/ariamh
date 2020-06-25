@@ -200,8 +200,15 @@ def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
     return result
 
 def fileContainsMsg(file_name, msg):
-    with open(file_name, 'r') as f:
-        datafile = f.readlines()
+    try:
+
+        with open(file_name, 'r') as f:
+            datafile = f.readlines()
+    except:
+        file_name = "create_standard_product_slc_pair.log"
+        with open(file_name, 'r') as f:
+            datafile = f.readlines()
+
     for line in datafile:
         if msg in line:
             # found = True # Not necessary
