@@ -10,6 +10,7 @@ from datetime import datetime
 import ifg_utils as util
 from create_standard_product_s1 import create_interferogram
 from dateutil import parser
+import osaka.main
 
 # set logger and custom filter to handle being run from sciflo
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
@@ -241,6 +242,15 @@ def convert_number(x):
     return data
 
 
+def localize_s3_file_osaka(s3_location, dest):
+    logger = utils.get_logger(__file__)
+    s3_location_updated = s3_location.replace("s3://", "s3://s3-us-west-2.amazonaws.com/")
+    filename = os.path.basename(s3_location)
+    osaka.main.get(s3_location_updated, ".")
+    cmd = "mv -f %s %s" %(filename, dest)
+    logger.info(cmd)
+    check_call(cmd, shell=True)
+
 def get_minmax(geojson):
     '''returns the minmax tuple of a geojson'''
     lats = [x[1] for x in geojson['coordinates'][0]]
@@ -309,11 +319,17 @@ def get_track(info):
         raise RuntimeError("Failed to find SLCs for only 1 track.")
     return track
 
+def localize_files(urls, dest):
+    for url in urls:
+        localize_s3_file_osaka(url.strip(), dest)
+
 def initiate_standard_product_job(context_file):
 
     # get context
     with open(context_file) as f:
         context = json.load(f)
+
+    wd = os.getcwd()
 
     # get args
     project = "ARIA"
@@ -451,7 +467,11 @@ def initiate_standard_product_job(context_file):
         satelite_orientation = "A"
     satelite_look_direction = "R"
         
+    localize_files(master_urls, wd)
+    localize_files(slave_urls, wd)
 
+    localize_files([master_orbit_url], wd)
+    localize_files([slave_orbit_url], wd)
     
     ifg_hash = util.get_ifg_hash(master_ids,  slave_ids)
 
