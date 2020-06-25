@@ -243,13 +243,14 @@ def convert_number(x):
 
 
 def localize_s3_file_osaka(s3_location, dest):
-    s3_location_updated = s3_location.replace("s3://", "s3://s3-us-west-2.amazonaws.com/")
+    #s3_location_updated = s3_location.replace("s3://", "s3://s3-us-west-2.amazonaws.com/")
     filename = os.path.basename(s3_location)
-    osaka.main.get(s3_location_updated, ".")
+    osaka.main.get(s3_location, dest)
+    '''
     cmd = "mv -f %s %s" %(filename, dest)
     logger.info(cmd)
     check_call(cmd, shell=True)
-
+    '''
 def get_minmax(geojson):
     '''returns the minmax tuple of a geojson'''
     lats = [x[1] for x in geojson['coordinates'][0]]
