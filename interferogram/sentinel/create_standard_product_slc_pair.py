@@ -243,7 +243,6 @@ def convert_number(x):
 
 
 def localize_s3_file_osaka(s3_location, dest):
-    logger = utils.get_logger(__file__)
     s3_location_updated = s3_location.replace("s3://", "s3://s3-us-west-2.amazonaws.com/")
     filename = os.path.basename(s3_location)
     osaka.main.get(s3_location_updated, ".")
