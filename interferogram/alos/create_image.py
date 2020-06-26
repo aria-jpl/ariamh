@@ -28,16 +28,21 @@ BASE_PATH = os.path.dirname(__file__)
 
 
 def main():
+
+    id = "ALOS2-GUNW-D-R-153-scansar-20150412_20150301-182710-19999N_15000N-PP-0a17-v1_0"
+    prod_dir = id
+
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (
-        'merged/topophase.cor',
-        'merged/topophase.flat',
-        'merged/filt_topophase.flat',
-        'merged/filt_topophase.unw',
-        'merged/filt_topophase.unw.conncomp',
-        'merged/phsig.cor',
-        'merged/los.rdr',
-        'merged/dem.crop',
+        #'insar/topophase.cor',
+        #'insar/topophase.flat',
+        #'insar/filt_topophase.flat',
+        glob.glob('insar/filt_*2-*_*rlks_*alks.unw')[0],
+        glob.glob('insar/filt_*2-*_*rlks_*alks.unw.conncomp')[0],
+        glob.glob('insar/filt_*2-*_*rlks_*alks.cor')[0],
+        glob.glob('insar/filt_*2-*_*rlks_*alks.los')[0],
+        #'insar/los.rdr',
+        #'insar/dem.crop',
     )
     for i in raster_prods:
         # radar-coded products
@@ -54,21 +59,19 @@ def main():
         gdal_hdr = "{}.hdr".format(j)
         gdal_vrt = "{}.vrt".format(j)
 
-    # save other files to product directory
-    shutil.copyfile("_context.json", os.path.join(prod_dir,"{}.context.json".format(id)))
-    #shutil.copyfile("_context.json", os.path.join(prod_dir_merged,"{}.context.json".format(ifg_id_merged)))
-
+    '''
     fine_int_xmls = []
     for swathnum in swath_list:
         fine_int_xmls.append("fine_interferogram/IW{}.xml".format(swathnum))
-    
+    '''
+
     # get water mask configuration
     wbd_url = uu.wbd_url
     wbd_user = uu.wbd_u
     wbd_pass = uu.wbd_p
 
     # get DEM bbox and add slop
-    dem_S, dem_N, dem_W, dem_E = bbox
+    dem_S, dem_N, dem_W, dem_E = [15, 20, -101, -96] 
     dem_S = int(math.floor(dem_S))
     dem_N = int(math.ceil(dem_N))
     dem_W = int(math.floor(dem_W))
@@ -124,9 +127,11 @@ def main():
 
 
     # get product image and size info
-    vrt_prod = get_image("merged/filt_topophase.unw.geo.xml")
+    #vrt_prod = get_image("insar/filt_topophase.unw.geo.xml")
+    vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0])
     vrt_prod_size = get_size(vrt_prod)
-    flat_vrt_prod = get_image("merged/filt_topophase.flat.geo.xml")
+    #flat_vrt_prod = get_image("insar/filt_topophase.flat.geo.xml")
+    flat_vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.phsig.geo.xml')[0])
     flat_vrt_prod_size = get_size(flat_vrt_prod)
 
     # get water mask image and size info
@@ -135,8 +140,8 @@ def main():
     wmask_size = get_size(wmask)
 
     # determine downsample ratio and dowsample water mask
-    lon_rat = 1./(old_div(vrt_prod_size['lon']['delta'],wmask_size['lon']['delta']))*100
-    lat_rat = 1./(old_div(vrt_prod_size['lat']['delta'],wmask_size['lat']['delta']))*100
+    lon_rat = 1./(vrt_prod_size['lon']['delta']/wmask_size['lon']['delta'])*100
+    lat_rat = 1./(vrt_prod_size['lat']['delta']/wmask_size['lat']['delta'])*100
     logger.info("lon_rat/lat_rat: {} {}".format(lon_rat, lat_rat))
     wbd_ds_file = "wbdmask_ds.wbd"
     wbd_ds_vrt = "wbdmask_ds.vrt"
@@ -181,7 +186,9 @@ def main():
     wmask_cropped = crop_mask(vrt_prod, wmask_ds, wbd_cropped_file)
     logger.info("wmask_cropped shape: {}".format(wmask_cropped.shape))
 
-    # read in wrapped interferogram
+    # read in wrapped interferograma
+    if "insar" not in flat_vrt_prod.filename:
+        flat_vrt_prod.filename = os.path.join("insar", flat_vrt_prod.filename)
     flat_vrt_prod_shape = (flat_vrt_prod_size['lat']['size'], flat_vrt_prod_size['lon']['size'])
     flat_vrt_prod_im = np.memmap(flat_vrt_prod.filename,
                             dtype=flat_vrt_prod.toNumpyDataType(),
@@ -191,6 +198,8 @@ def main():
     phase[wmask_cropped == -1] = -10
 
     # mask out water from the product data
+    if "insar" not in vrt_prod.filename:
+        vrt_prod.filename = os.path.join("insar", vrt_prod.filename)
     vrt_prod_shape = (vrt_prod_size['lat']['size'], vrt_prod.bands, vrt_prod_size['lon']['size'])
     vrt_prod_im = np.memmap(vrt_prod.filename,
                             dtype=vrt_prod.toNumpyDataType(),
@@ -201,7 +210,8 @@ def main():
         im1_tmp[wmask_cropped == -1] = 0
 
     # read in connected component mask
-    cc_vrt = "merged/filt_topophase.unw.conncomp.geo.vrt"
+    #cc_vrt = "insar/filt_topophase.unw.conncomp.geo.vrt"
+    cc_vrt = glob.glob('insar/filt_*2-*_*rlks_*alks.unw.conncomp.geo.vrt')[0]
     cc = gdal.Open(cc_vrt)
     cc_data = cc.ReadAsArray()
     cc = None
@@ -216,12 +226,14 @@ def main():
     im1[:,1,:] = phase
 
     # create masked product image
-    masked_filt = "filt_topophase.masked.unw.geo"
-    masked_filt_xml = "filt_topophase.masked.unw.geo.xml"
+    #masked_filt = "filt_topophase.masked.unw.geo"
+    masked_filt =  glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw')[0]
+    #masked_filt_xml = "filt_topophase.masked.unw.geo.xml"
+    masked_filt_xml = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.xml')[0]
     tim = np.memmap(masked_filt, dtype=vrt_prod.toNumpyDataType(), mode='w+', shape=vrt_prod_shape)
     tim[:,:,:] = im1
     im  = Image()
-    with open("merged/filt_topophase.unw.geo.xml") as f:
+    with open(glob.glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0]) as f:
         doc = parse(f)
     doc.xpath('.//property[@name="file_name"]/value')[0].text = masked_filt
     for rm in doc.xpath('.//property[@name="extra_file_name"]'): rm.getparent().remove(rm)
@@ -245,7 +257,7 @@ def main():
     im.renderHdr()
 
     # mask out nodata values
-    vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
+    vrt_prod_file = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.vrt')[0]
     vrt_prod_file_amp = "filt_topophase.masked_nodata.unw.amp.geo.vrt"
     vrt_prod_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt"
     check_call("gdal_translate -of VRT -b 1 -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file_amp), shell=True)
