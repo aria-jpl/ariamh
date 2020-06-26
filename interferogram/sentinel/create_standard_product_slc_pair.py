@@ -435,6 +435,15 @@ def initiate_standard_product_job(context_file):
             orbit_type = 'resorb'
             break
 
+    master_orbit_type = 'P'
+    slave_orbit_type = 'P'
+
+    if RESORB_RE.search(master_orbit_url):
+        master_orbit_type = 'R'
+
+    if RESORB_RE.search(slave_orbit_url):
+        slave_orbit_type = 'R'
+
     # fail if we expect only precise orbits
     #if precise_orbit_only and orbit_type == 'resorb':
         #raise RuntimeError("Precise orbit required.")
@@ -503,7 +512,8 @@ def initiate_standard_product_job(context_file):
     input_metadata['precise_orbit_only'] = precise_orbit_only
     input_metadata['priority'] = 5
     input_metadata['subswaths'] = subswaths
-
+    input_metadata['master_orbit_type'] = master_orbit_type
+    input_metadata['slave_orbit_type'] = slave_orbit_type
     context["input_metadata"] = input_metadata
     create_interferogram(context)
 

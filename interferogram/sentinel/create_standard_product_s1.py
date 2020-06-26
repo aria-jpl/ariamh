@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python
 from __future__ import division
 from builtins import str
 from builtins import range
@@ -44,7 +44,7 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 RESORB_RE = re.compile(r'_RESORB_')
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
-IFG_ID_SP_TMPL = "S1-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
+IFG_ID_SP_TMPL = "S1-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-{}-{}-{}"
 
 def update_met_key(met_md, old_key, new_key):
     try:
@@ -656,7 +656,8 @@ def get_temp_id(ctx, version):
     ifg_hash = ifg_hash[0:4]
     #logger.info("slc_master_dt : %s,slc_slave_dt : %s" %(slc_master_dt,slc_slave_dt))
 
-    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], "*", "*", ifg_hash, version.replace('.', '_'))
+    orbit_str = "PP"
+    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], "*", "*", orbit_str, ifg_hash, version.replace('.', '_'))
 
     return ifg_id
 
@@ -906,6 +907,13 @@ def create_interferogram(ctx):
     if 'precise_orbit_only' in input_metadata:
         precise_orbit_only = get_bool_param(input_metadata, 'precise_orbit_only')
     ctx['precise_orbit_only'] = precise_orbit_only
+
+    master_orbit_type = 'P'
+    if 'master_orbit_type' in input_metadata:
+        master_orbit_type = input_metadata['master_orbit_type']
+    slave_orbit_type = 'P'
+    if 'slave_orbit_type' in input_metadata:
+        slave_orbit_type = input_metadata['slave_orbit_type']
 
     job_priority = int(input_metadata['priority'])
 
@@ -1414,7 +1422,9 @@ def create_interferogram(ctx):
     ifg_id_merged = id_tmpl_merged.format('M', len(master_ids), len(slave_ids), track,  master_ifg_dt, slave_ifg_dt, orbit_type, ifg_hash)
     logger.info("ifg_id_merged : %s" %ifg_id_merged)
 
-    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], acq_center_time, west_lat, ifg_hash, version.replace('.', '_'))
+    orbit_str = "{}{}".format(master_orbit_type, slave_orbit_type)
+
+    ifg_id = IFG_ID_SP_TMPL.format(sat_direction, "R", track, master_ifg_dt.split('T')[0], slave_ifg_dt.split('T')[0], acq_center_time, west_lat, orbit_str, ifg_hash, version.replace('.', '_'))
     id = ifg_id
 
     logger.info("id : %s" %id)
