@@ -46,14 +46,14 @@
       "from": "submitter",
       "type": "number",
       "lambda": "lambda x: int(x)",
-      "default": "11"
+      "default": "7"
     },
     { 
       "name": "range_looks",
       "from": "submitter",
       "type": "number",
       "lambda": "lambda x: int(x)",
-      "default": "33"
+      "default": "11"
     },
     { 
       "name": "filter_strength",
