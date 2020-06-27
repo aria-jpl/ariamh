@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 
 import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 import math
-from glob import glob
+import glob
 from UrlUtils import UrlUtils
 from subprocess import check_call, CalledProcessError
 from datetime import datetime
@@ -11,7 +11,7 @@ from zipfile import ZipFile
 import isce_functions_alos2
 import ifg_utils
 from create_input_xml_alos2 import create_input_xml
-
+from isceobj.Image.Image import Image
 from lxml.etree import parse
 import numpy as np
 from utils.UrlUtils_standard_product import UrlUtils
@@ -31,22 +31,23 @@ def main():
 
     id = "ALOS2-GUNW-D-R-153-scansar-20150412_20150301-182710-19999N_15000N-PP-0a17-v1_0"
     prod_dir = id
+    uu = UrlUtils()
 
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (
         #'insar/topophase.cor',
         #'insar/topophase.flat',
         #'insar/filt_topophase.flat',
-        glob.glob('insar/filt_*2-*_*rlks_*alks.unw')[0],
-        glob.glob('insar/filt_*2-*_*rlks_*alks.unw.conncomp')[0],
-        glob.glob('insar/filt_*2-*_*rlks_*alks.cor')[0],
-        glob.glob('insar/filt_*2-*_*rlks_*alks.los')[0],
+        glob.glob('insar/filt_*-*_*rlks_*alks.unw')[0],
+        glob.glob('insar/filt_*-*_*rlks_*alks.unw.conncomp')[0],
+        glob.glob('insar/*-*_*rlks_*alks.cor')[0],
+        glob.glob('insar/*-*_*rlks_*alks.los')[0],
         #'insar/los.rdr',
         #'insar/dem.crop',
     )
     for i in raster_prods:
         # radar-coded products
-        call_noerr("isce2gis.py envi -i {}".format(i))
+        os.system("isce2gis.py envi -i {}".format(i))
         gdal_xml = "{}.xml".format(i)
         gdal_hdr = "{}.hdr".format(i)
         gdal_vrt = "{}.vrt".format(i)
@@ -54,7 +55,7 @@ def main():
         # geo-coded products
         j = "{}.geo".format(i)
         if not os.path.exists(j): continue
-        call_noerr("isce2gis.py envi -i {}".format(j))
+        os.system("isce2gis.py envi -i {}".format(j))
         gdal_xml = "{}.xml".format(j)
         gdal_hdr = "{}.hdr".format(j)
         gdal_vrt = "{}.vrt".format(j)
@@ -131,7 +132,7 @@ def main():
     vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0])
     vrt_prod_size = get_size(vrt_prod)
     #flat_vrt_prod = get_image("insar/filt_topophase.flat.geo.xml")
-    flat_vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.phsig.geo.xml')[0])
+    flat_vrt_prod = get_image(glob.glob('insar/*-*_*rlks_*alks.phsig.geo.xml')[0])
     flat_vrt_prod_size = get_size(flat_vrt_prod)
 
     # get water mask image and size info

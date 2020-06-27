@@ -26,7 +26,7 @@ source $HOME/verdi/bin/activate
 echo "##########################################" 1>&2
 echo -n "Running ALOS2 interferogram generation : " 1>&2
 date 1>&2
-python3 $BASE_PATH/test.py> test.log 2>&1
+python3 $BASE_PATH/create_image.py> test.log 2>&1
 #python3 $BASE_PATH/makeAlos2Geocube.py -m ../reference -s ../secondary -o metadata.h5 > test.log 2>&1
 STATUS=$?
 echo -n "Finished running ALOS2 interferogram generation: " 1>&2
