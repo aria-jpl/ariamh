@@ -290,7 +290,7 @@ def main():
     tif_file_amp = "{}.tif".format(vrt_prod_file_amp)
     #check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/{}.amplitude.browse_coarse.png".format(tif_file_amp, prod_dir, id), shell=True)
     #check_call("gdal_translate -of png {} {}/{}.amplitude.browse_full.png".format(tif_file_amp, prod_dir, id), shell=True)
-    for i in glob("{}/{}.*.browse*.aux.xml".format(prod_dir, id)): 
+    for i in glob.glob("{}/{}.*.browse*.aux.xml".format(prod_dir, id)): 
         try:
             print("unlinking {}".format(i))
             os.unlink(i)
