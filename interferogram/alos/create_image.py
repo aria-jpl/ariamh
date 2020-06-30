@@ -184,6 +184,12 @@ def main():
     wmask_cropped = crop_mask(vrt_prod, wmask_ds, wbd_cropped_file)
     logger.info("wmask_cropped shape: {}".format(wmask_cropped.shape))
 
+    # read in ionospheric phase
+    iono_vrt = glob.glob('insar/*-*_*rlks_*alks.ion.geo.vrt')[0]
+    iono = gdal.Open(iono_vrt)
+    iono_data = iono.ReadAsArray()
+    iono = None
+
     # read in wrapped interferograma
     if "insar" not in flat_vrt_prod.filename:
         flat_vrt_prod.filename = os.path.join("insar", flat_vrt_prod.filename)
@@ -191,7 +197,11 @@ def main():
     flat_vrt_prod_im = np.memmap(flat_vrt_prod.filename,
                             dtype=flat_vrt_prod.toNumpyDataType(),
                             mode='c', shape=(flat_vrt_prod_size['lat']['size'], flat_vrt_prod_size['lon']['size']))
-    phase = np.angle(flat_vrt_prod_im)
+    #phase = np.angle(flat_vrt_prod_im)
+
+    #remove ionosphere from interfergram phasea
+    iono_data[phase==0]=0
+    phase = np.angle(np.exp(1j*(phase-iono_data)))
     phase[phase == 0] = -10
     phase[wmask_cropped == -1] = -10
     # mask out water from the product data
