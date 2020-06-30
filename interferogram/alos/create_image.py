@@ -35,15 +35,15 @@ def main():
 
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (
-        #'insar/topophase.cor',
-        #'insar/topophase.flat',
-        #'insar/filt_topophase.flat',
+        'insar/150412-150301_30rlks_168alks.cor',
+        'insar/diff_150412-150301_30rlks_168alks.int',
+        'insar/ilt_150412-150301_30rlks_168alks.int',
         glob.glob('insar/filt_*-*_*rlks_*alks.unw')[0],
         glob.glob('insar/filt_*-*_*rlks_*alks.unw.conncomp')[0],
-        glob.glob('insar/*-*_*rlks_*alks.cor')[0],
+        glob.glob('insar/*-*_*rlks_*alks.phsig')[0],
         glob.glob('insar/*-*_*rlks_*alks.los')[0],
         #'insar/los.rdr',
-        #'insar/dem.crop',
+        'insar/crop.dem',
     )
     for i in raster_prods:
         # radar-coded products
@@ -60,11 +60,6 @@ def main():
         gdal_hdr = "{}.hdr".format(j)
         gdal_vrt = "{}.vrt".format(j)
 
-    '''
-    fine_int_xmls = []
-    for swathnum in swath_list:
-        fine_int_xmls.append("fine_interferogram/IW{}.xml".format(swathnum))
-    '''
 
     # get water mask configuration
     wbd_url = uu.wbd_url
@@ -126,14 +121,16 @@ def main():
     except Exception as e:
         logger.info(str(e))
 
-
     # get product image and size info
     #vrt_prod = get_image("insar/filt_topophase.unw.geo.xml")
     vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0])
     vrt_prod_size = get_size(vrt_prod)
     #flat_vrt_prod = get_image("insar/filt_topophase.flat.geo.xml")
-    flat_vrt_prod = get_image(glob.glob('insar/*-*_*rlks_*alks.phsig.geo.xml')[0])
+    flat_vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.int.geo.xml')[0])
     flat_vrt_prod_size = get_size(flat_vrt_prod)
+
+    print("flat_vrt_prod_size : {}".format(flat_vrt_prod_size))
+    print("vrt_prod_size : {}".format(vrt_prod_size))
 
     # get water mask image and size info
     wbd_xml = "{}.xml".format(wbd_file)
@@ -148,7 +145,7 @@ def main():
     wbd_ds_vrt = "wbdmask_ds.vrt"
     check_call("gdal_translate -of ENVI -outsize {}% {}% {} {}".format(lon_rat, lat_rat, wbd_file, wbd_ds_file), shell=True)
     check_call("gdal_translate -of VRT {} {}".format(wbd_ds_file, wbd_ds_vrt), shell=True)
-
+    
     # update xml file for downsampled water mask
     wbd_ds_json = "{}.json".format(wbd_ds_file)
     check_call("gdalinfo -json {} > {}".format(wbd_ds_file, wbd_ds_json), shell=True)
@@ -197,7 +194,6 @@ def main():
     phase = np.angle(flat_vrt_prod_im)
     phase[phase == 0] = -10
     phase[wmask_cropped == -1] = -10
-
     # mask out water from the product data
     if "insar" not in vrt_prod.filename:
         vrt_prod.filename = os.path.join("insar", vrt_prod.filename)
@@ -222,15 +218,14 @@ def main():
         im1_tmp = im1[:,i,:]
         im1_tmp[cc_data == 0] = 0
     phase[cc_data == 0] = -10
-
     # overwrite displacement with phase
     im1[:,1,:] = phase
 
     # create masked product image
-    #masked_filt = "filt_topophase.masked.unw.geo"
-    masked_filt =  glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw')[0]
-    #masked_filt_xml = "filt_topophase.masked.unw.geo.xml"
-    masked_filt_xml = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.xml')[0]
+    masked_filt = "filt_topophase.masked.unw.geo"
+    #masked_filt =  glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw')[0]
+    masked_filt_xml = "filt_topophase.masked.unw.geo.xml"
+    #masked_filt_xml = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.xml')[0]
     tim = np.memmap(masked_filt, dtype=vrt_prod.toNumpyDataType(), mode='w+', shape=vrt_prod_shape)
     tim[:,:,:] = im1
     im  = Image()
@@ -257,13 +252,15 @@ def main():
     im.filename = masked_filt
     im.renderHdr()
 
+
     # mask out nodata values
-    vrt_prod_file = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.vrt')[0]
+    #vrt_prod_file = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.vrt')[0]
+    vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
     vrt_prod_file_amp = "filt_topophase.masked_nodata.unw.amp.geo.vrt"
     vrt_prod_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt"
     check_call("gdal_translate -of VRT -b 1 -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file_amp), shell=True)
     check_call("gdal_translate -of VRT -b 2 -a_nodata -10 {} {}".format(vrt_prod_file, vrt_prod_file_dis), shell=True)
-    
+
     '''
     # get band statistics
     amp_data = gdal.Open(vrt_prod_file_amp, gdal.GA_ReadOnly)
