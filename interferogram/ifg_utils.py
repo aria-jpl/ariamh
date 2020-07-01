@@ -801,6 +801,7 @@ def change_dir(wd):
 
 def run_command(cmd_array):
     cmd_line = " ".join(cmd_array)
+    logging.info("cmd_line : {}".format(cmd_line))
     check_call(cmd_line, shell=True)
 
 

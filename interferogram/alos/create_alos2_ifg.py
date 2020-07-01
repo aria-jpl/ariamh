@@ -337,10 +337,10 @@ def main():
         'insar/150412-150301_30rlks_168alks.cor',
         'insar/diff_150412-150301_30rlks_168alks.int',
         'insar/ilt_150412-150301_30rlks_168alks.int',
-        glob.glob('insar/filt_*-*_*rlks_*alks.unw')[0],
-        glob.glob('insar/filt_*-*_*rlks_*alks.unw.conncomp')[0],
-        glob.glob('insar/*-*_*rlks_*alks.phsig')[0],
-        glob.glob('insar/*-*_*rlks_*alks.los')[0],
+        glob('insar/filt_*-*_*rlks_*alks.unw')[0],
+        glob('insar/filt_*-*_*rlks_*alks.unw.conncomp')[0],
+        glob('insar/*-*_*rlks_*alks.phsig')[0],
+        glob('insar/*-*_*rlks_*alks.los')[0],
         #'insar/los.rdr',
         'insar/crop.dem',
     )
@@ -422,10 +422,10 @@ def main():
 
     # get product image and size info
     #vrt_prod = get_image("insar/filt_topophase.unw.geo.xml")
-    vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0])
+    vrt_prod = get_image(glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0])
     vrt_prod_size = get_size(vrt_prod)
     #flat_vrt_prod = get_image("insar/filt_topophase.flat.geo.xml")
-    flat_vrt_prod = get_image(glob.glob('insar/filt_*-*_*rlks_*alks.int.geo.xml')[0])
+    flat_vrt_prod = get_image(glob('insar/filt_*-*_*rlks_*alks.int.geo.xml')[0])
     flat_vrt_prod_size = get_size(flat_vrt_prod)
 
     print("flat_vrt_prod_size : {}".format(flat_vrt_prod_size))
@@ -484,7 +484,7 @@ def main():
     logger.info("wmask_cropped shape: {}".format(wmask_cropped.shape))
 
     # read in ionospheric phase
-    iono_vrt = glob.glob('insar/*-*_*rlks_*alks.ion.geo.vrt')[0]
+    iono_vrt = glob('insar/*-*_*rlks_*alks.ion.geo.vrt')[0]
     iono = gdal.Open(iono_vrt)
     iono_data = iono.ReadAsArray()
     iono = None
@@ -517,7 +517,7 @@ def main():
 
     # read in connected component mask
     #cc_vrt = "insar/filt_topophase.unw.conncomp.geo.vrt"
-    cc_vrt = glob.glob('insar/filt_*2-*_*rlks_*alks.unw.conncomp.geo.vrt')[0]
+    cc_vrt = glob('insar/filt_*2-*_*rlks_*alks.unw.conncomp.geo.vrt')[0]
     cc = gdal.Open(cc_vrt)
     cc_data = cc.ReadAsArray()
     cc = None
@@ -532,13 +532,13 @@ def main():
 
     # create masked product image
     masked_filt = "filt_topophase.masked.unw.geo"
-    #masked_filt =  glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw')[0]
+    #masked_filt =  glob('insar/filt_*-*_*rlks_*alks_msk.unw')[0]
     masked_filt_xml = "filt_topophase.masked.unw.geo.xml"
-    #masked_filt_xml = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.xml')[0]
+    #masked_filt_xml = glob('insar/filt_*-*_*rlks_*alks_msk.unw.xml')[0]
     tim = np.memmap(masked_filt, dtype=vrt_prod.toNumpyDataType(), mode='w+', shape=vrt_prod_shape)
     tim[:,:,:] = im1
     im  = Image()
-    with open(glob.glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0]) as f:
+    with open(glob('insar/filt_*-*_*rlks_*alks.unw.geo.xml')[0]) as f:
         doc = parse(f)
     doc.xpath('.//property[@name="file_name"]/value')[0].text = masked_filt
     for rm in doc.xpath('.//property[@name="extra_file_name"]'): rm.getparent().remove(rm)
@@ -563,7 +563,7 @@ def main():
 
 
     # mask out nodata values
-    #vrt_prod_file = glob.glob('insar/filt_*-*_*rlks_*alks_msk.unw.vrt')[0]
+    #vrt_prod_file = glob('insar/filt_*-*_*rlks_*alks_msk.unw.vrt')[0]
     vrt_prod_file = "filt_topophase.masked.unw.geo.vrt"
     vrt_prod_file_amp = "filt_topophase.masked_nodata.unw.amp.geo.vrt"
     vrt_prod_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt"
@@ -599,7 +599,7 @@ def main():
     tif_file_amp = "{}.tif".format(vrt_prod_file_amp)
     #check_call("gdal_translate -of png -r average -tr 0.00416666667 0.00416666667 {} {}/{}.amplitude.browse_coarse.png".format(tif_file_amp, prod_dir, id), shell=True)
     #check_call("gdal_translate -of png {} {}/{}.amplitude.browse_full.png".format(tif_file_amp, prod_dir, id), shell=True)
-    for i in glob.glob("{}/{}.*.browse*.aux.xml".format(prod_dir, id)): 
+    for i in glob("{}/{}.*.browse*.aux.xml".format(prod_dir, id)): 
         try:
             print("unlinking {}".format(i))
             os.unlink(i)
