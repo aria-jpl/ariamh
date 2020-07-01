@@ -197,7 +197,7 @@ def main():
     flat_vrt_prod_im = np.memmap(flat_vrt_prod.filename,
                             dtype=flat_vrt_prod.toNumpyDataType(),
                             mode='c', shape=(flat_vrt_prod_size['lat']['size'], flat_vrt_prod_size['lon']['size']))
-    #phase = np.angle(flat_vrt_prod_im)
+    phase = np.angle(flat_vrt_prod_im)
 
     #remove ionosphere from interfergram phasea
     iono_data[phase==0]=0
