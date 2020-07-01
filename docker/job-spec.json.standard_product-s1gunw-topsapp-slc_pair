@@ -34,7 +34,7 @@
       "destination": "context"
     },
     {
-      "name": "precise_orbit_only",
+      "name": "orbit_quality",
       "destination": "context"
     },
     {

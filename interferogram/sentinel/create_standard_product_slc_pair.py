@@ -339,7 +339,11 @@ def initiate_standard_product_job(context_file):
     azimuth_looks = int(context.get('azimuth_looks', 7))
     range_looks = int(context.get('range_looks', 19))
     filter_strength = float(context.get('filter_strength', 0.5))
-    precise_orbit_only = get_bool_param(context, 'precise_orbit_only')
+    orbit_quality = context['orbit_quality']
+    precise_orbit_only = False
+
+    if orbit_quality.lower().strip()=="precise-only":
+        precise_orbit_only = True
 
     #direction = input_metadata["direction"]
     #platform = input_metadata["platform"]
@@ -445,8 +449,9 @@ def initiate_standard_product_job(context_file):
         slave_orbit_type = 'R'
 
     # fail if we expect only precise orbits
-    #if precise_orbit_only and orbit_type == 'resorb':
-        #raise RuntimeError("Precise orbit required.")
+    if precise_orbit_only:
+        if master_orbit_type == 'R' and slave_orbit_type == 'R':
+            raise RuntimeError("Precise orbit required.")
 
 
     '''
