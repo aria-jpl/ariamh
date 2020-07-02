@@ -11,6 +11,13 @@ from zipfile import ZipFile
 import isce_functions_alos2
 import ifg_utils
 from create_input_xml_alos2 import create_input_xml
+from isceobj.Image.Image import Image
+from lxml.etree import parse
+import numpy as np
+from utils.UrlUtils_standard_product import UrlUtils
+from utils.imutils import get_image, get_size, crop_mask
+from utils.time_utils import getTemporalSpanInDays
+from osgeo import ogr, gdal
 
 log_format = "[%(asctime)s: %(levelname)s/%(funcName)s] %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -334,9 +341,9 @@ def main():
 
     # generate GDAL (ENVI) headers and move to product directory
     raster_prods = (
-        'insar/150412-150301_30rlks_168alks.cor',
-        'insar/diff_150412-150301_30rlks_168alks.int',
-        'insar/ilt_150412-150301_30rlks_168alks.int',
+        glob('insar/*-*_*rlks_*alks.cor')[0],
+        glob('insar/diff_*-*_*rlks_*alks.int')[0],
+        glob('insar/ilt_*-*_*rlks_*alks.int')[0],
         glob('insar/filt_*-*_*rlks_*alks.unw')[0],
         glob('insar/filt_*-*_*rlks_*alks.unw.conncomp')[0],
         glob('insar/*-*_*rlks_*alks.phsig')[0],
