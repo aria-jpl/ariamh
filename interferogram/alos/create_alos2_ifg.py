@@ -343,7 +343,7 @@ def main():
     raster_prods = (
         glob('insar/*-*_*rlks_*alks.cor')[0],
         glob('insar/diff_*-*_*rlks_*alks.int')[0],
-        glob('insar/ilt_*-*_*rlks_*alks.int')[0],
+        glob('insar/filt_*-*_*rlks_*alks.int')[0],
         glob('insar/filt_*-*_*rlks_*alks.unw')[0],
         glob('insar/filt_*-*_*rlks_*alks.unw.conncomp')[0],
         glob('insar/*-*_*rlks_*alks.phsig')[0],
