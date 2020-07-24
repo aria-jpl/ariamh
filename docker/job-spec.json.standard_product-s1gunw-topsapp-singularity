@@ -18,6 +18,14 @@
       "destination": "context"
     },
     {
+      "name": "geocoded_unfiltered_coherence",
+      "destination": "context"
+    },
+    {
+      "name": "geocoded_unfiltered_wrapped_phase",
+      "destination": "context"
+    },
+    {
       "name": "input_metadata",
       "destination": "context"
     },
