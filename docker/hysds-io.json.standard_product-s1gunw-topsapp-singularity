@@ -11,13 +11,13 @@
       "default": "standard_product,pleiades",
       "placeholder": "A value to append to the dataset identifier"
     },
-    { "name": "geocoded_unfiltered_coherence", 
+    { "name": "coherence", 
       "from": "submitter", 
       "type": "enum", 
       "default": "exclude", 
       "enumerables": ["exclude", "include"] 
     },
-    { "name": "geocoded_unfiltered_wrapped_phase", 
+    { "name": "wrapped_phase", 
       "from": "submitter", 
       "type": "enum", 
       "default": "exclude", 
