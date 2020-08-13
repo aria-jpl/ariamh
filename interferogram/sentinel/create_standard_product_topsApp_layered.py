@@ -603,6 +603,9 @@ def get_union_polygon(ds_files):
 def get_bool_param(ctx, param):
     """Return bool param from context."""
 
+    if param not in ctx:
+        return False
+
     if param in ctx and isinstance(ctx[param], bool): return ctx[param]
     return True if ctx.get(param, 'true').strip().lower() == 'true' else False
 
@@ -839,6 +842,7 @@ def main():
     ctx['system_version'] = system_version
     full_id_hash = input_metadata['full_id_hash']
     ctx['full_id_hash'] = full_id_hash
+    
 
     request_metadata = input_metadata.get("request_metadata", None)
 
@@ -906,6 +910,9 @@ def main():
     ctx['precise_orbit_only'] = precise_orbit_only
 
     job_priority = int(input_metadata['priority'])
+    
+    geocoded_unfiltered_wrapped_phase = get_bool_param(input_metadata, 'geocoded_unfiltered_wrapped_phase')
+    geocoded_unfiltered_coherence = get_bool_param(input_metadata,'geocoded_unfiltered_coherence')
 
     subswaths = [1, 2, 3]
  
@@ -1766,16 +1773,16 @@ def main():
     md['dem_type'] = dem_type
     md['sensingStart'] = sensing_start
     md['sensingStop'] = sensing_stop
-    md['tags'] = ['standard_product']
     md['polarization']= match_pol.upper()
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
-    
+    md['geocoded_unfiltered_wrapped_phase'] = geocoded_unfiltered_wrapped_phase
+    md['geocoded_unfiltered_coherence'] = geocoded_unfiltered_coherence
+   
     md['full_id_hash'] = ctx['new_ifg_hash']    
     md['system_version']=ctx['system_version']
     md['request_metadata'] = request_metadata
-    if len(tag_list)>0:
-        md['tags'] = tag_list
+    md['tags'] = tag_list
 
     try:
         if 'temporal_span' in md:
