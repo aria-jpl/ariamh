@@ -847,7 +847,8 @@ def main():
     request_metadata = input_metadata.get("request_metadata", None)
 
     if not request_metadata:
-        err_msg = "No request metadata found in context input_metadata")
+        
+        err_msg = "No request metadata found in context input_metadata"
         logger.info(err_msg)
         logger.info(json.dumps(input_metadata, indent=2))
         raise Exception(err_msg)
