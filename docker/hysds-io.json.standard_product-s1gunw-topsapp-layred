@@ -1,6 +1,6 @@
 {
   "submission_type": "iteration",
-  "label" : "Standard Product S1-GUNW - topsApp-layred",
+  "label" : "Request S1-GUNW - topsApp-layred",
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,
   "params" : [
