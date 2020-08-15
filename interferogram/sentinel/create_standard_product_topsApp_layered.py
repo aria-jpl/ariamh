@@ -211,13 +211,13 @@ def fileContainsMsg(file_name, msg):
 def checkBurstError():
     msg = "cannot continue for interferometry applications"
 
-    found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+    found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
     if found:
         logger.info("checkBurstError : %s" %line.strip())
         raise RuntimeError(line.strip())
     if not found:
         msg = "Exception: Could not determine a suitable burst offset"
-        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
             raise RuntimeError(line.strip())
@@ -1874,7 +1874,7 @@ def updateErrorFiles(msg):
         f.write("%s\n" %msg)
     with open('_alt_traceback.txt', 'w') as f:
         '''
-        with open("create_standard_product_s1.log", 'r') as f2:
+        with open("create_standard_product_topsApp_layered.log", 'r') as f2:
             datafile = f2.readlines()
             for line in datafile:
                 if "error" in line.lower() or "exception" in line.lower():
@@ -1911,14 +1911,14 @@ if __name__ == '__main__':
 
         found = False
         msg = "cannot continue for interferometry applications"
-        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
             updateErrorFiles(line.strip())
         
         if not found:
             msg = "Exception: Could not determine a suitable burst offset"
-            found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+            found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
             if found:
                 logger.info("Found Error : %s" %line.strip())
                 updateErrorFiles(line.strip())
