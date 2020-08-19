@@ -158,8 +158,13 @@ def get_track(info):
     tracks = {}
     for id in info:
         h = info[id]
-        fields = h['fields']['partial'][0]   
-        track = fields['metadata']['trackNumber']
+        fields = h['fields']['partial'][0]
+
+        try:
+            track = fields['metadata']['track_number']
+        except KeyError:
+            track = fields['metadata']['trackNumber']
+
         tracks.setdefault(track, []).append(id)
     if len(tracks) != 1:
         raise RuntimeError("Failed to find SLCs for only 1 track.")
@@ -273,6 +278,10 @@ def get_topsapp_cfg(context_file, id_tmpl=IFG_ID_TMPL):
         bboxes.append(bbox)
         auto_bboxes.append(auto_bbox)
         projects.append(project)
+    
+        ifg_hash = get_ifg_hash(master_ids,  slave_ids)
+
+        '''
         ifg_hash = hashlib.md5(json.dumps([
             id_tmpl,
             stitched_args[-1],
@@ -288,6 +297,8 @@ def get_topsapp_cfg(context_file, id_tmpl=IFG_ID_TMPL):
             range_looks,
             filter_strength,
         ])).hexdigest()
+
+        '''
         ifg_ids.append(id_tmpl.format('M', len(master_ids), len(slave_ids),
                                       track, ifg_master_dt,
                                       ifg_slave_dt, subswath,
@@ -297,6 +308,38 @@ def get_topsapp_cfg(context_file, id_tmpl=IFG_ID_TMPL):
     return ( projects, stitched_args, auto_bboxes, ifg_ids, master_zip_urls,
              master_orbit_urls, slave_zip_urls, slave_orbit_urls, swathnums,
              bboxes )
+
+
+def get_ifg_hash(master_slcs,  slave_slcs):
+
+    master_ids_str=""
+    slave_ids_str=""
+
+    for slc in sorted(master_slcs):
+        print("get_ifg_hash : master slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if master_ids_str=="":
+            master_ids_str= slc
+        else:
+            master_ids_str += " "+slc
+
+    for slc in sorted(slave_slcs):
+        print("get_ifg_hash: slave slc : %s" %slc)
+        if isinstance(slc, tuple) or isinstance(slc, list):
+            slc = slc[0]
+
+        if slave_ids_str=="":
+            slave_ids_str= slc
+        else:
+            slave_ids_str += " "+slc
+
+    id_hash = hashlib.md5(json.dumps([
+            master_ids_str,
+            slave_ids_str
+            ]).encode("utf8")).hexdigest()
+    return id_hash
 
 
 def get_topsapp_cfg_rsp(context_file):

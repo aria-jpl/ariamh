@@ -1863,13 +1863,16 @@ def updateErrorFiles(msg):
         f.write("%s\n" % traceback.format_exc())
 
 if __name__ == '__main__':
+    wd = os.getcwd()
+
     try: 
         status = main()
         checkBurstError()        
     except Exception as e:
         max_retry = 3
-        ctx_file = "_context.json"
-        job_file = "_job.json"
+        ctx_file = os.path.join(wd, "_context.json")
+        job_file = os.path.join(wd, "_job.json")
+
         with open(ctx_file) as f:
             ctx = json.load(f)
 

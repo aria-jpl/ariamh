@@ -6,7 +6,7 @@
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "sciflo-s1-slcp-mrpe"
+    "aria-s1-slcp"
   ],
   "soft_time_limit": 7200,
   "time_limit": 7500,
