@@ -10,7 +10,6 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
-from past.utils import old_div
 import tensorflow as tf
 import argparse
 from ariaml.TFConvNet import TFConvNet as RN, Data
@@ -113,22 +112,22 @@ def print_results(results,save=0,output='output'):#0 print, 1  save, 2 print and
     max_acc = 0
     for i,res in enumerate(results):
         print(res)
-        pre = old_div(np.sum(res[0]),np.sum(res[0:2]).astype(np.float))
-        rec = old_div(np.sum(res[0]),np.sum(res[[0,3]]).astype(np.float))
-        acc = old_div(np.sum(res[[0,2]]),np.sum(res).astype(np.float))
+        pre = np.sum(res[0])/np.sum(res[0:2]).astype(np.float)
+        rec = np.sum(res[0])/np.sum(res[[0,3]]).astype(np.float)
+        acc = np.sum(res[[0,2]])/np.sum(res).astype(np.float)
         if save == 0 or save == 2:            
             print('Label ' + str(i),':')
             print('Accuracy:',str(acc))
             print('Precision:',str(pre))
             print('Recall:',str(rec))
-            print('F1:',str(old_div(2*(pre*rec),(pre + rec))))
+            print('F1:',str(2*(pre*rec)/(pre + rec)))
         if save == 1 or save == 2:
             with open(output,'a') as fp:
                 fp.write('Label ' + str(i) + ' :\n')
                 fp.write('Accuracy: ' + str(acc) + '\n')
                 fp.write('Precision: ' + str(pre) + '\n')
                 fp.write('Recall: ' + str(rec) + '\n')
-                fp.write('F1: ' + str(old_div(2*(pre*rec),(pre + rec))) + '\n')
+                fp.write('F1: ' + str(2*(pre*rec)/(pre + rec)) + '\n')
         if acc > max_acc:
             max_acc = acc
     return max_acc
@@ -430,7 +429,7 @@ def main(inps):
                     print_res = False 
                     if step % args.print_rate == 0:
                         num_examples_per_step = args.batch_size
-                        examples_per_sec = old_div(num_examples_per_step, duration)
+                        examples_per_sec = num_examples_per_step / duration
                         sec_per_batch = float(duration)
                         
                         format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '

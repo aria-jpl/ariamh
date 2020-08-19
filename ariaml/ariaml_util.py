@@ -3,7 +3,6 @@ from __future__ import division
 from builtins import map
 from builtins import str
 from builtins import range
-from past.utils import old_div
 import sys, os
 import numpy as np
 
@@ -133,7 +132,7 @@ def rotatebbox(bboxxy, snap=0.25):
             rotmin,rotdeg = rdiff,ar
             rotmat,rotxy  = rar,rxy
 
-    return rotxy, rotmat, old_div(rotdeg,DEG2RAD)
+    return rotxy, rotmat, rotdeg/DEG2RAD
 
 def rotatexy(x, y, theta, ox, oy):
     """
@@ -227,8 +226,8 @@ def impreprocess(rimg,**kwargs):
     
         outimg = zeros(outdims,dtype=dtype)
         romax,comax = rmax-rmin,cmax-cmin
-        roshift = max(0,int(old_div((nrows-romax),2)))
-        coshift = max(0,int(old_div((ncols-comax),2)))
+        roshift = max(0,int((nrows-romax)/2))
+        coshift = max(0,int((ncols-comax)/2))
         outimg[coshift:coshift+comax,roshift:roshift+romax,:] = rimg
 
     # zero nans, \pm infinity
