@@ -1,7 +1,6 @@
 from __future__ import division
 from builtins import range
 from builtins import object
-from past.utils import old_div
 import datetime 
 from isceobj.Orbit.Orbit import Orbit, StateVector
 from isceobj.Planet.Planet import Planet
@@ -26,8 +25,8 @@ class OrbitInfo(object):
 
         self.coherenceThreshold = 0.2
         self.orbVec = None 
-        self.tMid = self.tStart +old_div(sum([self.tStop-self.tStart,
-                    datetime.timedelta()],datetime.timedelta()),2)
+        self.tMid = self.tStart +(sum([self.tStop-self.tStart,
+                    datetime.timedelta()],datetime.timedelta())/2)
         self.pos = None
         self.vel = None
         self.peg  = None
@@ -73,7 +72,7 @@ class OrbitInfo(object):
 
 
     def computeLookAngle(self):
-        self.clook = old_div((2*self.hgt*self.rds+self.hgt**2+self.rng**2),(2*self.rng*(self.rds+self.hgt)))
+        self.clook = (2*self.hgt*self.rds+self.hgt**2+self.rng**2)/(2*self.rng*(self.rds+self.hgt))
         self.slook = numpy.sqrt(1-self.clook**2)
 #        print('Estimated Look Angle: %3.2f degrees'%(np.arccos(self.clook)*180.0/np.pi))
         return
@@ -82,7 +81,7 @@ class OrbitInfo(object):
 
         shortOrb = Orbit()
         for i in range(-10,10):
-            time = self.tMid + datetime.timedelta(seconds=(old_div(i,self.prf)))
+            time = self.tMid + datetime.timedelta(seconds=(i/self.prf))
             sv = self.orbVec.interpolateOrbit(time, method='hermite')
             shortOrb.addStateVector(sv)
 
@@ -113,9 +112,9 @@ class OrbitInfo(object):
         mvel = numpy.array(self.vel)
 
         #######From the ROI-PAC scripts
-        rvec = old_div(mpos,numpy.linalg.norm(mpos))
-        crp = old_div(numpy.cross(rvec, mvel),numpy.linalg.norm(mvel))
-        crp = old_div(crp,numpy.linalg.norm(crp))
+        rvec = mpos/numpy.linalg.norm(mpos)
+        crp = numpy.cross(rvec, mvel)/numpy.linalg.norm(mvel)
+        crp = crp/numpy.linalg.norm(crp)
         vvec = numpy.cross(crp, rvec)
         mvel = numpy.linalg.norm(mvel)
 
@@ -124,9 +123,9 @@ class OrbitInfo(object):
         svel = numpy.linalg.norm(svel)
 
         dx = spos - mpos;
-        z_offset = old_div(slave.prf*numpy.dot(dx, vvec),mvel)
+        z_offset = slave.prf*numpy.dot(dx, vvec)/mvel
 
-        slave_time = slave.tMid - datetime.timedelta(seconds=old_div(z_offset,slave.prf))
+        slave_time = slave.tMid - datetime.timedelta(seconds=z_offset/slave.prf)
 
         ####Remove these checks to deal with scenes from same track but not exactly overlaid
 #        if slave_time < slave.tStart:
@@ -164,10 +163,10 @@ class OrbitInfo(object):
         '''
         Bperp = numpy.abs(self.lookSide*(self.baseline['horz'] - slave.horizontalBaseline)*self.clook + (self.baseline['vert'] - slave.verticalBaseline)*self.slook)
         Btemp = numpy.abs(self.tStart.toordinal() - slave.sensingStart.toordinal()) * 1.0
-        Bdop = numpy.abs(old_div((self.fd * self.prf - slave.doppler * slave.prf), self.prf))
+        Bdop = numpy.abs((self.fd * self.prf - slave.doppler * slave.prf)/self.prf)
 
-        geomRho = (1-numpy.clip(old_div(Bperp,Bcrit), 0., 1.))
-        tempRho = numpy.exp(old_div(-1.0*Btemp,Tau))
+        geomRho = (1-numpy.clip(Bperp/Bcrit, 0., 1.))
+        tempRho = numpy.exp(-1.0*Btemp/Tau)
         dopRho  = Bdop < Doppler
 
         self.coherence = geomRho * tempRho * dopRho
@@ -183,13 +182,13 @@ class OrbitInfo(object):
         self.computeBaseline(OrbitInfo(slave))
         Bperp = numpy.abs(self.lookSide*self.baseline['horz']*self.clook + self.baseline['vert'] *self.slook)
         Btemp = numpy.abs(self.tStart.toordinal() - slave.sensingStart.toordinal()) * 1.0
-        Bdop = numpy.abs(old_div((self.fd * self.prf - slave.doppler * slave.prf), self.prf))
+        Bdop = numpy.abs((self.fd * self.prf - slave.doppler * slave.prf)/self.prf)
 
         
         print(('Bperp: %f (m) , Btemp: %f days, Bdop:  %f (frac PRF)'%
                 (Bperp,Btemp,Bdop))) 
-        geomRho = (1-numpy.clip(old_div(Bperp,Bcrit), 0., 1.))
-        tempRho = numpy.exp(old_div(-1.0*Btemp,Tau))
+        geomRho = (1-numpy.clip((Bperp/Bcrit), 0., 1.))
+        tempRho = numpy.exp(-1.0*Btemp/Tau)
         dopRho  = Bdop < Doppler
         self.coherence = geomRho * tempRho * dopRho
         print(('Expected Coherence: %f'%(self.coherence)))
