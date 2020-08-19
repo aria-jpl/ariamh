@@ -16,7 +16,6 @@ from __future__ import division
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # giangi: taken Piyush code for snaphu and adapted
 
-from past.utils import old_div
 import sys
 import isceobj
 from contrib.Snaphu.Snaphu import Snaphu
@@ -46,13 +45,13 @@ def runUnwrap(self,costMode = None,initMethod = None, defomax = None, initOnly =
     azimuthLooks = self.insar.topo.numberAzimuthLooks
 
     azres = self.insar.masterFrame.platform.antennaLength/2.0
-    azfact = old_div(self.insar.topo.numberAzimuthLooks *azres, self.insar.topo.azimuthSpacing)
+    azfact = self.insar.topo.numberAzimuthLooks *azres/self.insar.topo.azimuthSpacing
 
     rBW = self.insar.masterFrame.instrument.pulseLength * self.insar.masterFrame.instrument.chirpSlope
-    rgres = abs(old_div(SPEED_OF_LIGHT, (2.0 * rBW)))
-    rngfact = old_div(rgres,self.insar.topo.slantRangePixelSpacing)
+    rgres = abs((SPEED_OF_LIGHT/(2.0 * rBW)))
+    rngfact = rgres/self.insar.topo.slantRangePixelSpacing
 
-    corrLooks = old_div(self.insar.topo.numberRangeLooks * self.insar.topo.numberAzimuthLooks,(azfact*rngfact)) 
+    corrLooks = ((self.insar.topo.numberRangeLooks * self.insar.topo.numberAzimuthLooks)/(azfact*rngfact)) 
     maxComponents = 20
     #Unfortunately isce changes topophaseFlatFilename to the filtered one so need to change
     #it back 
