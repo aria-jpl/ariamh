@@ -1,0 +1,31 @@
+{
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract_asf.py",
+  "imported_worker_files": {
+    "$HOME/.netrc": "/home/ops/.netrc",
+    "$HOME/.aws": "/home/ops/.aws",
+    "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/frameMetadata/settings.json",
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf",
+    "/data/work/datasets": "/data/work/datasets",
+    "/data/work/browse": "/data/work/browse"
+  },
+  "recommended-queues" : [
+    "slc-sling-extract-asf",
+    "spyddder-sling-extract-asf",
+    "factotum-job_worker-asf_throttled",
+    "aria-job_worker-small",
+    "mem-job_worker-small",
+    "dwr-job_worker-small",
+    "chevron-job_worker-small",
+    "floodmap-job_worker-small",
+    "urgent-response-job_worker-small"
+  ],
+  "soft_time_limit": 6000,
+  "time_limit": 6400,
+  "disk_usage": "50GB",
+  "params" : [
+    { 
+      "name": "slc_id",
+      "destination": "positional"
+    }
+  ]
+}
