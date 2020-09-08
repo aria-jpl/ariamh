@@ -1,5 +1,5 @@
 {
-  "label" : "Data Sling and Extract for asf-file",
+  "label" : "Data Sling and Extract to File - asf",
   "allowed_accounts": [ "ops" ],
   "params" : [
     {

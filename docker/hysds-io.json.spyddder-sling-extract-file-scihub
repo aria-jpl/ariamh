@@ -1,5 +1,5 @@
 {
-  "label" : "Data Sling and Extract for Scihub-file",
+  "label" : "Data Sling and Extract to File - Scihub",
   "allowed_accounts": [ "ops" ],
   "params" : [
     {
