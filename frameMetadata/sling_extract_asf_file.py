@@ -293,6 +293,24 @@ def download_file(url, path, cache=False):
     else:
         return osaka.main.get(url, path, params=params)
 
+def rename_file(orig_file_name):
+    if not os.path.exists(orig_file_name):
+        raise Exception("File NOT Found : {}".format(orig_file_name))
+
+    filename, file_extension = os.path.splitext(orig_file_name)
+    print("filename : {}, file_extension : {}".format(filename, file_extension))
+    if file_extension.lower() != ".zip":
+        raise Exception("Not the right extension : {} for a SLC file : {}".format(file_extension, orig_file_name))
+    
+    new_file_name = orig_file_name
+    if not new_file_name.endswith("-file"):
+        new_file_name = "{}-file{}".format(filename, file_extension)
+
+    print(new_file_name)
+
+    os.rename(orig_file_name, new_file_name)
+
+    return new_file_name
 
 def localize_file(url, path, cache):
     """Localize urls for job inputs. Track metrics."""
@@ -508,6 +526,45 @@ def create_product(file, url, prod_name, prod_date, md5_hash):
 
     run_extractor(dsets_file, prod_path, url, ctx, md5_hash)
 
+def create_product_file_from_product(prod_name):
+    if not os.path.exists(prod_name) or not os.path.isdir(prod_name):
+        raise Exception("No Product Directory Found : {}".format(prod_name))
+    
+    prod_file_path = prod_name
+    if not prod_file_path.endswith("-file"):
+        prod_file_path = "{}-file".format(prod_file_path)
+
+    if not os.path.exists(prod_file_path):
+        os.makedirs(prod_file_path, 0o775)
+
+    files = os.listdir(prod_name)
+
+    for f on files:
+        source_file = os.path.join(prod_name, f)
+        dest_file = os.path.join(prod_file_path, f.replace(prod_name, prod_file_path))
+        os.rename(source_file, dest_file)
+
+    os.unlink(prod_name)
+
+    #update metadata file contents
+    metadata_file = os.path.join(prod_file_path, '%s.met.json' % \
+                                 os.path.basename(prod_file_path))
+    dataset_file = os.path.join(prod_file_path, '%s.dataset.json' % \
+                                os.path.basename(prod_file_path))
+
+    # load metadata
+    metadata = {}
+    if os.path.exists(metadata_file):
+        with open(metadata_file) as f:
+            metadata = json.load(f)
+
+    metadata["new_file_name"] = prod_file_path
+
+    # write it out to file
+    with open(metadata_file, 'w') as f:
+        json.dump(metadata, f, indent=2)
+    logging.info("Wrote metadata to %s" % metadata_file)
+
 
 def is_non_zero_file(fpath):
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
@@ -519,14 +576,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
     prod_date = time.strftime('%Y-%m-%d')
 
-    if check_slc_status(args.slc_id.strip()):
-        logging.info("TEMP NOT Exiting though we FOUND slc id : %s in ES query" % args.slc_id)
+    slc_id = args.slc_id.strip()
+    slc_id_file = slc_id 
+    if not slc_id_file.lower().endswith("-file"):
+        slc_id_file = "{}-file".format(slc_id_file)
+
+    if check_slc_status(slc_id_file):
+        logging.info("TEMP NOT Exiting though we FOUND slc id : %s in ES query" % slc_id)
         #exit(0)
 
     time.sleep(5)
     # Recheck as this method sometime does not work
-    if check_slc_status(args.slc_id.strip()):
-        logging.info("TEMP NOT Exiting though we FOUND slc id : %s in ES query" % args.slc_id)
+    if check_slc_status(slc_id_file):
+        logging.info("TEMP NOT Exiting though we FOUND slc id : %s in ES query" % slc_id)
         #exit(0)
 
     acq_datas = get_acquisition_data_from_slc(args.slc_id)
@@ -564,9 +626,10 @@ if __name__ == "__main__":
         logging.info("localize_url : %s \nfile : %s" % (localize_url, archive_filename))
 
         localize_file(localize_url, archive_filename, False)
+        #archive_filename = rename_file(archive_filename)
 
         # update context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
+        update_context_file(localize_url, archive_filename, slc_id, prod_date, download_url)
 
         # getting the checksum value of the localized file
         os.path.abspath(archive_filename)
@@ -603,7 +666,7 @@ if __name__ == "__main__":
         if not is_non_zero_file(archive_filename):
             raise Exception("File Not Found or Empty File : %s" % archive_filename)
 
-        create_product(archive_filename, localize_url, args.slc_id, prod_date, asf_md5_hash)
+        create_product(archive_filename, localize_url, slc_id, prod_date, asf_md5_hash)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
