@@ -539,12 +539,12 @@ def create_product_file_from_product(prod_name):
 
     files = os.listdir(prod_name)
 
-    for f on files:
+    for f in files:
         source_file = os.path.join(prod_name, f)
         dest_file = os.path.join(prod_file_path, f.replace(prod_name, prod_file_path))
         os.rename(source_file, dest_file)
 
-    os.unlink(prod_name)
+    os.rmdir(prod_name)
 
     #update metadata file contents
     metadata_file = os.path.join(prod_file_path, '%s.met.json' % \
@@ -558,13 +558,24 @@ def create_product_file_from_product(prod_name):
         with open(metadata_file) as f:
             metadata = json.load(f)
 
-    metadata["new_file_name"] = prod_file_path
+    metadata["archive_filename"] = metadata["archive_filename"].replace(prod_name, prod_file_path)
+    metadata["prod_name"] = prod_file_path
 
     # write it out to file
     with open(metadata_file, 'w') as f:
         json.dump(metadata, f, indent=2)
     logging.info("Wrote metadata to %s" % metadata_file)
 
+    if os.path.exists(dataset_file):
+        with open(dataset_file) as f:
+            dataset = json.load(f)
+
+    dataset["label"] = prod_file_path
+
+    # write it out to file
+    with open(dataset_file, 'w') as f:
+        json.dump(dataset, f, indent=2)
+    logging.info("Wrote dataset to %s" % dataset_file)
 
 def is_non_zero_file(fpath):
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
@@ -667,6 +678,7 @@ if __name__ == "__main__":
             raise Exception("File Not Found or Empty File : %s" % archive_filename)
 
         create_product(archive_filename, localize_url, slc_id, prod_date, asf_md5_hash)
+        create_product_file_from_product(slc_id)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
