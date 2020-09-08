@@ -175,31 +175,32 @@ def check_slc_status(slc_id, index_suffix=None):
     return False
 
 
-def get_slc_checksum_md5_asf(slc_id):
+def get_slc_checksum_md5_scihub(esa_uuid):
     '''
-    :param slc_id: slc_id taken from the metadata of the acquisition
-    :return: string (md5 hash from ASF sci-hub) all lower case (ex. 8e15beebbbb3de0a7dbed50a39b6e41b)
+    :param esa_uuid: ESA's uuid (provded in acquisition metadata.id)
+    :return: string (md5 hash from ESA sci-hub)
+             ex. 8E15BEEBBBB3DE0A7DBED50A39B6E41B -> 8e15beebbbb3de0a7dbed50a39b6e41b
     '''
 
     # sleeps random time between 15 and 60 seconds so we can further avoid too many requests to sci-hub
     sleep_time = random.randrange(15, 60)
     time.sleep(sleep_time)
 
-    asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&processingLevel=SLC&output=geojson"
-    asf_geo_json_endpoint = asf_geo_json_endpoint_template.format(slc_id=slc_id)
+    md5_checksum_url_template = "https://scihub.copernicus.eu/dhus/odata/v1/Products('{uuid}')/Checksum/Value/$value"
+    md5_checksum_url = md5_checksum_url_template.format(uuid=esa_uuid)
+    logging.info("md5_checksum_url : %s" % md5_checksum_url)
+    req = requests.get(md5_checksum_url, timeout=30)
 
-    req = requests.get(asf_geo_json_endpoint, timeout=30)
+    if req.status_code == 404:
+        logging.error("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+        raise RuntimeError("ERROR 404: {uuid} not found in ESA sci-hub's system".format(uuid=esa_uuid))
+    elif req.status_code == 408 or req.status_code == 504:
+        logging.error("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
+        raise RuntimeError("TIMEOUT ERROR PULLING FROM SCI-HUB: {uuid}".format(uuid=esa_uuid))
 
-    if req.status_code != 200:
-        raise RuntimeError("API Request failed for md5 retrieval from ASF: ERROR CODE: {}".format(req.status_code))
-
-    geojson = json.loads(req.text)
-    if len(geojson["features"]) < 1:
-        # {u'type': u'FeatureCollection', u'features': []} if SLC not found in ASF
-        raise RuntimeError("SLC_ID {} not found in ASF: no available md5 checksum for SLC".format(slc_id))
-
-    md5_hash = geojson["features"][0]["properties"]["md5sum"]  # md5 checksum is lower case
-    return md5_hash
+    scihub_md5_hash = req.text
+    # forcing to lower case because get_md5_from_localized_file() returns lower string
+    return scihub_md5_hash.lower()
 
 
 def get_download_params(url):
@@ -274,8 +275,7 @@ def download_file(url, path, cache=False):
             with atomic_write(signal_file, overwrite=True) as f:
                 f.write("%sZ\n" % datetime.utcnow().isoformat())
         for i in os.listdir(cache_dir):
-            if i == '.localized':
-                continue
+            if i == '.localized': continue
             cached_obj = os.path.join(cache_dir, i)
             if os.path.isdir(cached_obj):
                 dst = os.path.join(path, i) if os.path.isdir(path) else path
@@ -293,24 +293,6 @@ def download_file(url, path, cache=False):
     else:
         return osaka.main.get(url, path, params=params)
 
-def rename_file(orig_file_name):
-    if not os.path.exists(orig_file_name):
-        raise Exception("File NOT Found : {}".format(orig_file_name))
-
-    filename, file_extension = os.path.splitext(orig_file_name)
-    print("filename : {}, file_extension : {}".format(filename, file_extension))
-    if file_extension.lower() != ".zip":
-        raise Exception("Not the right extension : {} for a SLC file : {}".format(file_extension, orig_file_name))
-    
-    new_file_name = orig_file_name
-    if not new_file_name.endswith("-file"):
-        new_file_name = "{}-file{}".format(filename, file_extension)
-
-    print(new_file_name)
-
-    os.rename(orig_file_name, new_file_name)
-
-    return new_file_name
 
 def localize_file(url, path, cache):
     """Localize urls for job inputs. Track metrics."""
@@ -394,6 +376,7 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
         settings_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json')
         settings = json.load(open(settings_file))
     except:
+
         settings['DATASETS_CFG'] = "/home/ops/verdi/etc/datasets.json"
         settings["INCOMING_VERSION"] = "v0.1"
         settings["EXTRACT_VERSION"] = "v0.1"
@@ -455,6 +438,7 @@ def run_extractor(dsets_file, prod_path, url, ctx, md5_hash):
                     err_msg = split_err
             else:
                 logging.info("%s file NOT Found" % split_log)
+
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, err_msg))
 
         if os.path.exists(metadata_file):
@@ -523,7 +507,6 @@ def create_product(file, url, prod_name, prod_date, md5_hash):
     dsets_file = settings['DATASETS_CFG']
     if os.path.exists("./datasets.json"):
         dsets_file = "./datasets.json"
-
     run_extractor(dsets_file, prod_path, url, ctx, md5_hash)
 
 def create_product_file_from_product(prod_name):
@@ -577,6 +560,7 @@ def create_product_file_from_product(prod_name):
         json.dump(dataset, f, indent=2)
     logging.info("Wrote dataset to %s" % dataset_file)
 
+
 def is_non_zero_file(fpath):
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 
@@ -591,7 +575,7 @@ if __name__ == "__main__":
     slc_id_file = slc_id 
     if not slc_id_file.lower().endswith("-file"):
         slc_id_file = "{}-file".format(slc_id_file)
-    
+
     if check_slc_status(slc_id_file):
         logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
         exit(0)
@@ -622,13 +606,19 @@ if __name__ == "__main__":
     logging.info("archive_filename : %s" % archive_filename)
     logging.info("acq_data['metadata']['id'] : %s" % acq_data['metadata']['id'])
 
-    # get md5 checksum from ASF sci-hub
-    asf_md5_hash = get_slc_checksum_md5_asf(args.slc_id)
+    # get md5 checksum from ESA sci-hub
+    esa_sci_hub_md5_hash = get_slc_checksum_md5_scihub(acq_data['metadata']['id'])
 
-    source = "asf"
+    source = "scihub"
     localize_url = None
     if source.lower() == "asf":
-        localize_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
+        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
+        r = requests.head(vertex_url, allow_redirects=True)
+        logging.info("Status Code from ASF : %s" % r.status_code)
+        if r.status_code in (200, 403):
+            localize_url = vertex_url
+        else:
+            raise RuntimeError("Status Code from ASF for SLC %s : %s" % (args.slc_id, r.status_code))
     else:
         localize_url = download_url
 
@@ -637,22 +627,20 @@ if __name__ == "__main__":
         logging.info("localize_url : %s \nfile : %s" % (localize_url, archive_filename))
 
         localize_file(localize_url, archive_filename, False)
-        #archive_filename = rename_file(archive_filename)
 
-        # update context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename, slc_id, prod_date, download_url)
+        # update _context.json with localize file info as it is used later
+        update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
 
         # getting the checksum value of the localized file
-        os.path.abspath(archive_filename)
-        # slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename)
+        # slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
         slc_file_path = os.path.join(os.getcwd(), archive_filename)
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
-        # comparing localized md5 hash with asf's md5 hash
-        if localized_md5_checksum != asf_md5_hash:
+        # comparing localized md5 hash with esa's md5 hash
+        if localized_md5_checksum != esa_sci_hub_md5_hash:
             raise RuntimeError(
                 "Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id,
-                                                                                               asf_md5_hash,
+                                                                                               esa_sci_hub_md5_hash,
                                                                                                localized_md5_checksum))
 
         '''
@@ -677,8 +665,8 @@ if __name__ == "__main__":
         if not is_non_zero_file(archive_filename):
             raise Exception("File Not Found or Empty File : %s" % archive_filename)
 
-        create_product(archive_filename, localize_url, slc_id, prod_date, asf_md5_hash)
-        create_product_file_from_product(slc_id)
+        create_product(archive_filename, localize_url, args.slc_id, prod_date, esa_sci_hub_md5_hash)
+        create_product_file_from_product(args.slc_id)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
