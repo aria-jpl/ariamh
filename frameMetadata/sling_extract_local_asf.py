@@ -536,27 +536,27 @@ def create_product_file_from_product(prod_name):
     if not os.path.exists(prod_name) or not os.path.isdir(prod_name):
         raise Exception("No Product Directory Found : {}".format(prod_name))
     
-    prod_file_path = prod_name
-    if not prod_file_path.endswith("-local"):
-        prod_file_path = "{}-local".format(prod_file_path)
+    prod_local_path = prod_name
+    if not prod_local_path.endswith("-local"):
+        prod_local_path = "{}-local".format(prod_local_path)
 
-    if not os.path.exists(prod_file_path):
-        os.makedirs(prod_file_path, 0o775)
+    if not os.path.exists(prod_local_path):
+        os.makedirs(prod_local_path, 0o775)
 
     files = os.listdir(prod_name)
 
     for f in files:
         source_file = os.path.join(prod_name, f)
-        dest_file = os.path.join(prod_file_path, f.replace(prod_name, prod_file_path))
+        dest_file = os.path.join(prod_local_path, f.replace(prod_name, prod_local_path))
         os.rename(source_file, dest_file)
 
     os.rmdir(prod_name)
 
     #update metadata file contents
-    metadata_file = os.path.join(prod_file_path, '%s.met.json' % \
-                                 os.path.basename(prod_file_path))
-    dataset_file = os.path.join(prod_file_path, '%s.dataset.json' % \
-                                os.path.basename(prod_file_path))
+    metadata_file = os.path.join(prod_local_path, '%s.met.json' % \
+                                 os.path.basename(prod_local_path))
+    dataset_file = os.path.join(prod_local_path, '%s.dataset.json' % \
+                                os.path.basename(prod_local_path))
 
     # load metadata
     metadata = {}
@@ -564,8 +564,8 @@ def create_product_file_from_product(prod_name):
         with open(metadata_file) as f:
             metadata = json.load(f)
 
-    metadata["archive_filename"] = metadata["archive_filename"].replace(prod_name, prod_file_path)
-    metadata["prod_name"] = prod_file_path
+    metadata["archive_filename"] = metadata["archive_filename"].replace(prod_name, prod_local_path)
+    metadata["prod_name"] = prod_local_path
 
     # write it out to file
     with open(metadata_file, 'w') as f:
@@ -576,7 +576,7 @@ def create_product_file_from_product(prod_name):
         with open(dataset_file) as f:
             dataset = json.load(f)
 
-    dataset["label"] = prod_file_path
+    dataset["label"] = prod_local_path
 
     # write it out to file
     with open(dataset_file, 'w') as f:
@@ -630,7 +630,7 @@ if __name__ == "__main__":
     logging.info("acq_data['metadata']['id'] : %s" % acq_data['metadata']['id'])
 
     # get md5 checksum from ASF sci-hub
-    asf_md5_hash = get_slc_checksum_md5_asf(args.slc_id)
+    asf_md5_hash = get_slc_checksum_md5_asf(slc_id_real)
 
     source = "asf"
     localize_url = None

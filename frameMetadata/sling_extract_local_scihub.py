@@ -519,27 +519,27 @@ def create_product_file_from_product(prod_name):
     if not os.path.exists(prod_name) or not os.path.isdir(prod_name):
         raise Exception("No Product Directory Found : {}".format(prod_name))
     
-    prod_file_path = prod_name
-    if not prod_file_path.endswith("-local"):
-        prod_file_path = "{}-local".format(prod_file_path)
+    prod_local_path = prod_name
+    if not prod_local_path.endswith("-local"):
+        prod_local_path = "{}-local".format(prod_local_path)
 
-    if not os.path.exists(prod_file_path):
-        os.makedirs(prod_file_path, 0o775)
+    if not os.path.exists(prod_local_path):
+        os.makedirs(prod_local_path, 0o775)
 
     files = os.listdir(prod_name)
 
     for f in files:
         source_file = os.path.join(prod_name, f)
-        dest_file = os.path.join(prod_file_path, f.replace(prod_name, prod_file_path))
+        dest_file = os.path.join(prod_local_path, f.replace(prod_name, prod_local_path))
         os.rename(source_file, dest_file)
 
     os.rmdir(prod_name)
 
     #update metadata file contents
-    metadata_file = os.path.join(prod_file_path, '%s.met.json' % \
-                                 os.path.basename(prod_file_path))
-    dataset_file = os.path.join(prod_file_path, '%s.dataset.json' % \
-                                os.path.basename(prod_file_path))
+    metadata_file = os.path.join(prod_local_path, '%s.met.json' % \
+                                 os.path.basename(prod_local_path))
+    dataset_file = os.path.join(prod_local_path, '%s.dataset.json' % \
+                                os.path.basename(prod_local_path))
 
     # load metadata
     metadata = {}
@@ -547,8 +547,8 @@ def create_product_file_from_product(prod_name):
         with open(metadata_file) as f:
             metadata = json.load(f)
 
-    metadata["archive_filename"] = metadata["archive_filename"].replace(prod_name, prod_file_path)
-    metadata["prod_name"] = prod_file_path
+    metadata["archive_filename"] = metadata["archive_filename"].replace(prod_name, prod_local_path)
+    metadata["prod_name"] = prod_local_path
 
     # write it out to file
     with open(metadata_file, 'w') as f:
@@ -559,7 +559,7 @@ def create_product_file_from_product(prod_name):
         with open(dataset_file) as f:
             dataset = json.load(f)
 
-    dataset["label"] = prod_file_path
+    dataset["label"] = prod_local_path
 
     # write it out to file
     with open(dataset_file, 'w') as f:
@@ -578,23 +578,24 @@ if __name__ == "__main__":
     prod_date = time.strftime('%Y-%m-%d')
 
     slc_id = args.slc_id.strip()
-    slc_id_file = slc_id 
-    if not slc_id_file.lower().endswith("-local"):
-        slc_id_file = "{}-local".format(slc_id_file)
+    slc_id_local = slc_id 
+    slc_id_real = remove_local(slc_id, "-local")
+    if not slc_id_local.lower().endswith("-local"):
+        slc_id_local = "{}-local".format(slc_id_local)
 
-    if check_slc_status(slc_id_file):
-        logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
+    if check_slc_status(slc_id_local):
+        logging.info("Existing as we FOUND slc id : %s in ES query" % slc_id_local)
         exit(0)
 
     time.sleep(5)
     # Recheck as this method sometime does not work
-    if check_slc_status(slc_id_file):
-        logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
+    if check_slc_status(slc_id_local):
+        logging.info("Existing as we FOUND slc id : %s in ES query" % slc_id_local)
         exit(0)
 
-    acq_datas = get_acquisition_data_from_slc(args.slc_id)
+    acq_datas = get_acquisition_data_from_slc(slc_id_real)
     if len(acq_datas) < 1:
-        raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(args.slc_id))
+        raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(slc_id_real))
 
     acq_data = acq_datas[0]
     if len(acq_datas) > 1:
@@ -618,13 +619,13 @@ if __name__ == "__main__":
     source = "scihub"
     localize_url = None
     if source.lower() == "asf":
-        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
+        vertex_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(slc_id_real)
         r = requests.head(vertex_url, allow_redirects=True)
         logging.info("Status Code from ASF : %s" % r.status_code)
         if r.status_code in (200, 403):
             localize_url = vertex_url
         else:
-            raise RuntimeError("Status Code from ASF for SLC %s : %s" % (args.slc_id, r.status_code))
+            raise RuntimeError("Status Code from ASF for SLC %s : %s" % (slc_id_real, r.status_code))
     else:
         localize_url = download_url
 
@@ -635,17 +636,16 @@ if __name__ == "__main__":
         localize_file(localize_url, archive_filename, False)
 
         # update _context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename, args.slc_id, prod_date, download_url)
+        update_context_file(localize_url, archive_filename, slc_id_local, prod_date, download_url)
 
         # getting the checksum value of the localized file
-        # slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename + ".md5")
         slc_file_path = os.path.join(os.getcwd(), archive_filename)
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
         # comparing localized md5 hash with esa's md5 hash
         if localized_md5_checksum != esa_sci_hub_md5_hash:
             raise RuntimeError(
-                "Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id,
+                "Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(slc_id_real,
                                                                                                esa_sci_hub_md5_hash,
                                                                                                localized_md5_checksum))
 
@@ -671,8 +671,8 @@ if __name__ == "__main__":
         if not is_non_zero_file(archive_filename):
             raise Exception("File Not Found or Empty File : %s" % archive_filename)
 
-        create_product(archive_filename, localize_url, args.slc_id, prod_date, esa_sci_hub_md5_hash)
-        create_product_file_from_product(args.slc_id)
+        create_product(archive_filename, localize_url, slc_id_real, prod_date, esa_sci_hub_md5_hash)
+        create_product_file_from_product(slc_id_real)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
