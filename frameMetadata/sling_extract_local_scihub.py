@@ -74,8 +74,14 @@ def getConf():
             pass
     return uu
 
+def remove_local(s, suffix):
+    if suffix and s.endswith(suffix):
+        return s[:-len(suffix)]
+    return s
 
 def get_acquisition_data_from_slc(slc_id):
+    slc_id = remove_local(slc_id, "-local")
+    
     uu = getConf()
     es_url = uu['rest_url']
     es_index = "grq_*_*acquisition*"
