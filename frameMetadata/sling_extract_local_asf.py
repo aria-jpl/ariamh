@@ -594,23 +594,24 @@ if __name__ == "__main__":
     prod_date = time.strftime('%Y-%m-%d')
 
     slc_id = args.slc_id.strip()
-    slc_id_file = slc_id 
-    if not slc_id_file.lower().endswith("-local"):
-        slc_id_file = "{}-local".format(slc_id_file)
+    slc_id_local = slc_id
+    slc_id_real = remove_local(slc_id, "-local") 
+    if not slc_id_local.lower().endswith("-local"):
+        slc_id_local = "{}-local".format(slc_id_local)
     
-    if check_slc_status(slc_id_file):
-        logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
+    if check_slc_status(slc_id_local):
+        logging.info("Existing as we FOUND slc id : %s in ES query" % slc_id_local)
         exit(0)
 
     time.sleep(5)
     # Recheck as this method sometime does not work
-    if check_slc_status(slc_id_file):
-        logging.info("Existing as we FOUND slc id : %s in ES query" % args.slc_id)
+    if check_slc_status(slc_id_local):
+        logging.info("Existing as we FOUND slc id : %s in ES query" %slc_id_local)
         exit(0)
 
-    acq_datas = get_acquisition_data_from_slc(args.slc_id)
+    acq_datas = get_acquisition_data_from_slc(slc_id_real)
     if len(acq_datas) < 1:
-        raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(args.slc_id))
+        raise RuntimeError("No Non-Deprecated Acquisition Found for SLC: {}".format(slc_id_real))
 
     acq_data = acq_datas[0]
     if len(acq_datas) > 1:
@@ -634,7 +635,7 @@ if __name__ == "__main__":
     source = "asf"
     localize_url = None
     if source.lower() == "asf":
-        localize_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(args.slc_id)
+        localize_url = "https://datapool.asf.alaska.edu/SLC/SA/{}.zip".format(slc_id_real)
     else:
         localize_url = download_url
 
@@ -646,18 +647,17 @@ if __name__ == "__main__":
         #archive_filename = rename_file(archive_filename)
 
         # update context.json with localize file info as it is used later
-        update_context_file(localize_url, archive_filename, slc_id, prod_date, download_url)
+        update_context_file(localize_url, archive_filename, slc_id_local, prod_date, download_url)
 
         # getting the checksum value of the localized file
         os.path.abspath(archive_filename)
-        # slc_file_path = os.path.join(os.path.abspath(args.slc_id), archive_filename)
         slc_file_path = os.path.join(os.getcwd(), archive_filename)
         localized_md5_checksum = get_md5_from_localized_file(slc_file_path)
 
         # comparing localized md5 hash with asf's md5 hash
         if localized_md5_checksum != asf_md5_hash:
             raise RuntimeError(
-                "Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(args.slc_id,
+                "Checksums DO NOT match SLC id {} : SLC checksum {}. local checksum {}".format(slc_id_real,
                                                                                                asf_md5_hash,
                                                                                                localized_md5_checksum))
 
@@ -683,8 +683,8 @@ if __name__ == "__main__":
         if not is_non_zero_file(archive_filename):
             raise Exception("File Not Found or Empty File : %s" % archive_filename)
 
-        create_product(archive_filename, localize_url, slc_id, prod_date, asf_md5_hash)
-        create_product_file_from_product(slc_id)
+        create_product(archive_filename, localize_url, slc_id_real, prod_date, asf_md5_hash)
+        create_product_file_from_product(slc_id_real)
     except Exception as e:
         with open('_alt_error.txt', 'w') as f:
             f.write("%s\n" % str(e))
