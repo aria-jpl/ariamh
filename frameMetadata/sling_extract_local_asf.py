@@ -367,6 +367,11 @@ def get_md5_from_localized_file(file_name):
     :param file_name: file path to the local SLC file after download
     :return: string, ex. 8e15beebbbb3de0a7dbed50a39b6e41b ALL LOWER CASE
     '''
+
+    logging.info("get_md5_from_localized_file : file_name : {}".format(file_name))
+    if not os.path.isfile(file_name):
+        logging.info("get_md5_from_localized_file : file {} does NOT Exist".format(file_name))
+
     hash_md5 = hashlib.md5()
     with open(file_name, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
