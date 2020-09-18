@@ -6,6 +6,13 @@
       "name": "slc_id",
       "from": "dataset_jpath:_source.metadata.identifier",
       "type": "text"
+    },
+    { 
+      "name": "request_id",
+      "from": "submitter",
+      "type": "text",
+      "default": "UNKNOWN"
     }
+  ]
   ]
 }
