@@ -5,8 +5,8 @@
     "$HOME/.aws": "/home/ops/.aws",
     "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/frameMetadata/settings.json",
     "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf",
-    "/nobackupp12/esi_sar/work/datasets": ["/nobackupp12/esi_sar/work/datasets", "rw"],
-    "/nobackupp12/esi_sar/work/browse": ["/nobackupp12/esi_sar/work/browse", "rw"]
+    "/data/work/datasets": ["/data/work/datasets", "rw"],
+    "/data/work/browse": ["/data/work/browse", "rw"]
   },
   "recommended-queues" : [
     "slc-sling-extract-asf",
