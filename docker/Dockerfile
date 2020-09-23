@@ -1,4 +1,7 @@
-FROM hysds/isce2:latest-cuda
+FROM nisar/isce
+# FROM hysds/isce2:latest-cuda
+# FROM hysds/isce2:latest-cuda-es1
+
 
 MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
