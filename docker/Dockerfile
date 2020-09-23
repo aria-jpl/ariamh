@@ -36,9 +36,9 @@ COPY . /home/ops/ariamh
 
 RUN set -ex \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj \
-    && $HOME/bin/pip install joblib netcdf4 \
-    &&  $HOME/bin/pip install 'fiona==1.7.13' \
-    #&& $HOME/bin/pip install 'pyproj==2.6.1' \
+    && /opt/conda/bin/pip install joblib netcdf4 \
+    && /opt/conda/bin/pip install 'fiona==1.7.13' \
+    #&& /opt/conda/bin/pip install 'pyproj==2.6.1' \
     && sudo rm -rf /root/.cache \
     && sudo chown -R conda /home/ops/ariamh \
     && cd /home/ops/verdi/ops/slcp2pm/src \
