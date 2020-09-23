@@ -11,7 +11,7 @@ RUN sudo yum install -y git
 # copying spyddderman, slcp2cor and slcp2pm repos
 RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
     && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
-    && sudo chown -R ops $HOME/verdi/ops
+    && sudo chown -R conda $HOME/verdi/ops
 #    && sudo chown -R ops:ops $HOME/verdi/ops
 
 
