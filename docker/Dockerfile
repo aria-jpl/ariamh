@@ -8,6 +8,7 @@ LABEL description="GRFN PGE container"
 
 RUN sudo yum install -y git
 RUN sudo yum install -y gcc-c++
+RUN sudo yum install -y gdal gdal-devel
 
 # copying spyddderman, slcp2cor and slcp2pm repos
 # RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
