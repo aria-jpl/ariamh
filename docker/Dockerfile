@@ -14,11 +14,6 @@ RUN sudo yum install -y gcc-c++
 #     && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
 #     && sudo chown -R ops:ops $HOME/verdi/ops
 
-RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
-    && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
-    && sudo chown -R conda $HOME/verdi/ops 
-
-
 RUN set -ex \
  && . /opt/conda/bin/activate root \
  && conda install --yes \
@@ -37,6 +32,13 @@ RUN set -ex \
       libgcc \
       libstdcxx-ng \
       cmake
+
+RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
+    && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
+    && sudo chown -R conda $HOME/verdi/ops 
+
+
+
 
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
