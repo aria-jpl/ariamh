@@ -32,10 +32,17 @@ RUN set -ex \
       libgcc \
       libstdcxx-ng \
       cmake
+      
+RUN set -ex \
+  && . /opt/conda/bin/activate root \
+  && git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
+  && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
+  && sudo chown -R conda $HOME/verdi/ops 
 
-RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
-    && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
-    && sudo chown -R conda $HOME/verdi/ops 
+
+# RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
+#    && git clone --branch python3 https://github.com/aria-jpl/slcp2cor.git $HOME/verdi/ops/slcp2cor \
+#    && sudo chown -R conda $HOME/verdi/ops 
 
 
 
