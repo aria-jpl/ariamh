@@ -7,6 +7,7 @@ MAINTAINER aria-ops "aria-ops@list.jpl.nasa.gov"
 LABEL description="GRFN PGE container"
 
 RUN sudo yum install -y git
+RUN sudo yum install -y gcc-c++
 
 # copying spyddderman, slcp2cor and slcp2pm repos
 # RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/verdi/ops/slcp2pm \
