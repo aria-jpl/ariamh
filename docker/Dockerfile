@@ -36,7 +36,7 @@ RUN set -ex \
       hdf5 \
       libgcc \
       libstdcxx-ng \
-      cmake \
+      cmake
 
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
