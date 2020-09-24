@@ -16,7 +16,7 @@ RUN sudo yum install -y gcc-c++
 
 RUN set -ex \
  && . /opt/conda/bin/activate root \
- && conda install --yes \
+ && sudo conda install --yes \
       cython \
       gdal \
       git \
