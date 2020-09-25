@@ -48,7 +48,8 @@ RUN set -ex \
 
 
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
-COPY . /home/ops/ariamh
+# COPY . /home/ops/ariamh
+COPY . /home/conda/ariamh
 
 # RUN set -ex \
 #     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj \
@@ -65,16 +66,22 @@ COPY . /home/ops/ariamh
 RUN set -ex \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj \
     && /opt/conda/bin/pip install joblib netcdf4 \
-    && /opt/conda/bin/pip install 'fiona==1.7.13' \
-    #&& /opt/conda/bin/pip install 'pyproj==2.6.1' \
+    # && /opt/conda/bin/pip install 'fiona==1.7.13' \
+    && sudo conda install -c conda-forge fiona \
+    # && /opt/conda/bin/pip install 'pyproj==2.6.1' \
+    && sudo conda install -c conda-forge pyproj \
     && sudo rm -rf /root/.cache \
     && sudo chown -R conda /home/ops/ariamh \
-    && cd /home/ops/verdi/ops/slcp2pm/src \
+    && sudo chown -R conda /home/conda/ariamh \
+    # && cd /home/ops/verdi/ops/slcp2pm/src \
+    && cd /home/conda/verdi/ops/slcp2pm/src \
     && ./compile.sh \
-    && cd /home/ops/verdi/ops/slcp2cor/src \
+    # && cd /home/ops/verdi/ops/slcp2cor/src \
+    && cd /home/conda/verdi/ops/slcp2cor/src \
     && ./compile.sh
 
 
 # set entrypoint
-WORKDIR /home/ops
+# WORKDIR /home/ops
+WORKDIR /home/conda
 CMD ["/bin/bash", "--login"]
