@@ -71,7 +71,7 @@ RUN set -ex \
     # && /opt/conda/bin/pip install 'pyproj==2.6.1' \
     && sudo /opt/conda/bin/conda install -c conda-forge pyproj \
     && sudo rm -rf /root/.cache \
-    && sudo chown -R conda /home/ops/ariamh \
+    # && sudo chown -R conda /home/ops/ariamh \
     && sudo chown -R conda /home/conda/ariamh \
     # && cd /home/ops/verdi/ops/slcp2pm/src \
     && cd /home/conda/verdi/ops/slcp2pm/src \
