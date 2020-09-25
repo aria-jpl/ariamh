@@ -67,9 +67,9 @@ RUN set -ex \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj \
     && /opt/conda/bin/pip install joblib netcdf4 \
     # && /opt/conda/bin/pip install 'fiona==1.7.13' \
-    && sudo conda install -c conda-forge fiona \
+    && sudo /opt/conda/bin/conda install -c conda-forge fiona \
     # && /opt/conda/bin/pip install 'pyproj==2.6.1' \
-    && sudo conda install -c conda-forge pyproj \
+    && sudo /opt/conda/bin/conda install -c conda-forge pyproj \
     && sudo rm -rf /root/.cache \
     && sudo chown -R conda /home/ops/ariamh \
     && sudo chown -R conda /home/conda/ariamh \
