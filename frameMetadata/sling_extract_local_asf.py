@@ -595,12 +595,16 @@ def is_non_zero_file(fpath):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("slc_id", help="id of the localized file")
+    parser.add_argument("request_id", help="request_id")
+
     args = parser.parse_args()
     prod_date = time.strftime('%Y-%m-%d')
 
     slc_id = args.slc_id.strip()
     slc_id_local = slc_id
     slc_id_real = remove_local(slc_id, "-local") 
+    request_id = args.request_id.strip()
+
     if not slc_id_local.lower().endswith("-local"):
         slc_id_local = "{}-local".format(slc_id_local)
     
