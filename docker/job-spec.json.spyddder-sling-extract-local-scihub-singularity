@@ -1,5 +1,5 @@
 {
-  "command": "/home/ops/ariamh/frameMetadata/sling_extract_local_scihub.py",
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract_local_scihub.sh",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
