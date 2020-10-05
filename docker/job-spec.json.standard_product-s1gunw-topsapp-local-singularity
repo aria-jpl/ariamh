@@ -6,10 +6,10 @@
     "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "standard_product-s1gunw-topsapp-asg-fleet"
+    "standard_product-s1gunw-topsapp-asg-fleet-pleiades_s2037"
   ],
-  "soft_time_limit": 7200,
-  "time_limit": 7500,
+  "soft_time_limit": 21600,
+  "time_limit": 21600,
   "disk_usage":"200GB",
   "post": [ "hysds.utils.triage" ],
   "params" : [

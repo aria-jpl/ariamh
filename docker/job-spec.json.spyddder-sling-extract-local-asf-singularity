@@ -1,10 +1,12 @@
 {
-  "command": "/home/ops/ariamh/frameMetadata/sling_extract_asf_file.py",
+  "command": "/home/ops/ariamh/frameMetadata/sling_extract_local_asf.sh",
   "imported_worker_files": {
     "$HOME/.netrc": "/home/ops/.netrc",
     "$HOME/.aws": "/home/ops/.aws",
     "$HOME/verdi/etc/settings.json": "/home/ops/ariamh/frameMetadata/settings.json",
-    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
+    "$HOME/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf",
+    "/data/work/datasets": ["/data/work/datasets", "rw"],
+    "/data/work/browse": ["/data/work/browse", "rw"]
   },
   "recommended-queues" : [
     "slc-sling-extract-asf",
@@ -23,6 +25,10 @@
   "params" : [
     { 
       "name": "slc_id",
+      "destination": "positional"
+    },
+    { 
+      "name": "request_id",
       "destination": "positional"
     }
   ]
