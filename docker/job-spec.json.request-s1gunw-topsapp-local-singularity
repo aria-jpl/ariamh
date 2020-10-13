@@ -1,5 +1,5 @@
 {
-  "command": "/home/ops/ariamh/interferogram/sentinel/create_standard_product_topsApp_local.sh",
+  "command": "/home/ops/ariamh/interferogram/sentinel/create_request_topsApp_local.sh",
   "imported_worker_files": {
     "/home/ops/.netrc": ["/home/ops/.netrc"],
     "/home/ops/.aws": ["/home/ops/.aws", "ro"],
