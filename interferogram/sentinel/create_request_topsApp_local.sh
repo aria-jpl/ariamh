@@ -24,7 +24,7 @@ STATUS=$?
 echo -n "Finished running Request TopsApp interferogram generation: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
-  echo "Failed to run TopsApp Request Layred interferogram generation." 1>&2
+  echo "Failed to run TopsApp Request interferogram generation." 1>&2
   echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_request_topsApp_local.log >> _alt_traceback.txt
   cat create_request_topsApp_local.log 1>&2
   echo "{}"
