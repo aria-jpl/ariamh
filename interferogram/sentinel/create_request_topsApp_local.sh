@@ -19,7 +19,7 @@ source $HOME/verdi/bin/activate
 echo "##########################################" 1>&2
 echo -n "Running TopsApp Request Layred interferogram generation : " 1>&2
 date 1>&2
-python $BASE_PATH/create_request_topsApp_layered.py > create_request_topsApp_layered.log 2>&1
+python $BASE_PATH/create_request_topsApp_local.py > create_request_topsApp_layered.log 2>&1
 STATUS=$?
 echo -n "Finished running Layered Request TopsApp interferogram generation: " 1>&2
 date 1>&2
