@@ -17,11 +17,11 @@ export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 source $HOME/verdi/bin/activate
 
 echo "##########################################" 1>&2
-echo -n "Running TopsApp Request Layred interferogram generation : " 1>&2
+echo -n "Running TopsApp Request interferogram generation : " 1>&2
 date 1>&2
 python $BASE_PATH/create_request_topsApp_local.py > create_request_topsApp_local.log 2>&1
 STATUS=$?
-echo -n "Finished running Layered Request TopsApp interferogram generation: " 1>&2
+echo -n "Finished running Request TopsApp interferogram generation: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
   echo "Failed to run TopsApp Request Layred interferogram generation." 1>&2
