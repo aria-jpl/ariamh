@@ -19,14 +19,14 @@ source $HOME/verdi/bin/activate
 echo "##########################################" 1>&2
 echo -n "Running TopsApp Request Layred interferogram generation : " 1>&2
 date 1>&2
-python $BASE_PATH/create_request_topsApp_local.py > create_request_topsApp_layered.log 2>&1
+python $BASE_PATH/create_request_topsApp_local.py > create_request_topsApp_local.log 2>&1
 STATUS=$?
 echo -n "Finished running Layered Request TopsApp interferogram generation: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
   echo "Failed to run TopsApp Request Layred interferogram generation." 1>&2
-  echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_request_topsApp_layered.log >> _alt_traceback.txt
-  cat create_request_topsApp_layered.log 1>&2
+  echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_request_topsApp_local.log >> _alt_traceback.txt
+  cat create_request_topsApp_local.log 1>&2
   echo "{}"
   exit $STATUS
 fi
