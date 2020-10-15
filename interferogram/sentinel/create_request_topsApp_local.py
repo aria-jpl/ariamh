@@ -1151,7 +1151,7 @@ def main():
                 "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
                 "-r", "-s", "1", "-f", "-x", "-c", "-n", dem_user, "-w", dem_pass,
-                "-d", dem_url
+                "-u", dem_url
             ]
             dem_cmd_line = " ".join(dem_cmd)
             logger.info("Calling dem.py: {}".format(dem_cmd_line))
@@ -1221,7 +1221,7 @@ def main():
         "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
         "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
         "-r", "-s", "3", "-f", "-x", "-c", "-n", dem_user, "-w", dem_pass,
-        "-d", geocode_dem_url
+        "-u", geocode_dem_url
     ]
     dem_cmd_line = " ".join(dem_cmd)
     logger.info("Calling dem.py: {}".format(dem_cmd_line))
