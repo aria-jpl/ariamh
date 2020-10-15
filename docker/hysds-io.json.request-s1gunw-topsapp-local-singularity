@@ -1,6 +1,6 @@
 {
   "submission_type": "iteration",
-  "label" : "Request S1-GUNW - topsApp-layred - singularity",
+  "label" : "Request S1-GUNW - topsApp-local - singularity",
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,
   "params" : [
