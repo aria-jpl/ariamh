@@ -14,7 +14,6 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 COPY . /home/ops/ariamh
 
 RUN set -ex \
-    && sudo yum install unzip \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     &&  $HOME/verdi/bin/pip install 'fiona==1.7.13' \
@@ -24,7 +23,8 @@ RUN set -ex \
     && cd /home/ops/verdi/ops/slcp2pm/src \
     && ./compile.sh \
     && cd /home/ops/verdi/ops/slcp2cor/src \
-    && ./compile.sh
+    && ./compile.sh \
+    && sudo yum install unzip
 
 # set entrypoint
 WORKDIR /home/ops
