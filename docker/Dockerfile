@@ -13,6 +13,9 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 
+RUN yum -y update \
+    && yum -y --setopt=tsflags=nodocs install unzip
+
 RUN set -ex \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
@@ -23,8 +26,7 @@ RUN set -ex \
     && cd /home/ops/verdi/ops/slcp2pm/src \
     && ./compile.sh \
     && cd /home/ops/verdi/ops/slcp2cor/src \
-    && ./compile.sh \
-    && sudo yum install unzip
+    && ./compile.sh
 
 # set entrypoint
 WORKDIR /home/ops
