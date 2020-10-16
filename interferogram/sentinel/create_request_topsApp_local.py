@@ -7,6 +7,8 @@ import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from itertools import chain
 from zipfile import ZipFile
 from subprocess import check_call, CalledProcessError
+from subprocess import Popen, PIPE
+import shlex
 from glob import glob
 from lxml.etree import parse
 import numpy as np
@@ -1255,6 +1257,14 @@ def main():
     ]
     dem_cmd_line = " ".join(dem_cmd)
     logger.info("Calling downsampleDEM.py: {}".format(dem_cmd_line))
+    # XXXXXX
+    cmd1 = 'env'
+    args1 = shlex.split(cmd1)
+    p1 = Popen(args1)
+    stdout1, stderr1 = p1.communicate()
+    logger.info("before calling {0}, stdout of env: {1}".format(dem_cmd_line, stdout1))
+    logger.info("before calling {0}, stderr of env: {1}".format(dem_cmd_line, stderr1))
+
     check_call(dem_cmd_line, shell=True)
     geocode_dem_file = ""
 
