@@ -15,6 +15,8 @@ export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 
 # source environment
 source $HOME/verdi/bin/activate
+# for gdal to work
+source /opt/conda/bin/activate gis
 
 echo "##########################################" 1>&2
 echo -n "Running S1 interferogram generation: " 1>&2
