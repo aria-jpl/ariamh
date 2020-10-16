@@ -1244,7 +1244,9 @@ def main():
 
     if not os.path.isfile(preprocess_vrt_file):
         logger.info("%s does not exists. Exiting")
-    
+   
+    logger.info("Present Working directory : {}".format(os.getcwd()))
+    os.chdir(cwd) 
     geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
     dem_cmd = [
