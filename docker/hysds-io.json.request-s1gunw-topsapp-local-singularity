@@ -8,7 +8,7 @@
       "name": "dataset_tag",
       "from": "submitter",
       "type": "text",
-      "default": "request-s1gunw,pleiades",
+      "default": "ondemand-s1gunw,pleiades",
       "placeholder": "A value to append to the dataset identifier"
     },
     {
