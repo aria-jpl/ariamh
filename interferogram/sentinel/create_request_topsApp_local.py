@@ -1151,7 +1151,7 @@ def main():
                 "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
                 "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
                 "-r", "-s", "1", "-f", "-x", "-c", "-n", dem_user, "-w", dem_pass,
-                "-d", dem_url
+                "-u", dem_url
             ]
             dem_cmd_line = " ".join(dem_cmd)
             logger.info("Calling dem.py: {}".format(dem_cmd_line))
@@ -1221,7 +1221,7 @@ def main():
         "{}/applications/dem.py".format(os.environ['ISCE_HOME']), "-a",
         "stitch", "-b", "{} {} {} {}".format(dem_S, dem_N, dem_W, dem_E),
         "-r", "-s", "3", "-f", "-x", "-c", "-n", dem_user, "-w", dem_pass,
-        "-d", geocode_dem_url
+        "-u", geocode_dem_url
     ]
     dem_cmd_line = " ".join(dem_cmd)
     logger.info("Calling dem.py: {}".format(dem_cmd_line))
@@ -1244,7 +1244,9 @@ def main():
 
     if not os.path.isfile(preprocess_vrt_file):
         logger.info("%s does not exists. Exiting")
-    
+   
+    logger.info("Present Working directory : {}".format(os.getcwd()))
+    os.chdir(cwd) 
     geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
     dem_cmd = [
