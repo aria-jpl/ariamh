@@ -2,6 +2,11 @@
 BASE_PATH=$(dirname "${BASH_SOURCE}")
 BASE_PATH=$(cd "${BASE_PATH}"; pwd)
 
+# source conda base environment
+. /opt/conda/etc/profile.d/conda.sh
+conda activate base
+export LD_LIBRARY_PATH=/opt/conda/lib:/usr/lib:/usr/lib64:/usr/local/lib:$LD_LIBRARY_PATH
+
 # source ISCE env
 export GMT_HOME=/usr/local/gmt
 export ARIAMH_HOME=$HOME/ariamh
