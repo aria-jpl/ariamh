@@ -13,8 +13,8 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 # copy ariamh code ensure proper permissions, and move dependencies to final locations
 COPY . /home/ops/ariamh
 
-RUN sudo yum -y update \
-    && sudo yum -y --setopt=tsflags=nodocs install unzip
+### RUN sudo yum -y update \
+###     && sudo yum -y --setopt=tsflags=nodocs install unzip
 
 RUN set -ex \
     && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib \
