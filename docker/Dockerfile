@@ -25,8 +25,8 @@ RUN set -ex \
     && cd /home/ops/verdi/ops/slcp2cor/src \
     && ./compile.sh \
     # apply shadow_mask source code to isce2
-    && sudo cp -u ariamh/interferogram/sentinel/shadow_mask/runTopo.py /opt/isce2/isce/components/isceobj/TopsProc/ \ 
-    && sudo cp -u ariamh/interferogram/sentinel/shadow_mask/runMergeBursts.py /opt/isce2/isce/components/isceobj/TopsProc/
+    && sudo cp -u /home/ops/ariamh/interferogram/sentinel/shadow_mask/runTopo.py /opt/isce2/isce/components/isceobj/TopsProc/ \ 
+    && sudo cp -u /home/ops/ariamh/interferogram/sentinel/shadow_mask/runMergeBursts.py /opt/isce2/isce/components/isceobj/TopsProc/
 
 # set entrypoint
 WORKDIR /home/ops
