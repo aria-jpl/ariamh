@@ -11,7 +11,6 @@
   "soft_time_limit": 36000,
   "time_limit": 36000,
   "disk_usage":"200GB",
-  "post": [ "hysds.utils.triage" ],
   "params" : [
     {
       "name": "dataset_tag",
