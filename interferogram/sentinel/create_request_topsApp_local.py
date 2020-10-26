@@ -20,7 +20,7 @@ from utils.UrlUtils_standard_product import UrlUtils
 from utils.imutils import get_image, get_size, crop_mask
 from utils.time_utils import getTemporalSpanInDays
 from check_interferogram import check_int
-from create_input_xml_standard_product import create_input_xml
+from create_input_xml_request_local import create_input_xml
 from dateutil import parser
 import hashlib
 import os
@@ -1020,7 +1020,7 @@ def main():
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
-        master_safe_dir = i.replace(".zip", ".SAFE")
+        master_safe_dir = i.replace("_local", "").replace(".zip", ".SAFE")
         if not os.path.exists(master_safe_dir):
             logger.info("Unzipping {}.".format(i))
             with ZipFile(i, 'r') as zf:
@@ -1031,7 +1031,7 @@ def main():
         master_safe_dirs.append(master_safe_dir)
     slave_safe_dirs = []
     for i in ctx['slave_zip_file']:
-        slave_safe_dir = i.replace(".zip", ".SAFE")
+        slave_safe_dir = i.replace("_local", "").replace(".zip", ".SAFE")
         if not os.path.exists(slave_safe_dir):
             logger.info("Unzipping {}.".format(i))
             with ZipFile(i, 'r') as zf:
@@ -1300,7 +1300,7 @@ def main():
     do_esd = True
     esd_coh_th = 0.85
     xml_file = "topsApp.xml"
-    create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
+    create_input_xml(os.path.join(BASE_PATH, 'topsApp_request_local.xml.tmpl'), xml_file,
                      str(master_safe_dirs), str(slave_safe_dirs), 
                      ctx['master_orbit_file'], ctx['slave_orbit_file'],
                      preprocess_dem_file, geocode_dem_file,
@@ -1341,7 +1341,7 @@ def main():
             if esd_coh_th < esd_coh_min:
                 logger.info("Disabling ESD filtering.")
                 do_esd = False
-                create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
+                create_input_xml(os.path.join(BASE_PATH, 'topsApp_request_local.xml.tmpl'), xml_file,
                                  str(master_safe_dirs), str(slave_safe_dirs), 
                                  ctx['master_orbit_file'], ctx['slave_orbit_file'],
                                  preprocess_dem_file, geocode_dem_file,
@@ -1352,7 +1352,7 @@ def main():
                 break
             logger.info("Stepping down ESD coherence threshold to: {}".format(esd_coh_th))
             logger.info("Creating topsApp.xml with ESD coherence threshold: {}".format(esd_coh_th))
-            create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
+            create_input_xml(os.path.join(BASE_PATH, 'topsApp_request_local.xml.tmpl'), xml_file,
                              str(master_safe_dirs), str(slave_safe_dirs), 
                              ctx['master_orbit_file'], ctx['slave_orbit_file'],
                              preprocess_dem_file, geocode_dem_file,
