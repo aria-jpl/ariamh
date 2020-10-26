@@ -1,6 +1,6 @@
 {
   "submission_type": "iteration",
-  "label" : "Request S1-GUNW - topsApp-layred - singularity",
+  "label" : "Request S1-GUNW - topsApp-local - singularity",
   "allowed_accounts": [ "ops" ],
   "enable_dedup": false,
   "params" : [
@@ -8,7 +8,7 @@
       "name": "dataset_tag",
       "from": "submitter",
       "type": "text",
-      "default": "standard_product,pleiades",
+      "default": "ondemand-s1gunw,pleiades",
       "placeholder": "A value to append to the dataset identifier"
     },
     {

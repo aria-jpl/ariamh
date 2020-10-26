@@ -1,15 +1,15 @@
 {
-  "command": "/home/ops/ariamh/interferogram/sentinel/create_standard_product_topsApp_local.sh",
+  "command": "/home/ops/ariamh/interferogram/sentinel/create_request_topsApp_local.sh",
   "imported_worker_files": {
     "/home/ops/.netrc": ["/home/ops/.netrc"],
     "/home/ops/.aws": ["/home/ops/.aws", "ro"],
     "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "standard_product-s1gunw-topsapp-asg-fleet-pleiades_s2037"
+    "standard_product-s1gunw-topsapp-pleiades_s2037"
   ],
-  "soft_time_limit": 21600,
-  "time_limit": 21600,
+  "soft_time_limit": 36000,
+  "time_limit": 36000,
   "disk_usage":"200GB",
   "post": [ "hysds.utils.triage" ],
   "params" : [

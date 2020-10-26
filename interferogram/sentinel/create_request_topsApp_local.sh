@@ -2,6 +2,11 @@
 BASE_PATH=$(dirname "${BASH_SOURCE}")
 BASE_PATH=$(cd "${BASE_PATH}"; pwd)
 
+# source conda base environment
+. /opt/conda/etc/profile.d/conda.sh
+conda activate base
+export LD_LIBRARY_PATH=/opt/conda/lib:/usr/lib:/usr/lib64:/usr/local/lib:$LD_LIBRARY_PATH
+
 # source ISCE env
 export GMT_HOME=/usr/local/gmt
 export ARIAMH_HOME=$HOME/ariamh
@@ -17,16 +22,16 @@ export PATH=$BASE_PATH:$TROPMAP_HOME:$GMT_HOME/bin:$PATH
 source $HOME/verdi/bin/activate
 
 echo "##########################################" 1>&2
-echo -n "Running TopsApp Standard Product Layred interferogram generation : " 1>&2
+echo -n "Running TopsApp Request interferogram generation : " 1>&2
 date 1>&2
-python $BASE_PATH/create_standard_product_topsApp_layered.py > create_standard_product_topsApp_layered.log 2>&1
+python $BASE_PATH/create_request_topsApp_local.py > create_request_topsApp_local.log 2>&1
 STATUS=$?
-echo -n "Finished running Layered Standard Product TopsApp interferogram generation: " 1>&2
+echo -n "Finished running Request TopsApp interferogram generation: " 1>&2
 date 1>&2
 if [ $STATUS -ne 0 ]; then
-  echo "Failed to run TopsApp Standard Product Layred interferogram generation." 1>&2
-  echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_standard_product_topsApp_layered.log >> _alt_traceback.txt
-  cat create_standard_product_topsApp_layered.log 1>&2
+  echo "Failed to run TopsApp Request interferogram generation." 1>&2
+  echo "# ----- errors|exception found in log -----" >> _alt_traceback.txt && grep -i "error\|exception" create_request_topsApp_local.log >> _alt_traceback.txt
+  cat create_request_topsApp_local.log 1>&2
   echo "{}"
   exit $STATUS
 fi

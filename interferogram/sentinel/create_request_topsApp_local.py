@@ -7,6 +7,8 @@ import os, sys, re, requests, json, shutil, traceback, logging, hashlib, math
 from itertools import chain
 from zipfile import ZipFile
 from subprocess import check_call, CalledProcessError
+from subprocess import Popen, PIPE
+import shlex
 from glob import glob
 from lxml.etree import parse
 import numpy as np
@@ -211,13 +213,13 @@ def fileContainsMsg(file_name, msg):
 def checkBurstError():
     msg = "cannot continue for interferometry applications"
 
-    found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
+    found, line = fileContainsMsg("create_request_topsApp_local.log", msg)
     if found:
         logger.info("checkBurstError : %s" %line.strip())
         raise RuntimeError(line.strip())
     if not found:
         msg = "Exception: Could not determine a suitable burst offset"
-        found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
+        found, line = fileContainsMsg("create_request_topsApp_local.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
             raise RuntimeError(line.strip())
@@ -1244,7 +1246,9 @@ def main():
 
     if not os.path.isfile(preprocess_vrt_file):
         logger.info("%s does not exists. Exiting")
-    
+   
+    logger.info("Present Working directory : {}".format(os.getcwd()))
+    os.chdir(cwd) 
     geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
     dem_cmd = [
@@ -1253,6 +1257,14 @@ def main():
     ]
     dem_cmd_line = " ".join(dem_cmd)
     logger.info("Calling downsampleDEM.py: {}".format(dem_cmd_line))
+    # XXXXXX
+    cmd1 = 'env'
+    args1 = shlex.split(cmd1)
+    p1 = Popen(args1)
+    stdout1, stderr1 = p1.communicate()
+    logger.info("before calling {0}, stdout of env: {1}".format(dem_cmd_line, stdout1))
+    logger.info("before calling {0}, stderr of env: {1}".format(dem_cmd_line, stderr1))
+
     check_call(dem_cmd_line, shell=True)
     geocode_dem_file = ""
 
@@ -1874,7 +1886,7 @@ def updateErrorFiles(msg):
         f.write("%s\n" %msg)
     with open('_alt_traceback.txt', 'w') as f:
         '''
-        with open("create_standard_product_topsApp_layered.log", 'r') as f2:
+        with open("create_request_topsApp_local.log", 'r') as f2:
             datafile = f2.readlines()
             for line in datafile:
                 if "error" in line.lower() or "exception" in line.lower():
@@ -1911,14 +1923,14 @@ if __name__ == '__main__':
 
         found = False
         msg = "cannot continue for interferometry applications"
-        found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
+        found, line = fileContainsMsg("create_request_topsApp_local.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
             updateErrorFiles(line.strip())
         
         if not found:
             msg = "Exception: Could not determine a suitable burst offset"
-            found, line = fileContainsMsg("create_standard_product_topsApp_layered.log", msg)
+            found, line = fileContainsMsg("create_request_topsApp_local.log", msg)
             if found:
                 logger.info("Found Error : %s" %line.strip())
                 updateErrorFiles(line.strip())
