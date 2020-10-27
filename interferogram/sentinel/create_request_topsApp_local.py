@@ -1020,7 +1020,7 @@ def main():
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
-        master_safe_dir = i.replace("_local", "").replace(".zip", ".SAFE")
+        master_safe_dir = i.replace("-local", "").replace(".zip", ".SAFE")
         if not os.path.exists(master_safe_dir):
             logger.info("Unzipping {}.".format(i))
             with ZipFile(i, 'r') as zf:
@@ -1031,7 +1031,7 @@ def main():
         master_safe_dirs.append(master_safe_dir)
     slave_safe_dirs = []
     for i in ctx['slave_zip_file']:
-        slave_safe_dir = i.replace("_local", "").replace(".zip", ".SAFE")
+        slave_safe_dir = i.replace("-local", "").replace(".zip", ".SAFE")
         if not os.path.exists(slave_safe_dir):
             logger.info("Unzipping {}.".format(i))
             with ZipFile(i, 'r') as zf:
