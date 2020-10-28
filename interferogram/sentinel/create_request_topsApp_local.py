@@ -1429,7 +1429,7 @@ def main():
 
     ifg_hash = ifg_hash[0:4]
     logger.info("slc_master_dt : %s,slc_slave_dt : %s" %(slc_master_dt,slc_slave_dt))
-    id_tmpl_merged = "S1-GUNW-LAYRED-MERGED_R{}_M{:d}S{:d}_TN{:03d}_{}-{}_s123-{}-{}"
+    id_tmpl_merged = "S1-GUNW-MERGED_R{}_M{:d}S{:d}_TN{:03d}_{}-{}_s123-{}-{}"
     ifg_id_merged = id_tmpl_merged.format('M', len(master_ids), len(slave_ids), track,  master_ifg_dt, slave_ifg_dt, orbit_type, ifg_hash)
     logger.info("ifg_id_merged : %s" %ifg_id_merged)
 
