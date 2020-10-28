@@ -46,7 +46,7 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 RESORB_RE = re.compile(r'_RESORB_')
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
-IFG_ID_SP_TMPL = "S1-GUNW-LAYRED-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
+IFG_ID_SP_TMPL = "S1-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
 
 def update_met_key(met_md, old_key, new_key):
     try:
