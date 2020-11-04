@@ -1271,7 +1271,7 @@ def main():
     do_esd = True
     esd_coh_th = 0.85
     xml_file = "topsApp.xml"
-    create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
+    create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_coseismic_product.xml.tmpl'), xml_file,
                      str(master_safe_dirs), str(slave_safe_dirs), 
                      ctx['master_orbit_file'], ctx['slave_orbit_file'],
                      preprocess_dem_file, geocode_dem_file,
@@ -1312,7 +1312,7 @@ def main():
             if esd_coh_th < esd_coh_min:
                 logger.info("Disabling ESD filtering.")
                 do_esd = False
-                create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
+                create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_coseismic_product.xml.tmpl'), xml_file,
                                  str(master_safe_dirs), str(slave_safe_dirs), 
                                  ctx['master_orbit_file'], ctx['slave_orbit_file'],
                                  preprocess_dem_file, geocode_dem_file,
@@ -1323,7 +1323,7 @@ def main():
                 break
             logger.info("Stepping down ESD coherence threshold to: {}".format(esd_coh_th))
             logger.info("Creating topsApp.xml with ESD coherence threshold: {}".format(esd_coh_th))
-            create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
+            create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_coseismic_product.xml.tmpl'), xml_file,
                              str(master_safe_dirs), str(slave_safe_dirs), 
                              ctx['master_orbit_file'], ctx['slave_orbit_file'],
                              preprocess_dem_file, geocode_dem_file,
