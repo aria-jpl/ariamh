@@ -19,7 +19,7 @@
     {
       "name": "request_id",
       "type": "text",
-      "default": "None",
+      "default": "UNKNOWN",
       "from": "dataset_jpath:_source.metadata.request_metadata.objectid"
     },
     {
