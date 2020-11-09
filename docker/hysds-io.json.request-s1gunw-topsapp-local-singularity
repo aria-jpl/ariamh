@@ -17,6 +17,12 @@
       "from": "dataset_jpath:_source.metadata"
     },
     {
+      "name": "request_id",
+      "type": "text",
+      "default": "None",
+      "from": "dataset_jpath:_source.metadata.request_metadata.objectid"
+    },
+    {
      "name":"localize_products",
      "from": "dataset_jpath:_source.metadata.localize_urls"
     },

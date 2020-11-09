@@ -21,6 +21,10 @@
       "destination": "context"
     },
     {
+      "name": "request_id",
+      "destination": "context"
+    },
+    {
       "name":"localize_products",
       "destination":"localize"
     },
