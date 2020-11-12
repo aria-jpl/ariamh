@@ -844,7 +844,16 @@ def main():
     ctx['system_version'] = system_version
     full_id_hash = input_metadata['full_id_hash']
     ctx['full_id_hash'] = full_id_hash
-    
+   
+    if "dataset_tag" in ctx:
+        dataset_tag = ctx["dataset_tag"]
+        if isinstance(dataset_tag, str): 
+            dataset_tags = dataset_tag.split(',')
+            for d_tag in dataset_tags:
+                d_tag = d_tag.strip()
+                if d_tag not in md['tags']:
+                    md['tags'].append(d_tag) 
+    logger.info("tag_list : {}".format(tag_list))
 
     request_metadata = input_metadata.get("request_metadata", None)
 
@@ -930,6 +939,15 @@ def main():
 
 
     #ifg_hash = ifg_cfg_id.split('-')[-1]
+    ifg_hash = new_ifg_hash[0:4]
+    ctx['ifg_hash'] = ifg_hash
+
+    logger.info("ifg_hash : %s" %ifg_hash)
+
+    # log inputs
+    logger.info("project: {}".format(project))
+    logger.info("master_ids: {}".format(master_ids))
+    logger.info("slave_ids: {}".format(slave_ids))
     ifg_hash = new_ifg_hash[0:4]
     ctx['ifg_hash'] = ifg_hash
 
@@ -1932,12 +1950,3 @@ if __name__ == '__main__':
             msg = "Exception: Could not determine a suitable burst offset"
             found, line = fileContainsMsg("create_request_topsApp_local.log", msg)
             if found:
-                logger.info("Found Error : %s" %line.strip())
-                updateErrorFiles(line.strip())
-
-        if not found:
-            updateErrorFiles(str(e))
-        
-        raise
-
-    sys.exit(status)
