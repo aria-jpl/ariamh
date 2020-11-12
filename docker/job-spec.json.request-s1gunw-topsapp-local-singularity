@@ -8,8 +8,8 @@
   "recommended-queues" : [
     "standard_product-s1gunw-topsapp-pleiades_s2037"
   ],
-  "soft_time_limit": 36000,
-  "time_limit": 36000,
+  "soft_time_limit": 43200,
+  "time_limit": 43200,
   "disk_usage":"200GB",
   "params" : [
     {
