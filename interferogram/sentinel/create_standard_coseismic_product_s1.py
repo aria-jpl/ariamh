@@ -23,6 +23,7 @@ import hashlib
 import os
 from scipy.constants import c
 import isce
+from string import Template
 from iscesys.Component.ProductManager import ProductManager as PM
 
 gdal.UseExceptions()  # make GDAL raise python exceptions
@@ -1255,19 +1256,40 @@ def main():
     check_call(aux_cmd_line, shell=True)
 
     # create initial input xml
-    do_esd = True
-    esd_coh_th = 0.85
-    xml_file = "topsApp.xml"
-    create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_coseismic_product.xml.tmpl'), xml_file,
-                     str(master_safe_dirs), str(slave_safe_dirs),
-                     ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                     preprocess_dem_file, geocode_dem_file,
-                     "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
-                     ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
-                     "{} {} {} {}".format(*bbox), "True", do_esd,
-                     esd_coh_th)
+    esd_coh_thresh = 0.85
+    master_orbit = ctx['master_orbit_file']
+    slave_orbit = ctx['slave_orbit_file']
+    bbox_str = list(map(lambda x: f'{x:1.2f}', bbox))
+    
+    TEMPLATE_DICT = dict(MASTER_SAFE_DIR=master_zip_file,
+                         SLAVE_SAFE_DIR=slave_zip_file,
+                         MASTER_ORBIT_FILE=master_orbit,
+                         SLAVE_ORBIT_FILE=slave_orbit,
+                         DEM_FILE=preprocess_dem_file,
+                         GEOCODE_DEM_FILE=geocode_dem_file,
+                         SWATHNUM="1, 2, 3",
+                         AZIMUTH_LOOKS=ctx['azimuth_looks'],
+                         RANGE_LOOKS=ctx['range_looks'],
+                         FILTER_STRENGTH=ctx['filter_strength'],
+                         BBOX=' '.join(bbox_str),
+                         USE_VIRTUAL_FILES=True,
+                         DO_ESD=True,
+                         ESD_COHERENCE_THRESHOLD=esd_coh_thresh)
 
-    #exit(0)
+    TEMPLATE_FILE = '/home/ops/ariamh/interferogram/sentinel/topsApp_standard_coseismic_product.xml.tmpl'
+    
+    
+    def create_input_xml(template_dict,
+                         out_xml,
+                         template_file=TEMPLATE_FILE):
+        with open(template_file) as f:
+            template = Template(f.read())
+        template = template.substitute(**template_dict)
+        with open(out_xml, 'w') as f:
+            f.write(template)
+        return out_xml
+
+    create_input_xml(TEMPLATE_DICT, 'topsApp.xml')
 
     #get the time before stating topsApp.py
     topsApp_start_time=datetime.now()
@@ -1281,43 +1303,39 @@ def main():
     logger.info("Calling topsApp.py to prepesd step: {}".format(topsapp_cmd_line))
     check_call(topsapp_cmd_line, shell=True)
 
-    # iterate over ESD coherence thresholds
+    # ESD Computations
+    # Maybe this belongs in context?
+    do_esd = False
+    logger.info(f'ESD computations are {"ON" if do_esd else "OFF"}')
+
+    # iterate over ESD coherence thresholds    
     esd_coh_increment = 0.05
     esd_coh_min = 0.5
+
+    
     topsapp_cmd = [
         "topsApp.py", "--steps", "--dostep=esd",
     ]
     topsapp_cmd_line = " ".join(topsapp_cmd)
-    while True:
-        logger.info("Calling topsApp.py on esd step with ESD coherence threshold: {}".format(esd_coh_th))
+    template_esd = TEMPLATE_DICT.copy()
+
+    while do_esd:
+        logger.info("Calling topsApp.py on esd step with ESD coherence threshold: {}".format(esd_coh_thresh))
         try:
             check_call(topsapp_cmd_line, shell=True)
             break
         except CalledProcessError:
-            logger.info("ESD filtering failed with ESD coherence threshold: {}".format(esd_coh_th))
-            esd_coh_th = round(esd_coh_th-esd_coh_increment, 2)
-            if esd_coh_th < esd_coh_min:
+            logger.info("ESD filtering failed with ESD coherence threshold: {}".format(esd_coh_thresh))
+            esd_coh_thresh = round(esd_coh_thresh - esd_coh_increment, 2)
+            if esd_coh_thresh < esd_coh_min:
                 logger.info("Disabling ESD filtering.")
                 do_esd = False
-                create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_coseismic_product.xml.tmpl'), xml_file,
-                                 str(master_safe_dirs), str(slave_safe_dirs),
-                                 ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                                 preprocess_dem_file, geocode_dem_file,
-                                 "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
-                                 ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
-                                 "{} {} {} {}".format(*bbox), "True", do_esd,
-                                 esd_coh_th)
+                template_esd['do_esd'] = False
+                create_input_xml(template_esd, 'topsApp.xml')
                 break
-            logger.info("Stepping down ESD coherence threshold to: {}".format(esd_coh_th))
-            logger.info("Creating topsApp.xml with ESD coherence threshold: {}".format(esd_coh_th))
-            create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_coseismic_product.xml.tmpl'), xml_file,
-                             str(master_safe_dirs), str(slave_safe_dirs),
-                             ctx['master_orbit_file'], ctx['slave_orbit_file'],
-                             preprocess_dem_file, geocode_dem_file,
-                             "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
-                             ctx['azimuth_looks'], ctx['range_looks'], ctx['filter_strength'],
-                             "{} {} {} {}".format(*bbox), "True", do_esd,
-                             esd_coh_th)
+            logger.info("Stepping down ESD coherence threshold to: {}".format(esd_coh_thresh))
+            logger.info("Creating topsApp.xml with ESD coherence threshold: {}".format(esd_coh_thresh))
+            create_input_xml(template_esd, 'topsApp.xml')
 
     # run topsApp from rangecoreg to geocode
     topsapp_cmd = [
@@ -1732,7 +1750,7 @@ def main():
     md['secondary_scenes'] = slave_ids
     md['orbitNumber'] = [master_orbit_number, slave_orbit_number]
     #if ctx.get('stitch_subswaths_xt', False): md['swath'] = [1, 2, 3]
-    md['esd_threshold'] = esd_coh_th if do_esd else -1.  # add ESD coherence threshold
+    md['esd_threshold'] = esd_coh_thresh if do_esd else -1.  # add ESD coherence threshold
 
     # add range_looks and azimuth_looks to metadata for stitching purposes
     md['azimuth_looks'] = int(ctx['azimuth_looks'])
