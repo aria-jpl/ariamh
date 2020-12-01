@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 from __future__ import division
 from builtins import str
 from builtins import range
@@ -25,8 +25,6 @@ import os
 from scipy.constants import c
 import isce
 from iscesys.Component.ProductManager import ProductManager as PM
-
-
 gdal.UseExceptions() # make GDAL raise python exceptions
 
 
@@ -58,7 +56,7 @@ def update_met_key(met_md, old_key, new_key):
 def delete_met_data(met_md, old_key):
     try:
         if old_key in met_md:
-            del met_md[old_key] 
+            del met_md[old_key]
     except Exception as err:
         print("Failed to delete %s from met file. Error : %s" %(old_key,  str(err)))
 
@@ -135,7 +133,6 @@ def get_dataset_by_hash(ifg_hash, es_index="grq"):
                 ]
             }
         }
-        
     }
 
     logger.info(query)
@@ -163,7 +160,7 @@ def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
 
     uu = UrlUtils()
     es_url = uu.rest_url
-    #es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
+    # es_index = "{}_{}_s1-ifg".format(uu.grq_index_prefix, version)
 
     # query
     query = {
@@ -176,7 +173,6 @@ def get_dataset_by_hash_version(ifg_hash, version, es_index="grq"):
                 ]
             }
         }
-        
     }
 
     logger.info(query)
@@ -222,7 +218,7 @@ def checkBurstError():
             logger.info("Found Error : %s" %line)
             raise RuntimeError(line.strip())
 
-    ''' 
+    '''
     found, line = fileContainsMsg("_stderr.txt", msg)
     if found:
         logger.info("checkBurstError : %s" %line)
@@ -290,13 +286,12 @@ def update_met(md):
     md = update_met_key(md, "parallelBaseline", "parallel_baseline")
     md = update_met_key(md, "direction", "orbit_direction")
 
-
-    #keys to delete
+    # keys to delete
     md = delete_met_data(md, "swath")
     md = delete_met_data(md, "spacecraftName")
     md = delete_met_data(md, "reference")
-    
     return md
+
 
 def get_ifg_hash(master_slcs,  slave_slcs):
 
@@ -387,7 +382,7 @@ def convert_number(x):
 
     post_y = '000'
     post_y = str(y).split('.')[1]
-        
+
     if int(post_y)>999:
         post_y = post_y[:3]
     else:
@@ -396,7 +391,7 @@ def convert_number(x):
             post_y = '000'
         else:
             post_y =post_y.ljust(3, '0')
-        
+
     print("post_y : %s " %post_y)
 
     if x<0:
@@ -423,11 +418,11 @@ def get_geocoded_lats(vrt_file):
     gt = ds.GetGeoTransform()
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-    
+
     # getting the gdal transform and projection
     geoTrans = str(ds.GetGeoTransform())
     projectionRef = str(ds.GetProjection())
-    
+
     lat_arr = list(range(0, rows))
     lats = np.empty((rows,),dtype='float64')
     for py in lat_arr:
@@ -441,7 +436,7 @@ def get_updated_met(metjson):
     return new_met
 
 def get_tops_subswath_xml(masterdir):
-    ''' 
+    '''
         Find all available IW[1-3].xml files
     '''
 
@@ -545,12 +540,12 @@ def create_dataset_json(id, version, met_file, ds_file):
                       [ md['bbox'][2][1], md['bbox'][2][0] ],
                       [ md['bbox'][1][1], md['bbox'][1][0] ],
                       [ md['bbox'][0][1], md['bbox'][0][0] ]
-                    ] 
+                    ]
                   ]
         '''
 
         coordinates = md['union_geojson']['coordinates']
-    
+
         cord_area = get_area(coordinates[0])
         if not cord_area>0:
             logger.info("creating dataset json. coordinates are not clockwise, reversing it")
@@ -705,19 +700,19 @@ def file_transform(infile,maskfile,maskfile_out):
         convert file into the same geo frame as the input file
         both files to be gdal compatible and with geo-coordinates
     '''
-    
+
     from osgeo import gdal, gdalconst
-    
+
     # convert all to absolute paths
     maskfile = os.path.abspath(maskfile)
     maskfile_out = os.path.abspath(maskfile_out)
-    
+
     # Source
     src = gdal.Open(maskfile, gdalconst.GA_ReadOnly)
     src_proj = src.GetProjection()
     src_geotrans = src.GetGeoTransform()
     print("Working on " + maskfile )
-    
+
     # We want a section of source that matches this:
     match_ds = gdal.Open(infile, gdalconst.GA_ReadOnly)
     match_proj = match_ds.GetProjection()
@@ -725,7 +720,7 @@ def file_transform(infile,maskfile,maskfile_out):
     print("Getting target reference information")
     wide = match_ds.RasterXSize
     high = match_ds.RasterYSize
-    
+
     # Output / destination
     dst = gdal.GetDriverByName('envi').Create(maskfile_out, wide, high, 1, gdalconst.GDT_Float32)
     dst.SetGeoTransform( match_geotrans )
@@ -825,16 +820,16 @@ def main():
     direction = input_metadata["direction"]
     platform = input_metadata["platform"]
     master_zip_file = input_metadata["master_zip_file"]
-    slave_zip_file = input_metadata["slave_zip_file"]  
-    master_orbit_file = input_metadata["master_orbit_file"] 
-    slave_orbit_file = input_metadata["slave_orbit_file"]  
+    slave_zip_file = input_metadata["slave_zip_file"]
+    master_orbit_file = input_metadata["master_orbit_file"]
+    slave_orbit_file = input_metadata["slave_orbit_file"]
     master_zip_url = input_metadata["master_zip_url"]
     slave_zip_url = input_metadata["slave_zip_url"]
     master_orbit_url = input_metadata["master_orbit_url"]
     slave_orbit_url = input_metadata["slave_orbit_url"]
     track = input_metadata["track_number"]
     dem_type = input_metadata['dem_type']
-    system_version = ctx["container_image_name"].strip().split(':')[-1].strip() 
+    system_version = ctx["container_image_name"].strip().split(':')[-1].strip()
     ctx['system_version'] = system_version
     full_id_hash = input_metadata['full_id_hash']
     ctx['full_id_hash'] = full_id_hash
@@ -900,14 +895,14 @@ def main():
     job_priority = int(input_metadata['priority'])
 
     subswaths = [1, 2, 3]
- 
-    ''' 
+
+    '''
     ctx['dem_type'] = "SRTM+v3"
     dem_type = "SRTM+v3"
     '''
 
 
-    id_tmpl = IFG_ID_SP_TMPL 
+    id_tmpl = IFG_ID_SP_TMPL
 
 
     #ifg_hash = ifg_cfg_id.split('-')[-1]
@@ -955,7 +950,7 @@ def main():
     #Pull topsApp configs
     ctx['azimuth_looks'] = ctx.get("context", {}).get("azimuth_looks", 7)
     ctx['range_looks'] = ctx.get("context", {}).get("range_looks", 19)
-    
+
     ctx['swathnum'] = None
     # stitch all subswaths?
     ctx['stitch_subswaths_xt'] = False
@@ -995,9 +990,9 @@ def main():
         logger.info(err)
         raise RuntimeError(err)
 
-    
+
     logger.info("\nS1-GUNW IFG NOT Found : %s.\nSo Proceeding ....\n" %temp_ifg_id)
-  
+
     # unzip SAFE dirs
     master_safe_dirs = []
     for i in ctx['master_zip_file']:
@@ -1045,7 +1040,7 @@ def main():
     # get union bbox
     logger.info("Determining envelope bbox from SLC swaths.")
     bbox_json = "bbox.json"
-    
+
     if ctx['stitch_subswaths_xt']:
         logger.info("stitch_subswaths_xt is True")
         bbox_cmd_tmpl = "{}/get_union_bbox.sh -o {} *.SAFE/annotation/s1?-iw?-slc-{}-*.xml"
@@ -1056,13 +1051,13 @@ def main():
         bbox_cmd_tmpl = "{}/get_union_bbox.sh -o {} *.SAFE/annotation/s1?-iw{}-slc-{}-*.xml"
         check_call(bbox_cmd_tmpl.format(BASE_PATH, bbox_json, ctx['swathnum'],
                                     match_pol), shell=True)
-    
+
     with open(bbox_json) as f:
         bbox = json.load(f)['envelope']
     logger.info("bbox: {}".format(bbox))
 
     # get dataset version and set dataset ID
-    version = get_version()   
+    version = get_version()
     '''
     # get id base
     id_base = ctx['id']
@@ -1102,7 +1097,7 @@ def main():
     ned13_dem_url = uu.ned13_dem_url
     dem_user = uu.dem_u
     dem_pass = uu.dem_p
-   
+
 
     preprocess_dem_dir="preprocess_dem"
     geocode_dem_dir="geocode_dem"
@@ -1122,8 +1117,8 @@ def main():
         dem_N = int(math.ceil(dem_N))
         dem_W = int(math.floor(dem_W))
         dem_E = int(math.ceil(dem_E))
-       
-        logger.info("DEM TYPE : %s" %dem_type) 
+
+        logger.info("DEM TYPE : %s" %dem_type)
         if dem_type.startswith("SRTM"):
             dem_type_simple = "SRTM"
             if dem_type.startswith("SRTM3"):
@@ -1140,18 +1135,18 @@ def main():
             logger.info("Calling dem.py: {}".format(dem_cmd_line))
             check_call(dem_cmd_line, shell=True)
             preprocess_dem_file = glob("*.dem.wgs84")[0]
-            
+
         else:
-            if dem_type == "NED1": 
+            if dem_type == "NED1":
                 dem_url = ned1_dem_url
                 dem_type_simple = "NED1"
-            elif dem_type.startswith("NED13"): 
+            elif dem_type.startswith("NED13"):
                 dem_url = ned13_dem_url
                 dem_type_simple = "NED13"
             else: raise RuntimeError("Unknown dem type %s." % dem_type)
             if dem_type == "NED13-downsampled": downsample_option = "-d 33%"
             else: downsample_option = ""
- 
+
             dem_S = dem_S - 1 if dem_S > -89 else dem_S
             dem_N = dem_N + 1 if dem_N < 89 else dem_N
             dem_W = dem_W - 1 if dem_W > -179 else dem_W
@@ -1210,7 +1205,7 @@ def main():
     logger.info("Calling dem.py: {}".format(dem_cmd_line))
     check_call(dem_cmd_line, shell=True)
     geocode_dem_file = glob("*.dem.wgs84")[0]
-    
+
     move_dem_separate_dir(geocode_dem_dir)
     geocode_dem_file = os.path.join(geocode_dem_dir, geocode_dem_file)
     logger.info("Using Geocode DEM file: {}".format(geocode_dem_file))
@@ -1227,7 +1222,7 @@ def main():
 
     if not os.path.isfile(preprocess_vrt_file):
         logger.info("%s does not exists. Exiting")
-    
+
     geocode_dem_dir = os.path.join(preprocess_dem_dir, "Coarse_{}_preprocess_dem".format(dem_type_simple))
     create_dir(geocode_dem_dir)
     dem_cmd = [
@@ -1256,7 +1251,7 @@ def main():
     fix_cmd_line = " ".join(fix_cmd)
     logger.info("Calling fixImageXml.py: {}".format(fix_cmd_line))
     check_call(fix_cmd_line, shell=True)
-    
+
     # download auciliary calibration files
     aux_cmd = [
         #"{}/fetchCal.py".format(BASE_PATH), "-o", "aux_cal"
@@ -1266,13 +1261,13 @@ def main():
     #logger.info("Calling fetchCal.py: {}".format(aux_cmd_line))
     logger.info("Calling fetchCalES.py: {}".format(aux_cmd_line))
     check_call(aux_cmd_line, shell=True)
-        
+
     # create initial input xml
     do_esd = True
     esd_coh_th = 0.85
     xml_file = "topsApp.xml"
     create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
-                     str(master_safe_dirs), str(slave_safe_dirs), 
+                     str(master_safe_dirs), str(slave_safe_dirs),
                      ctx['master_orbit_file'], ctx['slave_orbit_file'],
                      preprocess_dem_file, geocode_dem_file,
                      "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
@@ -1313,7 +1308,7 @@ def main():
                 logger.info("Disabling ESD filtering.")
                 do_esd = False
                 create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
-                                 str(master_safe_dirs), str(slave_safe_dirs), 
+                                 str(master_safe_dirs), str(slave_safe_dirs),
                                  ctx['master_orbit_file'], ctx['slave_orbit_file'],
                                  preprocess_dem_file, geocode_dem_file,
                                  "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
@@ -1324,7 +1319,7 @@ def main():
             logger.info("Stepping down ESD coherence threshold to: {}".format(esd_coh_th))
             logger.info("Creating topsApp.xml with ESD coherence threshold: {}".format(esd_coh_th))
             create_input_xml(os.path.join(BASE_PATH, 'topsApp_standard_product.xml.tmpl'), xml_file,
-                             str(master_safe_dirs), str(slave_safe_dirs), 
+                             str(master_safe_dirs), str(slave_safe_dirs),
                              ctx['master_orbit_file'], ctx['slave_orbit_file'],
                              preprocess_dem_file, geocode_dem_file,
                              "1, 2, 3" if ctx['stitch_subswaths_xt'] else ctx['swathnum'],
@@ -1344,7 +1339,7 @@ def main():
     check_call(topsapp_cmd_line, shell=True)
 
     #topsApp End Time
-    topsApp_end_time=datetime.now() 
+    topsApp_end_time=datetime.now()
     logger.info("TopsApp End Time : {}".format(topsApp_end_time))
 
     topsApp_run_time=topsApp_end_time - topsApp_start_time
@@ -1484,7 +1479,7 @@ def main():
     fine_int_xmls = []
     for swathnum in swath_list:
         fine_int_xmls.append("fine_interferogram/IW{}.xml".format(swathnum))
-    
+
     # get water mask configuration
     wbd_url = uu.wbd_url
     wbd_user = uu.wbd_u
@@ -1673,7 +1668,7 @@ def main():
     vrt_prod_file_dis = "filt_topophase.masked_nodata.unw.dis.geo.vrt"
     check_call("gdal_translate -of VRT -b 1 -a_nodata 0 {} {}".format(vrt_prod_file, vrt_prod_file_amp), shell=True)
     check_call("gdal_translate -of VRT -b 2 -a_nodata -10 {} {}".format(vrt_prod_file, vrt_prod_file_dis), shell=True)
-    
+
     '''
     # get band statistics
     amp_data = gdal.Open(vrt_prod_file_amp, gdal.GA_ReadOnly)
@@ -1707,13 +1702,13 @@ def main():
 
     # extract metadata from master
     met_file = os.path.join(prod_dir, "{}.met.json".format(id))
-    extract_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..', 
+    extract_cmd_path = os.path.abspath(os.path.join(BASE_PATH, '..',
                                                     '..', 'frameMetadata',
                                                     'sentinel'))
     extract_cmd_tmpl = "{}/extractMetadata_standard_product.sh -i {}/annotation/s1?-iw?-slc-{}-*.xml -o {}"
     check_call(extract_cmd_tmpl.format(extract_cmd_path, master_safe_dirs[0],
                                        master_pol, met_file),shell=True)
-    
+
     # update met JSON
     if 'RESORB' in ctx['master_orbit_file'] or 'RESORB' in ctx['slave_orbit_file']:
         orbit_type = 'resorb'
@@ -1762,8 +1757,8 @@ def main():
     md['polarization']= match_pol.upper()
     md['reference_date'] = get_date_str(ctx['slc_master_dt'])
     md['secondary_date'] = get_date_str(ctx['slc_slave_dt'])
-    
-    md['full_id_hash'] = ctx['new_ifg_hash']    
+
+    md['full_id_hash'] = ctx['new_ifg_hash']
     md['system_version']=ctx['system_version']
 
     try:
@@ -1773,14 +1768,14 @@ def main():
         logger.info("temporal_span based on slc data : %s" %md['temporal_span'])
     except Exception as err:
         logger.info("Error in calculating getTemporalSpanInDays : %s" %str(err))
-    
+
     #update met files key to have python style naming
     md = update_met(md)
 
     # write met json
     logger.info("creating met file : %s" %met_file)
     with open(met_file, 'w') as f: json.dump(md, f, indent=2)
-    
+
     # generate dataset JSON
     ds_file = os.path.join(prod_dir, "{}.dataset.json".format(id))
     logger.info("creating dataset file : %s" %ds_file)
@@ -1805,8 +1800,8 @@ def main():
     shutil.copytree("PICKLE", os.path.join(prod_dir_merged, "PICKLE"))
     shutil.copy(fine_interferogram_xml, os.path.join(prod_dir_merged, "fine_interferogram.xml"))
     #shutil.copytree(tiles_dir, os.path.join(prod_dir_merged, "tiles"))
-   
-    # Copying all the vrt files to merged 
+
+    # Copying all the vrt files to merged
     for f in os.listdir("."):
         if f.endswith(".vrt"):
             src = os.path.join(os.getcwd(), f)
@@ -1827,7 +1822,7 @@ def main():
                 shutil.copy(src, dest)
             except Exception as err:
                 logger.info(str(err))
-            
+
     '''
 
 
@@ -1865,9 +1860,9 @@ def updateErrorFiles(msg):
 if __name__ == '__main__':
     wd = os.getcwd()
 
-    try: 
+    try:
         status = main()
-        checkBurstError()        
+        checkBurstError()
     except Exception as e:
         max_retry = 3
         ctx_file = os.path.join(wd, "_context.json")
@@ -1895,7 +1890,7 @@ if __name__ == '__main__':
         if found:
             logger.info("Found Error : %s" %line)
             updateErrorFiles(line.strip())
-        
+
         if not found:
             msg = "Exception: Could not determine a suitable burst offset"
             found, line = fileContainsMsg("create_standard_product_s1.log", msg)
@@ -1905,7 +1900,7 @@ if __name__ == '__main__':
 
         if not found:
             updateErrorFiles(str(e))
-        
+
         raise
 
     sys.exit(status)
