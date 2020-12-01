@@ -795,7 +795,7 @@ def unzip_annotation_xmls(zip_path: str) -> list:
     xmls = list(filter(lambda x: re.match(pattern, x.filename), all_files))
     
     def extract(zip_info_ob):
-        zip_obj.extract(zip_info)
+        zip_obj.extract(zip_info_ob)
         fn = zip_obj.filename
         logger.info(f'Unzipping {fn}')
         return fn
