@@ -1716,16 +1716,16 @@ def main():
                                                     '..', 'frameMetadata',
                                                     'sentinel'))
     extract_cmd_tmpl = "{}/extractMetadata_standard_product.sh -i {}/annotation/s1?-iw?-slc-{}-*.xml -o {}"
-    check_call(extract_cmd_tmpl.format(extract_cmd_path, master_safe_dirs[0],
+    check_call(extract_cmd_tmpl.format(extract_cmd_path, master_zip_file[0].replace('.zip','.SAFE'),
                                        master_pol, met_file),shell=True)
 
     # update met JSON
     if 'RESORB' in ctx['master_orbit_file'] or 'RESORB' in ctx['slave_orbit_file']:
         orbit_type = 'resorb'
     else: orbit_type = 'poeorb'
-    scene_count = min(len(master_safe_dirs), len(slave_safe_dirs))
-    master_mission = MISSION_RE.search(master_safe_dirs[0]).group(1)
-    slave_mission = MISSION_RE.search(slave_safe_dirs[0]).group(1)
+    scene_count = min(len(master_zip_file), len(slave_zip_file))
+    master_mission = MISSION_RE.search(master_zip_file[0]).group(1)
+    slave_mission = MISSION_RE.search(slave_zip_file[0]).group(1)
     unw_vrt = "filt_topophase.unw.geo.vrt"
     unw_xml = "filt_topophase.unw.geo.xml"
     update_met_cmd = '{}/update_met_json_standard_product.py {} {} "{}" {} {} {} "{}" {}/{} {}/{} {} {} {} {}'
@@ -1839,8 +1839,9 @@ def main():
     #logger.info( json.dump(md, f, indent=2))
 
     # clean out SAFE directories, DEM files and water masks
-    for i in chain(master_safe_dirs, slave_safe_dirs): shutil.rmtree(i)
+    # for i in chain(master_safe_dirs, slave_safe_dirs): shutil.rmtree(i)
     for i in glob("dem*"): os.unlink(i)
+    for i in glob("*.zip"): os.unlink(i)
     for i in glob("wbdmask*"): os.unlink(i)
 
     #topsApp End Time
