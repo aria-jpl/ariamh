@@ -1354,12 +1354,12 @@ def main():
     topsApp_run_time=topsApp_end_time - topsApp_start_time
     logger.info("New TopsApp Run Time : {}".format(topsApp_run_time))
 
-    swath_list = [1, 2, 3]
+    swath_list = ctx['swathnum'].copy()
     met_files=[]
     ds_files=[]
 
     # get radian value for 5-cm wrap. As it is same for all swath, we will use swathnum = 1
-    rt = parse('master/IW{}.xml'.format(1))
+    rt = parse('master/IW{}.xml'.format(swath_list[0]))
     wv = eval(rt.xpath('.//property[@name="radarwavelength"]/value/text()')[0])
     rad = 4 * np.pi * .05 / wv
     logger.info("Radian value for 5-cm wrap is: {}".format(rad))
@@ -1740,9 +1740,9 @@ def main():
     # add master/slave ids and orbits to met JSON (per ASF request)
     master_ids = [i.replace(".zip", "") for i in ctx['master_zip_file']]
     slave_ids = [i.replace(".zip", "") for i in ctx['slave_zip_file']]
-    master_rt = parse("master/IW1.xml")
+    master_rt = parse(f"master/IW{swath_list[0]}.xml")
     master_orbit_number = eval(master_rt.xpath('.//property[@name="orbitnumber"]/value/text()')[0])
-    slave_rt = parse("slave/IW1.xml")
+    slave_rt = parse(f"slave/IW{swath_list[0]}.xml")
     slave_orbit_number = eval(slave_rt.xpath('.//property[@name="orbitnumber"]/value/text()')[0])
     with open(met_file) as f: md = json.load(f)
     md['reference_scenes'] = master_ids
@@ -1799,7 +1799,7 @@ def main():
 
     #copy files to merged directory
     pickle_dir = "{}/PICKLE".format(prod_dir)
-    fine_interferogram_xml = "fine_interferogram/IW1.xml"
+    fine_interferogram_xml = f"fine_interferogram/IW{swath_list[0]}.xml"
     '''
     met_file_merged = os.path.join(prod_dir_merged, "{}.met.json".format(ifg_id_merged))
     ds_file_merged = os.path.join(prod_dir_merged, "{}.dataset.json".format(ifg_id_merged))
