@@ -42,7 +42,7 @@ KILAUEA_DEM = "https://aria-alt-dav.jpl.nasa.gov/repository/products/kilauea/dem
 RESORB_RE = re.compile(r'_RESORB_')
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
-IFG_ID_SP_TMPL = "S1-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
+IFG_ID_SP_TMPL = "S1-COSEISMIC-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}"
 
 def update_met_key(met_md, old_key, new_key):
     try:
@@ -999,12 +999,12 @@ def main():
     version = get_version()
     temp_ifg_id = get_temp_id(ctx, version)
 
-    if check_ifg_status_by_hash_version(new_ifg_hash, get_version()):
-        err = "S1-GUNW IFG Found : %s" %temp_ifg_id
-        logger.info(err)
-        raise RuntimeError(err)
+    # if check_ifg_status_by_hash_version(new_ifg_hash, get_version()):
+    #     err = "S1-GUNW IFG Found : %s" %temp_ifg_id
+    #     logger.info(err)
+    #     raise RuntimeError(err)
 
-    logger.info("\nS1-GUNW IFG NOT Found : %s.\nSo Proceeding ....\n" %temp_ifg_id)
+    # logger.info("\nS1-GUNW IFG NOT Found : %s.\nSo Proceeding ....\n" %temp_ifg_id)
 
     logger.debug('Warning: We assume that the zip paths are in the current working directory with the other data')
     zip_paths = list(Path('.').glob('S1A_IW_SLC__*.zip'))
