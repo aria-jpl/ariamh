@@ -1255,6 +1255,11 @@ def main():
     logger.info("Calling fetchCalES.py: {}".format(aux_cmd_line))
     check_call(aux_cmd_line, shell=True)
 
+    # ESD Computations
+    # Maybe this belongs in context?
+    do_esd = False
+    logger.info(f'ESD computations are {"ON" if do_esd else "OFF"}')
+
     # create initial input xml
     esd_coh_thresh = 0.85
     master_orbit = ctx['master_orbit_file']
@@ -1273,7 +1278,7 @@ def main():
                          FILTER_STRENGTH=ctx['filter_strength'],
                          BBOX=' '.join(bbox_str),
                          USE_VIRTUAL_FILES=True,
-                         DO_ESD=True,
+                         DO_ESD=do_esd,
                          ESD_COHERENCE_THRESHOLD=esd_coh_thresh)
 
     TEMPLATE_FILE = '/home/ops/ariamh/interferogram/sentinel/topsApp_standard_coseismic_product.xml.tmpl'
@@ -1303,15 +1308,9 @@ def main():
     logger.info("Calling topsApp.py to prepesd step: {}".format(topsapp_cmd_line))
     check_call(topsapp_cmd_line, shell=True)
 
-    # ESD Computations
-    # Maybe this belongs in context?
-    do_esd = False
-    logger.info(f'ESD computations are {"ON" if do_esd else "OFF"}')
-
     # iterate over ESD coherence thresholds    
     esd_coh_increment = 0.05
     esd_coh_min = 0.5
-
     
     topsapp_cmd = [
         "topsApp.py", "--steps", "--dostep=esd",
