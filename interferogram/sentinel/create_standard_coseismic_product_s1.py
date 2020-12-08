@@ -25,6 +25,8 @@ from scipy.constants import c
 import isce
 from string import Template
 from iscesys.Component.ProductManager import ProductManager as PM
+from pathlib import Path
+import zipfile
 
 gdal.UseExceptions()  # make GDAL raise python exceptions
 
@@ -1876,20 +1878,22 @@ if __name__ == '__main__':
     except Exception as e:
         max_retry = 3
         ctx_file = os.path.join(wd, "_context.json")
-        job_file = os.path.join(wd, "_job.json")
 
         with open(ctx_file) as f:
             ctx = json.load(f)
 
+        ###############################
+        # This should be commented out for testing
+        job_file = os.path.join(wd, "_job.json")
         with open(job_file) as f:
             job = json.load(f)
-
         retry_count = int(job.get('retry_count', 0))
-        ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
-
-
         if retry_count < max_retry:
             ctx['_triage_disabled'] = True
+        ###############################
+
+
+        ctx['_triage_additional_globs'] = [ 'S1-IFG*', 'AOI_*', 'celeryconfig.py', '*.json', '*.log', '*.txt']
 
         with open(ctx_file, 'w') as f:
             json.dump(ctx, f, sort_keys=True, indent=2)
