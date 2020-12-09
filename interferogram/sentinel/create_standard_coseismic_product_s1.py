@@ -211,7 +211,7 @@ def fileContainsMsg(file_name, msg):
 def checkBurstError():
     msg = "cannot continue for interferometry applications"
 
-    found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+    found, line = fileContainsMsg("create_standard_coseismic_product_s1.log", msg)
     if found:
         logger.info("checkBurstError : %s" %line.strip())
         raise RuntimeError(line.strip())
