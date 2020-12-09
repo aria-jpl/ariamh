@@ -1258,8 +1258,8 @@ def main():
     check_call(aux_cmd_line, shell=True)
 
     # ESD Computations
-    # Maybe this belongs in context?
-    do_esd = False
+    # ESD is by dafault turned off
+    do_esd = ctx.get('do_esd', False)
     logger.info(f'ESD computations are {"ON" if do_esd else "OFF"}')
 
     # create initial input xml
@@ -1883,13 +1883,14 @@ if __name__ == '__main__':
             ctx = json.load(f)
 
         ###############################
-        # This should be commented out for testing
-        job_file = os.path.join(wd, "_job.json")
-        with open(job_file) as f:
-            job = json.load(f)
-        retry_count = int(job.get('retry_count', 0))
-        if retry_count < max_retry:
-            ctx['_triage_disabled'] = True
+        TESTING = ctx.get('testing', False)
+        if not TESTING:
+            job_file = os.path.join(wd, "_job.json")
+            with open(job_file) as f:
+                job = json.load(f)
+            retry_count = int(job.get('retry_count', 0))
+            if retry_count < max_retry:
+                ctx['_triage_disabled'] = True
         ###############################
 
 
