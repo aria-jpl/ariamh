@@ -217,7 +217,7 @@ def checkBurstError():
         raise RuntimeError(line.strip())
     if not found:
         msg = "Exception: Could not determine a suitable burst offset"
-        found, line = fileContainsMsg("create_standard_product_s1.log", msg)
+        found, line = fileContainsMsg("create_standard_coseismic_product_s1.log", msg)
         if found:
             logger.info("Found Error : %s" %line)
             raise RuntimeError(line.strip())
