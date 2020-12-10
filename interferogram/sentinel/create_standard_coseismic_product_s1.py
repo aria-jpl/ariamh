@@ -1318,8 +1318,9 @@ def main():
         "topsApp.py", "--steps", "--dostep=esd",
     ]
     topsapp_cmd_line = " ".join(topsapp_cmd)
-    template_esd = TEMPLATE_DICT.copy()
+    check_call(topsapp_cmd_line, shell=True)
 
+    template_esd = TEMPLATE_DICT.copy()
     while do_esd:
         logger.info("Calling topsApp.py on esd step with ESD coherence threshold: {}".format(esd_coh_thresh))
         try:
