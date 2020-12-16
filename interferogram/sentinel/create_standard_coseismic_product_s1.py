@@ -509,7 +509,7 @@ def get_version():
                           '..', '..', 'conf', 'dataset_versions.json'))
     with open(DS_VERS_CFG) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-GUNW']
+    return ds_vers['S1-COSEISMIC-GUNW']
 
 
 def get_area(coords):

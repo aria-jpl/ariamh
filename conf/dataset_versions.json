@@ -4,6 +4,7 @@
   "S1-IFG": "v2.0.0",
   "S1-IFG-STITCHED": "v2.0.0",
   "S1-GUNW": "v2.0.3",
+  "S1-COSEISMIC-GUNW": "v1.0.0",
   "S1-VALIDATED_IFG_STACK": "v1.0",
   "S1-VALIDATED_TS_STACK": "v1.0",
   "S1-SLCP": "v1.2",
