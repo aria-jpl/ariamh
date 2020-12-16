@@ -921,6 +921,15 @@ def main():
 
     logger.info('ifg_hash : %s' % ifg_hash)
 
+    # Pull topsApp configs
+    ctx['azimuth_looks'] = ctx.get('context', {}).get('azimuth_looks', 7)
+    ctx['range_looks'] = ctx.get('context', {}).get('range_looks', 19)
+
+    ctx.setdefault('swathnum', [1, 2, 3])
+    ctx['stitch_subswaths_xt'] = True
+    azimuth_looks = ctx['azimuth_looks']
+    range_looks = ctx['range_looks']
+
     # log inputs
     logger.info('project: {}'.format(project))
     logger.info('master_ids: {}'.format(master_ids))
@@ -956,14 +965,6 @@ def main():
     logger.info('idx: {}'.format(uu.grq_index_prefix))
     logger.info('url: {}'.format(url))
 
-    # Pull topsApp configs
-    ctx['azimuth_looks'] = ctx.get('context', {}).get('azimuth_looks', 7)
-    ctx['range_looks'] = ctx.get('context', {}).get('range_looks', 19)
-
-    ctx.setdefault('swathnum', [1, 2, 3])
-    ctx['stitch_subswaths_xt'] = True
-    azimuth_looks = ctx['azimuth_looks']
-    range_looks = ctx['range_looks']
     logger.info(f'Using azimuth_looks of {azimuth_looks}'
                 f' and range_looks of {range_looks}')
     logger.info('STITCHED SWATHS')
