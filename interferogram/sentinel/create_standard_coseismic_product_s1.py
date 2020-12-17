@@ -1211,7 +1211,8 @@ def main():
                          DO_ESD=do_esd,
                          ESD_COHERENCE_THRESHOLD=esd_coh_thresh)
 
-    TEMPLATE_FILE = ('/home/ops/ariamh/interferogram/sentinel/'
+    TEMPLATE_FILE = (os.environ['ARIAMH_HOME'] +
+                     '/interferogram/sentinel/' +
                      'topsApp_standard_coseismic_product.xml.tmpl')
 
     def create_input_xml(template_dict,
