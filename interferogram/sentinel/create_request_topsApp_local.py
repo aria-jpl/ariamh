@@ -66,6 +66,11 @@ def delete_met_data(met_md, old_key):
 
     return met_md
 
+def remove_local(s, suffix):
+    if suffix and s.endswith(suffix):
+        return s[:-len(suffix)]
+    return s
+
 def get_dataset(id):
     """Query for existence of dataset by ID."""
 
@@ -310,6 +315,7 @@ def get_ifg_hash(master_slcs,  slave_slcs):
         if isinstance(slc, tuple) or isinstance(slc, list):
             slc = slc[0]
 
+        slc = remove_local(slc, "-local")
         if master_ids_str=="":
             master_ids_str= slc
         else:
@@ -320,6 +326,7 @@ def get_ifg_hash(master_slcs,  slave_slcs):
         if isinstance(slc, tuple) or isinstance(slc, list):
             slc = slc[0]
 
+        slc = remove_local(slc, "-local")
         if slave_ids_str=="":
             slave_ids_str= slc
         else:
@@ -865,6 +872,9 @@ def main():
         raise Exception(err_msg)
 
     new_ifg_hash = get_ifg_hash(master_ids, slave_ids)
+    if new_ifg_hash != full_id_hash:
+        raise Exception("new full_id_hash {} is NOT same as new full_id_hash : {}".format(new_ifg_hash))
+
     ctx['new_ifg_hash'] = new_ifg_hash
 
 
