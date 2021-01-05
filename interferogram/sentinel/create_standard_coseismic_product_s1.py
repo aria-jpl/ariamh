@@ -55,6 +55,8 @@ POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
 IFG_ID_SP_TMPL = 'S1-COSEISMIC-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}'
 LOG_NAME = 'create_standard_coseismic_product_s1.log'
 DATASET_KEY = 'S1-COSEISMIC-GUNW'
+ES_INDEX = 'grq_*_s1-coseismic-gunw'
+
 # Use the same template file and then adapt based on context.json
 TEMPLATE_FILE = (os.environ['ARIAMH_HOME'] +
                  '/interferogram/sentinel/' +
@@ -82,99 +84,9 @@ def delete_met_data(met_md, old_key):
     return met_md
 
 
-def get_dataset(id):
-    """Query for existence of dataset by ID."""
-
-    uu = UrlUtils()
-    es_url = uu.rest_url
-    es_index = 'grq'
-
-    # query
-    query = {
-      'query': {
-        'wildcard': {
-          '_id': id
-        }
-      }
-    }
-
-    logger.info(query)
-
-    if es_url.endswith('/'):
-        search_url = '%s%s/_search' % (es_url, es_index)
-    else:
-        search_url = '%s/%s/_search' % (es_url, es_index)
-    logger.info(f'search_url : {search_url}')
-
-    r = requests.post(search_url, data=json.dumps(query))
-
-    if r.status_code != 200:
-        logger.info('Failed to query %s:\n%s' % (es_url, r.text))
-        logger.info('query: %s' % json.dumps(query, indent=2))
-        logger.info('returned: %s' % r.text)
-        r.raise_for_status()
-
-    result = r.json()
-    logger.info(result['hits']['total'])
-    return result
-
-
 def touch(path):
     with open(path, 'a'):
         os.utime(path, None)
-
-
-def check_ifg_status(ifg_id):
-
-    result = get_dataset(ifg_id)
-    total = result['hits']['total']
-    logger.info(f'check_slc_status : total : {total}')
-    if total > 0:
-        found_id = result['hits']['hits'][0]['_id']
-        raise RuntimeError(f'S1-GUNW IFG already exists : {found_id}')
-
-    logger.info('check_slc_status : returning False')
-    return False
-
-
-def get_dataset_by_hash(ifg_hash, es_index='grq'):
-    """Query for existence of dataset by ID."""
-
-    uu = UrlUtils()
-    es_url = uu.rest_url
-
-    # query
-    query = {
-        'query': {
-            'bool': {
-                'must': [
-                    {'term': {'metadata.full_id_hash.raw': ifg_hash}},
-                    {'term': {'dataset.raw': 'S1-GUNW'}}
-                ]
-            }
-        }
-
-    }
-
-    logger.info(query)
-
-    if es_url.endswith('/'):
-        search_url = '%s%s/_search' % (es_url, es_index)
-    else:
-        search_url = '%s/%s/_search' % (es_url, es_index)
-    logger.info(f'search_url : {search_url}')
-
-    r = requests.post(search_url, data=json.dumps(query))
-    r.raise_for_status()
-
-    if r.status_code != 200:
-        logger.info(f'Failed to query es_url:\n{r.text}')
-        logger.info('query: %s' % json.dumps(query, indent=2))
-        logger.info('returned: %s' % r.text)
-        raise RuntimeError('Failed to query %s:\n%s' % (es_url, r.text))
-    result = r.json()
-    logger.info(result['hits']['total'])
-    return result
 
 
 def get_dataset_by_hash_version(ifg_hash, version, es_index='grq'):
@@ -188,7 +100,7 @@ def get_dataset_by_hash_version(ifg_hash, version, es_index='grq'):
             'bool': {
                 'must': [
                     {'term': {'metadata.full_id_hash.raw': ifg_hash}},
-                    {'term': {'dataset.raw': 'S1-GUNW'}},
+                    {'term': {'dataset.raw': DATASET_KEY}},
                     {'term': {'version.raw': version}}
                 ]
             }
@@ -199,9 +111,9 @@ def get_dataset_by_hash_version(ifg_hash, version, es_index='grq'):
     logger.info(query)
 
     if es_url.endswith('/'):
-        search_url = '%s%s/_search' % (es_url, es_index)
+        search_url = '%s%s/_search' % (es_url, ES_INDEX)
     else:
-        search_url = '%s/%s/_search' % (es_url, es_index)
+        search_url = '%s/%s/_search' % (es_url, ES_INDEX)
     logger.info(f'search_url : {search_url}')
 
     r = requests.post(search_url, data=json.dumps(query))
@@ -252,20 +164,6 @@ def get_md5_from_file(file_name):
         for chunk in iter(lambda: f.read(4096), b''):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
-
-
-def check_ifg_status_by_hash(new_ifg_hash):
-    es_index = 'grq_*_s1-gunw'
-    result = get_dataset_by_hash(new_ifg_hash, es_index)
-    total = result['hits']['total']
-    logger.info(f'check_slc_status_by_hash : total : {total}')
-    if total > 0:
-        found_id = result['hits']['hits'][0]['_id']
-        logger.info(f'Duplicate dataset found: {found_id}')
-        sys.exit(0)
-
-    logger.info('check_slc_status : returning False')
-    return False
 
 
 def check_ifg_status_by_hash_version(new_ifg_hash, version):
