@@ -17,16 +17,16 @@
       <property name="output directory">slave</property>
       <property name="safe">$SLAVE_SAFE_DIR</property>
     </component>
-    <property name="swaths">[$SWATHNUM]</property>
+    <property name="swaths">$SWATHNUM</property>
     <property name="range looks">$RANGE_LOOKS</property>
     <property name="azimuth looks">$AZIMUTH_LOOKS</property>
     <property name="filter strength">$FILTER_STRENGTH</property>
-    <!--<property name="region of interest">$BBOX</property>-->
+    <!-- <property name="region of interest">$REGION_OF_INTEREST</property>
+    <property name="geocode bounding box">$REGION_OF_INTEREST</property> -->
     <property name="demFilename">$DEM_FILE</property>
     <property name="geocodeDemFilename">$GEOCODE_DEM_FILE</property>
     <property name="do unwrap">True</property>
     <property name="unwrapper name">snaphu_mcf</property>
-    <!--<property name="geocode bounding box">$BBOX</property>-->
     <property name="do ESD">$DO_ESD</property>
     <property name="ESD coherence threshold">$ESD_COHERENCE_THRESHOLD</property>
     <property name="use virtual files">$USE_VIRTUAL_FILES</property>

@@ -50,8 +50,15 @@ KILAUEA_DEM = f'{BASE_URL_KILAUEA}/products/kilauea/dem_kilauea.dem'
 RESORB_RE = re.compile(r'_RESORB_')
 MISSION_RE = re.compile(r'^(S1\w)_')
 POL_RE = re.compile(r'^S1\w_IW_SLC._1S(\w{2})_')
+
+# Coseismic vs. Standard Product Global Variables
 IFG_ID_SP_TMPL = 'S1-COSEISMIC-GUNW-{}-{}-{:03d}-tops-{}_{}-{}-{}-PP-{}-{}'
-COSEISMIC_LOG_NAME = 'create_standard_coseismic_product_s1.log'
+LOG_NAME = 'create_standard_coseismic_product_s1.log'
+DATASET_KEY = 'S1-COSEISMIC-GUNW'
+# Use the same template file and then adapt based on context.json
+TEMPLATE_FILE = (os.environ['ARIAMH_HOME'] +
+                 '/interferogram/sentinel/' +
+                 'topsApp_standard_product.xml.tmpl')
 
 
 def update_met_key(met_md, old_key, new_key):
@@ -223,13 +230,13 @@ def fileContainsMsg(file_name, msg):
 def checkBurstError():
     msg = 'cannot continue for interferometry applications'
 
-    found, line = fileContainsMsg(COSEISMIC_LOG_NAME, msg)
+    found, line = fileContainsMsg(LOG_NAME, msg)
     if found:
         logger.info(f'checkBurstError : {line.strip()}')
         raise RuntimeError(line.strip())
     if not found:
         msg = 'Exception: Could not determine a suitable burst offset'
-        found, line = fileContainsMsg(COSEISMIC_LOG_NAME, msg)
+        found, line = fileContainsMsg(LOG_NAME, msg)
         if found:
             logger.info(f'Found Error : {line}')
             raise RuntimeError(line.strip())
@@ -509,7 +516,7 @@ def get_version():
                           '..', '..', 'conf', 'dataset_versions.json'))
     with open(DS_VERS_CFG) as f:
         ds_vers = json.load(f)
-    return ds_vers['S1-COSEISMIC-GUNW']
+    return ds_vers[DATASET_KEY]
 
 
 def get_area(coords):
@@ -977,6 +984,20 @@ def main():
 
     # Check if ifg_name exists
     version = get_version()
+    temp_ifg_id = get_temp_id(ctx, version)
+
+    ###################################
+    # This code may cause errors
+    ###################################
+    TESTING = ctx.get('testing', False)
+    if not TESTING:
+        if check_ifg_status_by_hash_version(new_ifg_hash, get_version()):
+            err = "S1-GUNW IFG Found : %s" % temp_ifg_id
+            logger.info(err)
+            raise RuntimeError(err)
+
+        logger.info('\nS1-GUNW IFG NOT Found:'
+                    f'{temp_ifg_id}.\nProceeding ....\n')
 
     logger.debug('Warning: We assume that the zip paths are '
                  'in the current working directory with the other data')
@@ -1192,7 +1213,7 @@ def main():
     esd_coh_thresh = 0.85
     master_orbit = ctx['master_orbit_file']
     slave_orbit = ctx['slave_orbit_file']
-    bbox_str = list(map(lambda x: f'{x:1.2f}', bbox))
+    region_of_interest_str = str(ctx.get('region_of_interest', bbox))
 
     TEMPLATE_DICT = dict(MASTER_SAFE_DIR=master_zip_file,
                          SLAVE_SAFE_DIR=slave_zip_file,
@@ -1200,20 +1221,14 @@ def main():
                          SLAVE_ORBIT_FILE=slave_orbit,
                          DEM_FILE=preprocess_dem_file,
                          GEOCODE_DEM_FILE=geocode_dem_file,
-                         # print to string and ignore brackets
-                         # TODO: fix template
-                         SWATHNUM=str(ctx['swathnum'])[1:-1],
+                         SWATHNUM=str(ctx['swathnum']),
                          AZIMUTH_LOOKS=ctx['azimuth_looks'],
                          RANGE_LOOKS=ctx['range_looks'],
                          FILTER_STRENGTH=ctx['filter_strength'],
-                         BBOX=' '.join(bbox_str),
+                         REGION_OF_INTEREST=region_of_interest_str,
                          USE_VIRTUAL_FILES=True,
                          DO_ESD=do_esd,
                          ESD_COHERENCE_THRESHOLD=esd_coh_thresh)
-
-    TEMPLATE_FILE = (os.environ['ARIAMH_HOME'] +
-                     '/interferogram/sentinel/' +
-                     'topsApp_standard_coseismic_product.xml.tmpl')
 
     def create_input_xml(template_dict,
                          out_xml,
@@ -1808,7 +1823,6 @@ def main():
 
     # clean out SAFE directories, DEM files and water masks
     # for i in chain(master_safe_dirs, slave_safe_dirs): shutil.rmtree(i)
-    TESTING = ctx.get('testing', False)
     if not TESTING:
         for i in glob('dem*'):
             os.unlink(i)
@@ -1870,14 +1884,14 @@ if __name__ == '__main__':
 
         found = False
         msg = 'cannot continue for interferometry applications'
-        found, line = fileContainsMsg(COSEISMIC_LOG_NAME, msg)
+        found, line = fileContainsMsg(LOG_NAME, msg)
         if found:
             logger.info(f'Found Error : {line}')
             updateErrorFiles(line.strip())
 
         if not found:
             msg = 'Exception: Could not determine a suitable burst offset'
-            found, line = fileContainsMsg(COSEISMIC_LOG_NAME, msg)
+            found, line = fileContainsMsg(LOG_NAME, msg)
             if found:
                 logger.info('Found Error : %s' % line.strip())
                 updateErrorFiles(line.strip())
