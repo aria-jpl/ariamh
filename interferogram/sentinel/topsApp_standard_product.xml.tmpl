@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <topsApp>
-  <!--<component name="bbox">-->
-  <!--<property name="snwe"></property>-->
-  <!--<property name="projection code">EPSG:3031</property>-->
-  <!--</component>-->
   <component name="topsinsar">
     <component name="master">
       <property name="orbit file">$MASTER_ORBIT_FILE</property>
@@ -21,8 +17,8 @@
     <property name="range looks">$RANGE_LOOKS</property>
     <property name="azimuth looks">$AZIMUTH_LOOKS</property>
     <property name="filter strength">$FILTER_STRENGTH</property>
-    <!-- <property name="region of interest">$REGION_OF_INTEREST</property>
-    <property name="geocode bounding box">$REGION_OF_INTEREST</property> -->
+    <property name="region of interest">$REGION_OF_INTEREST</property>
+    <property name="geocode bounding box">$REGION_OF_INTEREST</property>
     <property name="demFilename">$DEM_FILE</property>
     <property name="geocodeDemFilename">$GEOCODE_DEM_FILE</property>
     <property name="do unwrap">True</property>
