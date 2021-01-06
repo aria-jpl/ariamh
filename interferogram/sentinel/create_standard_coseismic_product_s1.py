@@ -92,7 +92,7 @@ def touch(path):
 def get_dataset_by_hash_version(ifg_hash, version, es_index='grq'):
     """Query for existence of dataset by ID."""
     uu = UrlUtils()
-    es_url = uu.rest_url
+    es_url = uu.rest_url + 'es'
 
     # query
     query = {
@@ -116,7 +116,7 @@ def get_dataset_by_hash_version(ifg_hash, version, es_index='grq'):
         search_url = '%s/%s/_search' % (es_url, ES_INDEX)
     logger.info(f'search_url : {search_url}')
 
-    r = requests.post(search_url, data=json.dumps(query))
+    r = requests.post(search_url, data=json.dumps(query), verify=False)
     r.raise_for_status()
 
     if r.status_code != 200:
@@ -894,7 +894,8 @@ def main():
             logger.info(err)
             raise RuntimeError(err)
 
-        logger.info('\nS1-GUNW IFG NOT Found:'
+        logger.info('\n'
+                    f'{DATASET_KEY} ifg cfg NOT Found:'
                     f'{temp_ifg_id}.\nProceeding ....\n')
 
     logger.debug('Warning: We assume that the zip paths are '
