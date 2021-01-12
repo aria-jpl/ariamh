@@ -6,7 +6,7 @@
     "/home/ops/verdi/etc/settings.conf": "/home/ops/ariamh/conf/settings.conf"
   },
   "recommended-queues" : [
-    "standard_product-s1gunw-topsapp-pleiades_s2037"
+    "standard_product-s1gunw-topsapp-pleiades_581_s2037"
   ],
   "soft_time_limit": 43200,
   "time_limit": 43200,
