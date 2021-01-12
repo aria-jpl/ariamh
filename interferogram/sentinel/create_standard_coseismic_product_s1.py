@@ -17,6 +17,7 @@ from subprocess import (check_call,
                         CalledProcessError)
 from glob import glob
 from lxml.etree import parse
+from interferogram.sentinel.sent1_bbox import get_envelope_from_all_slcs
 import numpy as np
 from datetime import datetime
 from osgeo import (ogr,
@@ -917,19 +918,19 @@ def main():
 
     # get union bbox
     logger.info('Determining envelope bbox from SLC swaths.')
-    bbox_json = 'bbox.json'
 
-    logger.info('stitch_subswaths_xt is True')
-    bbox_cmd_tmpl = ('{}/get_union_bbox.sh -o '
-                     '{} *.SAFE/annotation/s1?-iw?-slc-{}-*.xml')
-    check_call(bbox_cmd_tmpl.format(BASE_PATH,
-                                    bbox_json,
-                                    match_pol),
-               shell=True)
+    envelope_dict = get_envelope_from_all_slcs()
+    bbox = [envelope_dict['ymin'],
+            envelope_dict['ymax'],
+            envelope_dict['xmin'],
+            envelope_dict['xmax'],
+            ]
+    bbox_json = {'envelope': bbox}
+    json.dump(bbox_json,
+              open('bbox.json', 'w'),
+              indent=2)
 
-    with open(bbox_json) as f:
-        bbox = json.load(f)['envelope']
-    logger.info('bbox: {}'.format(bbox))
+    logger.info(f'bbox: {json.dumps(bbox_json, indent=2)}')
 
     # get dataset version and set dataset ID
     version = get_version()

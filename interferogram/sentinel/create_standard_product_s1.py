@@ -902,6 +902,7 @@ def main():
     logger.debug('Warning: We assume that the zip paths are '
                  'in the current working directory with the other data')
     zip_paths = list(Path('.').glob('S1A_IW_SLC__*.zip'))
+    logger.info(f'There are {len(zip_paths)} slcs to unzip')
     list(map(unzip_annotation_xmls, zip_paths))
 
     # get polarization values
@@ -917,19 +918,19 @@ def main():
 
     # get union bbox
     logger.info('Determining envelope bbox from SLC swaths.')
-    bbox_json = 'bbox.json'
 
-    logger.info('stitch_subswaths_xt is True')
-    bbox_cmd_tmpl = ('{}/get_union_bbox.sh -o '
-                     '{} *.SAFE/annotation/s1?-iw?-slc-{}-*.xml')
-    check_call(bbox_cmd_tmpl.format(BASE_PATH,
-                                    bbox_json,
-                                    match_pol),
-               shell=True)
+    envelope_dict = get_envelope_from_all_slcs()
+    bbox = [envelope_dict['ymin'],
+            envelope_dict['ymax'],
+            envelope_dict['xmin'],
+            envelope_dict['xmax'],
+            ]
+    bbox_json = {'envelope': bbox}
+    json.dump(bbox_json,
+              open('bbox.json', 'w'),
+              indent=2)
 
-    with open(bbox_json) as f:
-        bbox = json.load(f)['envelope']
-    logger.info('bbox: {}'.format(bbox))
+    logger.info(f'bbox: {json.dumps(bbox_json, indent=2)}')
 
     # get dataset version and set dataset ID
     version = get_version()
