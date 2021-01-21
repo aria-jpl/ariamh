@@ -14,7 +14,7 @@ RUN git clone --branch python3 https://github.com/aria-jpl/slcp2pm.git $HOME/ver
 COPY . /home/ops/ariamh
 
 RUN set -ex \
-    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib \
+    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib pandas \
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     &&  $HOME/verdi/bin/pip install 'fiona==1.7.13' \
     #&& $HOME/verdi/bin/pip install 'pyproj==2.6.1' \
@@ -25,7 +25,7 @@ RUN set -ex \
     && cd /home/ops/verdi/ops/slcp2cor/src \
     && ./compile.sh \
     # apply shadow_mask source code to isce2
-    && sudo cp -u /home/ops/ariamh/interferogram/sentinel/shadow_mask/runTopo.py /opt/isce2/isce/components/isceobj/TopsProc/ \ 
+    && sudo cp -u /home/ops/ariamh/interferogram/sentinel/shadow_mask/runTopo.py /opt/isce2/isce/components/isceobj/TopsProc/ \
     && sudo cp -u /home/ops/ariamh/interferogram/sentinel/shadow_mask/runMergeBursts.py /opt/isce2/isce/components/isceobj/TopsProc/
 
 # set entrypoint
