@@ -26,6 +26,7 @@ from utils.UrlUtils_standard_product import UrlUtils
 from utils.imutils import (get_image,
                            get_size,
                            crop_mask)
+from interferogram.sentinel.sent1_bbox import get_envelope_from_all_slcs
 from utils.time_utils import getTemporalSpanInDays
 from dateutil import parser
 from string import Template
@@ -902,6 +903,7 @@ def main():
     logger.debug('Warning: We assume that the zip paths are '
                  'in the current working directory with the other data')
     zip_paths = list(Path('.').glob('S1A_IW_SLC__*.zip'))
+    logger.info(f'There are {len(zip_paths)} slcs to unzip')
     list(map(unzip_annotation_xmls, zip_paths))
 
     # get polarization values
@@ -917,19 +919,19 @@ def main():
 
     # get union bbox
     logger.info('Determining envelope bbox from SLC swaths.')
-    bbox_json = 'bbox.json'
 
-    logger.info('stitch_subswaths_xt is True')
-    bbox_cmd_tmpl = ('{}/get_union_bbox.sh -o '
-                     '{} *.SAFE/annotation/s1?-iw?-slc-{}-*.xml')
-    check_call(bbox_cmd_tmpl.format(BASE_PATH,
-                                    bbox_json,
-                                    match_pol),
-               shell=True)
+    envelope_dict = get_envelope_from_all_slcs()
+    bbox = [envelope_dict['ymin'],
+            envelope_dict['ymax'],
+            envelope_dict['xmin'],
+            envelope_dict['xmax'],
+            ]
+    bbox_json = {'envelope': bbox}
+    json.dump(bbox_json,
+              open('bbox.json', 'w'),
+              indent=2)
 
-    with open(bbox_json) as f:
-        bbox = json.load(f)['envelope']
-    logger.info('bbox: {}'.format(bbox))
+    logger.info(f'bbox: {json.dumps(bbox_json, indent=2)}')
 
     # get dataset version and set dataset ID
     version = get_version()
@@ -1110,7 +1112,7 @@ def main():
     logger.info(f'ESD computations are {"ON" if do_esd else "OFF"}')
 
     # create initial input xml
-    esd_coh_thresh = 0.85
+    esd_coh_thresh = 0.85 if do_esd else - 1.
     master_orbit = ctx['master_orbit_file']
     slave_orbit = ctx['slave_orbit_file']
     region_of_interest_str = str(ctx.get('region_of_interest', bbox))
@@ -1670,7 +1672,7 @@ def main():
     md['orbitNumber'] = [master_orbit_number, slave_orbit_number]
 
     # add ESD coherence threshold
-    md['esd_threshold'] = esd_coh_thresh if do_esd else - 1.
+    md['esd_threshold'] = esd_coh_thresh
 
     # add range_looks and azimuth_looks to metadata for stitching purposes
     md['azimuth_looks'] = int(ctx['azimuth_looks'])
