@@ -17,7 +17,7 @@ COPY . /home/ops/ariamh
 ###     && sudo yum -y --setopt=tsflags=nodocs install unzip
 
 RUN set -ex \
-    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib \
+    && sudo /opt/conda/bin/conda install -c conda-forge --yes httplib2 lxml pyproj joblib pandas\
     && $HOME/verdi/bin/pip install joblib netcdf4 \
     &&  $HOME/verdi/bin/pip install 'fiona==1.7.13' \
     #&& $HOME/verdi/bin/pip install 'pyproj==2.6.1' \
