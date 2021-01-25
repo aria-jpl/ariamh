@@ -717,7 +717,7 @@ def unzip_annotation_xmls(zip_path: str) -> list:
     all_files = zip_obj.filelist
     # Only want xmls that match this regular expression
     # (within annotation file)
-    pattern = re.compile(r'S1A\w*.SAFE/annotation/s1a[\w\-]*.xml')
+    pattern = re.compile(r'S1\w*.SAFE/annotation/s1[\w\-]*.xml')
     xmls = list(filter(lambda x: re.match(pattern, x.filename), all_files))
 
     def extract(zip_info_ob):
