@@ -722,7 +722,7 @@ def unzip_annotation_xmls(zip_path: str) -> list:
 
     def extract(zip_info_ob):
         zip_obj.extract(zip_info_ob)
-        fn = zip_obj.filename
+        fn = zip_info_ob.filename
         logger.info(f'Unzipping {fn}')
         return fn
 
@@ -902,8 +902,11 @@ def main():
 
     logger.debug('Warning: We assume that the zip paths are '
                  'in the current working directory with the other data')
-    zip_paths = list(Path('.').glob('S1A_IW_SLC__*.zip'))
+    zip_paths = list(Path('.').glob('S1*_IW_SLC__*.zip'))
     logger.info(f'There are {len(zip_paths)} slcs to unzip')
+    if len(zip_paths) == 0:
+        err_msg = 'No SLC files to Unzip!'
+        raise RuntimeError(err_msg)
     list(map(unzip_annotation_xmls, zip_paths))
 
     # get polarization values
