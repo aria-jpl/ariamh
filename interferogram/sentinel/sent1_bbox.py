@@ -63,7 +63,7 @@ def get_data_from_one_slc(slc_directory: str) -> pd.DataFrame:
     Get concantenated dataframe of all GCPs within SLC for various
     polarizations and swaths within slc file.
     """
-    xml_files = list(Path(slc_directory).glob('annotation/s1a-iw*.xml'))
+    xml_files = list(Path(slc_directory).glob('annotation/s1*-iw*.xml'))
     dfs = list(map(get_data_from_one_xml, xml_files))
     df_slc = pd.concat(dfs, axis=0)
     return df_slc
@@ -71,7 +71,7 @@ def get_data_from_one_slc(slc_directory: str) -> pd.DataFrame:
 
 def get_envelope_from_all_slcs() -> dict:
     # Assume the data is in the current work directory
-    safe_dirs = list(Path('.').glob('S1A_IW_SLC*.SAFE/'))
+    safe_dirs = list(Path('.').glob('S1*_IW_SLC*.SAFE/'))
     dfs = list(map(get_data_from_one_slc, safe_dirs))
     df_all_slcs = pd.concat(dfs, axis=0)
     envelope = {'xmin': df_all_slcs.longitude.min(),
