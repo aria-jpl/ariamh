@@ -93,8 +93,11 @@ def touch(path):
 def get_dataset_by_hash_version(ifg_hash, version, es_index='grq'):
     """Query for existence of dataset by ID."""
     uu = UrlUtils()
-    es_url = uu.rest_url.replace(':9200', '') + 'es'
-    es_url = es_url.replace('http:', 'https:')
+    es_url = uu.rest_url
+
+    if '100.67.35.28' in es_url:
+        es_url = es_url.replace(':9200', '')
+        es_url = es_url.replace('http:', 'https:')
 
     # query
     query = {
