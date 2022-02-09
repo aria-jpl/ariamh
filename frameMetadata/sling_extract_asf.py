@@ -185,7 +185,9 @@ def get_slc_checksum_md5_asf(slc_id):
     sleep_time = random.randrange(15, 60)
     time.sleep(sleep_time)
 
-    asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&processingLevel=SLC&output=geojson"
+    asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&output=geojson"
+    # updated ASF query syntax (2022-02-07)
+    # asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&processingLevel=SLC&output=geojson"
     asf_geo_json_endpoint = asf_geo_json_endpoint_template.format(slc_id=slc_id)
 
     req = requests.get(asf_geo_json_endpoint, timeout=30)
