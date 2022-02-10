@@ -189,6 +189,8 @@ def get_slc_checksum_md5_asf(slc_id):
     # updated ASF query syntax (2022-02-07)
     # asf_geo_json_endpoint_template = "https://api.daac.asf.alaska.edu/services/search/param?granule_list={slc_id}&processingLevel=SLC&output=geojson"
     asf_geo_json_endpoint = asf_geo_json_endpoint_template.format(slc_id=slc_id)
+    print("asf_geo_json_endpoint_template : {}".format(asf_geo_json_endpoint_template))
+    print("asf_geo_json_endpoint : {}".format(asf_geo_json_endpoint))
 
     req = requests.get(asf_geo_json_endpoint, timeout=30)
 
@@ -200,8 +202,16 @@ def get_slc_checksum_md5_asf(slc_id):
         # {u'type': u'FeatureCollection', u'features': []} if SLC not found in ASF
         raise RuntimeError("SLC_ID {} not found in ASF: no available md5 checksum for SLC".format(slc_id))
 
-    md5_hash = geojson["features"][0]["properties"]["md5sum"]  # md5 checksum is lower case
-    return md5_hash
+    found = False
+    slc_file_name = "{}.zip".format(slc_id)
+    for feature in geojson["features"]:
+        feature_file_name = feature["properties"]["fileName"]
+        if feature_file_name.lower() == slc_file_name.lower():
+            found = True
+            return feature["properties"]["md5sum"]
+
+    if not found:
+        raise Exception("No property for {} in {}".format(slc_file_name, geojson))
 
 
 def get_download_params(url):
